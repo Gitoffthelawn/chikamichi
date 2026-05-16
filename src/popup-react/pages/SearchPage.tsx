@@ -288,6 +288,7 @@ export function SearchPage({
   onUpdateSettings: (partial: Partial<AppSettings>) => Promise<void>;
   settings: AppSettings;
 }) {
+  const FEEDBACK_FADE_DURATION_MS = 200;
   const [activeTab, setActiveTab] = useState<browser.Tabs.Tab | null>(null);
   const [collections, setCollections] = useState<SearchCollections>(EMPTY_COLLECTIONS);
   const [favoriteItems, setFavoriteItems] = useState(settings.favoriteItems);
@@ -296,6 +297,7 @@ export function SearchPage({
   const [selectedNumber, setSelectedNumber] = useState(0);
   const [selectedKey, setSelectedKey] = useState("");
   const [badgeText, setBadgeText] = useState("");
+  const [badgeVisible, setBadgeVisible] = useState(false);
   const [draggedFavoriteIndex, setDraggedFavoriteIndex] = useState<number | null>(null);
   const [dragOverFavoriteIndex, setDragOverFavoriteIndex] = useState<number | null>(null);
   const [searchEngine, setSearchEngine] = useState({
@@ -306,6 +308,7 @@ export function SearchPage({
   const resultRefs = useRef<Array<HTMLElement | null>>([]);
   const resultsWrapperRef = useRef<HTMLDivElement>(null);
   const badgeTimerRef = useRef<number | null>(null);
+  const badgeClearTimerRef = useRef<number | null>(null);
   const suppressHoverSelectionRef = useRef(false);
   const lastPointerPositionRef = useRef<{ x: number; y: number } | null>(null);
   const getMockActiveTab = useCallback(() => {
@@ -465,9 +468,13 @@ export function SearchPage({
     if (badgeTimerRef.current !== null) {
       window.clearTimeout(badgeTimerRef.current);
     }
+    if (badgeClearTimerRef.current !== null) {
+      window.clearTimeout(badgeClearTimerRef.current);
+    }
 
     flushSync(() => {
       setBadgeText(text);
+      setBadgeVisible(true);
     });
 
     await new Promise<void>((resolve) => {
@@ -476,7 +483,11 @@ export function SearchPage({
       }, duration);
     });
 
-    setBadgeText("");
+    setBadgeVisible(false);
+    badgeClearTimerRef.current = window.setTimeout(() => {
+      setBadgeText("");
+      badgeClearTimerRef.current = null;
+    }, FEEDBACK_FADE_DURATION_MS);
   };
 
   const searchResult = useMemo(() => {
@@ -1269,7 +1280,7 @@ export function SearchPage({
             <div
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary/92 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-200 ease-out",
-                badgeText
+                badgeVisible
                   ? "translate-y-0 opacity-100"
                   : "pointer-events-none translate-y-1 opacity-0",
               )}
