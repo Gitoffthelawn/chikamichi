@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["vue"],
+  "env": {
+    "browser": true
+  },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "style": "error",
+    "restriction": "error",
+    "perf": "error"
+  },
+  "rules": {
+    "func-style": "off",
+    "id-length": "off",
+    "max-lines": "off",
+    "max-lines-per-function": "off",
+    "max-statements": "off",
+    "no-magic-numbers": "off",
+    "no-ternary": "off",
+    "no-undefined": "off",
+    "no-underscore-dangle": [
+      "error",
+      {
+        "allow": ["__DEV__"]
+      }
+    ],
+    "sort-imports": "off",
+    "vue/define-emits-declaration": "error",
+    "vue/define-props-declaration": "error",
+    "vue/define-props-destructuring": "error"
+  }
+}

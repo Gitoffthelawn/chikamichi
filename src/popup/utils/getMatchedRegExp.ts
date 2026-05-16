@@ -1,15 +1,12 @@
-const escapeRegExp = (text: string) => {
-  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-};
+function escapeRegExp(text: string) {
+  return text.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
 
-export const getMatchedRegExp = (text: string, indices: [number, number][]) => {
+export function getMatchedRegExp(text: string, indices: [number, number][]) {
   return new RegExp(
     Array.from(
-      new Set(
-        indices.map(([start, end]) => {
-          return escapeRegExp(text.substring(start, end + 1));
-        })
-      )
-    ).join("|")
+      new Set(indices.map(([start, end]) => escapeRegExp(text.substring(start, end + 1)))),
+    ).join("|"),
+    "u",
   );
-};
+}

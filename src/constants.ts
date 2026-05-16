@@ -1,25 +1,27 @@
 import type Fuse from "fuse.js";
 
+export const HISTORY_FETCH_DAYS = 180;
+export const HISTORY_FETCH_LIMIT = 5000;
+export const SEARCH_RESULT_LIMIT = 100;
+
 export const SEARCH_TARGET_REGEX = {
-  HISTORY: /^\/h\s(.*)/,
-  BOOKMARK: /^\/b\s(.*)/,
-  TAB: /^\/t\s(.*)/,
-  EITHER: /^\/[hbt]\s(.*)/,
+  ACTION: /^>\s?(.*)/u,
+  BOOKMARK: /^\/b\s(.*)/u,
+  EITHER: /^\/[hbt]\s(.*)/u,
+  HISTORY: /^\/h\s(.*)/u,
+  TAB: /^\/t\s(.*)/u,
 } as const;
 
 export const SEARCH_ITEM_TYPE = {
-  HISTORY: "history",
   BOOKMARK: "bookmark",
+  HISTORY: "history",
   TAB: "tab",
 } as const;
 
 export const FUSE_OPTIONS: Fuse.IFuseOptions<any> = {
-  useExtendedSearch: true,
   distance: 300,
-  minMatchCharLength: 2,
-  includeScore: true,
   includeMatches: true,
-  shouldSort: true,
+  includeScore: true,
   keys: [
     {
       name: "title",
@@ -38,18 +40,21 @@ export const FUSE_OPTIONS: Fuse.IFuseOptions<any> = {
       weight: 0.1,
     },
   ],
+  minMatchCharLength: 2,
+  shouldSort: true,
   threshold: 0.4,
+  useExtendedSearch: true,
 };
 
 export const PAGES = {
-  SEARCH: "search",
   INFO: "info",
+  SEARCH: "search",
   SETTING: "setting",
 } as const;
 
 export const SEARCH_PREFIX = {
-  HISTORY: "/h ",
   BOOKMARK: "/b ",
+  HISTORY: "/h ",
   TAB: "/t ",
 };
 
@@ -67,6 +72,6 @@ export const SEARCH_ICON_DATA_URL_DARK =
 
 export const BADGE_TEXT = {
   ADD_FAVORITE: "Add to favorite",
-  REMOVE_FAVORITE: "Removed from favorite ",
   COPY: "Copied to clipboard",
+  REMOVE_FAVORITE: "Removed from favorite ",
 } as const;

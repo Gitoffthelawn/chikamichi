@@ -1,0 +1,13 @@
+allowBuilds:
+  "@parcel/watcher": true
+  "@swc/core": true
+  core-js: true
+  dtrace-provider: true
+  esbuild: true
+  lefthook: true
+  lmdb: true
+  msgpackr-extract: true
+  msw: true
+  sharp: true
+  spawn-sync: true
+  vue-demi: true
