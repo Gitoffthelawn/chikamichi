@@ -22,7 +22,7 @@ export function SearchFooter({ badgeText, badgeVisible }: SearchFooterProps) {
       <div className="ml-auto flex min-w-0 justify-end">
         <div
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary/92 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-200 ease-out",
+            "inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-[0_8px_18px_rgba(42,91,199,0.2),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-200 ease-out dark:border-primary/35 dark:shadow-[0_10px_24px_rgba(10,18,35,0.36),inset_0_1px_0_rgba(255,255,255,0.28)]",
             badgeVisible
               ? "translate-y-0 opacity-100"
               : "pointer-events-none translate-y-1 opacity-0",
