@@ -6,6 +6,7 @@ import { t } from "~/i18n";
 import { highlightText } from "~/popup-react/utils";
 import type { ActionItem } from "~/popup-react/types";
 
+// oxlint-disable-next-line prefer-arrow-callback
 export const SearchResultRow = memo(function SearchResultRow({
   dragOverFavoriteIndex,
   draggedFavoriteIndex,
@@ -146,6 +147,7 @@ export const SearchResultRow = memo(function SearchResultRow({
   );
 });
 
+// oxlint-disable-next-line prefer-arrow-callback
 export const ActionResultRow = memo(function ActionResultRow({
   description,
   icon: Icon,
