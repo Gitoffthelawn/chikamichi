@@ -1,4 +1,5 @@
 import type { FuseResult } from "fuse.js";
+import { SEARCH_RANKING_CONFIG } from "~/core/config";
 import { getMatchedRegExp } from "./getMatchedRegExp";
 
 type RecentContextBoost = {
@@ -14,10 +15,6 @@ type SortAndFormatSearchResultOptions = {
   openStatsLookup?: OpenStatsLookup;
   recentContext?: RecentContextBoost;
 };
-
-const RECENT_HOSTNAME_BOOST = 0.025;
-const OPEN_STATS_MAX_BOOST = 0.06;
-const OPEN_STATS_RECENCY_WINDOW_MS = 1000 * 60 * 60 * 24 * 30;
 
 function getHostname(value: string) {
   try {
@@ -35,7 +32,7 @@ function getRecentContextBoostScore(item: SearchItem, recentContext: RecentConte
   }
 
   if (recentContext.recentHostnames.has(hostname)) {
-    return RECENT_HOSTNAME_BOOST;
+    return SEARCH_RANKING_CONFIG.recentHostnameBoost;
   }
 
   return 0;
@@ -52,15 +49,20 @@ function getOpenStatsBoostScore(
     return 0;
   }
 
-  const frequencyBoost = Math.min(Math.log2(stats.openCount + 1) * 0.012, 0.036);
+  const frequencyBoost = Math.min(
+    Math.log2(stats.openCount + 1) * SEARCH_RANKING_CONFIG.openStatsBoost.frequencyMultiplier,
+    SEARCH_RANKING_CONFIG.openStatsBoost.frequencyMax,
+  );
   const age = Math.max(0, now - stats.lastOpenedAt);
-  const recencyBoost = Math.max(0, 1 - age / OPEN_STATS_RECENCY_WINDOW_MS) * 0.024;
+  const recencyBoost =
+    Math.max(0, 1 - age / SEARCH_RANKING_CONFIG.openStatsBoost.recencyWindowMs) *
+    SEARCH_RANKING_CONFIG.openStatsBoost.recencyMax;
 
-  return Math.min(OPEN_STATS_MAX_BOOST, frequencyBoost + recencyBoost);
+  return Math.min(SEARCH_RANKING_CONFIG.openStatsBoost.maxTotal, frequencyBoost + recencyBoost);
 }
 
 export function sortSearchResult(searchResult: SearchResult[]) {
-  const roundingFunc = (num: number) => Math.round(num * 100);
+  const roundingFunc = (num: number) => Math.round(num * SEARCH_RANKING_CONFIG.scoreRoundingFactor);
 
   // Group by score
   const mapKeys: number[] = [];

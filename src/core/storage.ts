@@ -1,4 +1,5 @@
 import { Storage } from "@plasmohq/storage";
+import { OPEN_STATS_CONFIG } from "~/core/config";
 import { THEME } from "~/constants";
 
 export interface FavoriteItemRecord {
@@ -28,9 +29,6 @@ const STORAGE_KEYS = {
   openLinkInCurrentTab: "chikamichi-open-link-in-current-tab",
   theme: "chikamichi-theme",
 } as const;
-
-const OPEN_STATS_STORAGE_KEY = "chikamichi-open-stats";
-const OPEN_STATS_LIMIT = 500;
 
 const storage = new Storage({
   area: "local",
@@ -80,7 +78,9 @@ function parseOpenStats(value: unknown): OpenStatsRecord[] {
 }
 
 export async function getOpenStats(): Promise<OpenStatsRecord[]> {
-  return parseOpenStats(await storage.get<OpenStatsRecord[] | string>(OPEN_STATS_STORAGE_KEY));
+  return parseOpenStats(
+    await storage.get<OpenStatsRecord[] | string>(OPEN_STATS_CONFIG.storageKey),
+  );
 }
 
 export async function recordOpenedUrl(url: string, now = Date.now()) {
@@ -99,9 +99,9 @@ export async function recordOpenedUrl(url: string, now = Date.now()) {
     ...stats.filter((item) => item.url !== url),
   ]
     .sort((a, b) => b.lastOpenedAt - a.lastOpenedAt)
-    .slice(0, OPEN_STATS_LIMIT);
+    .slice(0, OPEN_STATS_CONFIG.limit);
 
-  await storage.set(OPEN_STATS_STORAGE_KEY, nextStats);
+  await storage.set(OPEN_STATS_CONFIG.storageKey, nextStats);
 }
 
 export async function getSettings(): Promise<AppSettings> {

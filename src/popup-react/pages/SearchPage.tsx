@@ -484,11 +484,17 @@ export function SearchPage({
     });
   };
 
+  const updateOpenStats = useCallback(async (url: string) => {
+    try {
+      await recordOpenedUrl(url);
+      setOpenStats(await getOpenStats());
+    } catch (error) {
+      reportError(error);
+    }
+  }, []);
+
   const openResult = useCallback(
     async (item: SearchResult, inNewTab: boolean) => {
-      await recordOpenedUrl(item.url);
-      setOpenStats(await getOpenStats());
-
       if (item.tabId !== undefined) {
         await sendToBackground({
           body: {
@@ -496,6 +502,7 @@ export function SearchPage({
           },
           name: "change-current-tab",
         });
+        await updateOpenStats(item.url);
         return;
       }
 
@@ -508,8 +515,9 @@ export function SearchPage({
         },
         name: messageName,
       });
+      await updateOpenStats(item.url);
     },
-    [settings.openLinkInCurrentTab],
+    [settings.openLinkInCurrentTab, updateOpenStats],
   );
 
   const toggleFavorite = useCallback(
