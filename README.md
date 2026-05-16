@@ -1,5 +1,4 @@
-<img width="100" src="https://user-images.githubusercontent.com/11070996/147922657-3c079672-edbd-4993-a645-f71a2739b18c.png#gh-dark-mode-only"/>
-<img width="100" src="https://user-images.githubusercontent.com/11070996/147922660-890e2d96-26ee-4358-afc4-8421e9a05d5d.png#gh-light-mode-only"/>
+<img width="100" src="./src/images/logo.svg" alt="Chikamichi logo"/>
 
 # Chikamichi - Quickly find a page
 
