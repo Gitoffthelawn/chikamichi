@@ -8,8 +8,7 @@ import {
   subscribeSettings,
   updateSettings,
 } from "~/core/storage";
-import logoLightUrl from "~/images/logo.svg";
-import { PageMenuButton } from "~/popup-react/components/common";
+import { AppSidebar } from "~/popup-react/components/app/AppSidebar";
 import { InfoPage } from "~/popup-react/pages/InfoPage";
 import { SearchPage } from "~/popup-react/pages/SearchPage";
 import { SettingPage } from "~/popup-react/pages/SettingPage";
@@ -75,28 +74,7 @@ function App() {
             <SettingPage onUpdateSettings={saveSettings} settings={settings} />
           ) : null}
         </div>
-        <aside className="flex h-full min-h-0 flex-col items-center bg-white/48 p-2.5 dark:bg-background/10">
-          <nav aria-label="Navigation" className="space-y-2.5">
-            <PageMenuButton
-              currentPage={currentPage}
-              page={PAGES.SEARCH}
-              setCurrentPage={setCurrentPage}
-            />
-            <PageMenuButton
-              currentPage={currentPage}
-              page={PAGES.SETTING}
-              setCurrentPage={setCurrentPage}
-            />
-            <PageMenuButton
-              currentPage={currentPage}
-              page={PAGES.INFO}
-              setCurrentPage={setCurrentPage}
-            />
-          </nav>
-          <div className="mt-auto flex w-full justify-center pt-3">
-            <img alt="Chikamichi" className="size-8" src={logoLightUrl} />
-          </div>
-        </aside>
+        <AppSidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       </div>
     </main>
   );

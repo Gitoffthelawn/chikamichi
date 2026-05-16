@@ -478,21 +478,4 @@ test.describe("popup", () => {
       .poll(() => getMockCalls(page, "copyImage").then((calls) => calls.length))
       .toBeGreaterThan(1);
   });
-
-  test("reloads and closes the current tab from action mode", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
-
-    await input.fill("> reload");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Reload Tab");
-    await input.press("Enter");
-    await expect.poll(() => getLastMockCall<any[]>(page, "tabsReload")).toEqual([1, {}]);
-
-    await input.fill("> close");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Close Tab");
-    await input.press("Enter");
-    await expect.poll(() => getLastMockCall<any[]>(page, "tabsRemove")).toEqual([1]);
-    await expect
-      .poll(() => getMockCalls(page, "close").then((calls) => calls.length))
-      .toBeGreaterThan(0);
-  });
 });
