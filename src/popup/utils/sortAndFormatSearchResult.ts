@@ -1,4 +1,4 @@
-import Fuse from "fuse.js";
+import type { FuseResult } from "fuse.js";
 import { getMatchedRegExp } from "./getMatchedRegExp";
 
 type RecentContextBoost = {
@@ -6,7 +6,6 @@ type RecentContextBoost = {
   recentHostnames: Set<string>;
 };
 
-const ACTIVE_HOSTNAME_BOOST = 0.06;
 const RECENT_HOSTNAME_BOOST = 0.025;
 
 function getHostname(value: string) {
@@ -22,10 +21,6 @@ function getRecentContextBoostScore(item: SearchItem, recentContext: RecentConte
 
   if (!hostname) {
     return 0;
-  }
-
-  if (recentContext.activeHostname && hostname === recentContext.activeHostname) {
-    return ACTIVE_HOSTNAME_BOOST;
   }
 
   if (recentContext.recentHostnames.has(hostname)) {
@@ -74,7 +69,7 @@ export function sortSearchResult(searchResult: SearchResult[]) {
 }
 
 export function sortAndFormatSearchResult(
-  searchResult: Fuse.FuseResult<SearchItem>[],
+  searchResult: FuseResult<SearchItem>[],
   favoriteLookup: Set<string>,
   recentContext: RecentContextBoost = {
     activeHostname: null,

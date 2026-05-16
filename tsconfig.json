@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["vitest/globals", "chrome"],
+    "types": ["vitest/globals", "chrome", "node", "webextension-polyfill"],
     "paths": {
       "~*": ["./src/*"]
     }

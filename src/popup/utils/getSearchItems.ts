@@ -1,4 +1,4 @@
-import type { Bookmarks, History, Tabs } from "webextension-polyfill";
+import browser, { type Bookmarks, type History, type Tabs } from "webextension-polyfill";
 import { HISTORY_FETCH_DAYS, HISTORY_FETCH_LIMIT, SEARCH_ITEM_TYPE } from "~/constants";
 
 export function faviconUrl(url: string) {

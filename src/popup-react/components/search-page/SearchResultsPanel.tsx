@@ -78,7 +78,7 @@ export function SearchResultsPanel({
 
       return (
         <div
-          className="flex min-h-[180px] items-center justify-center rounded-[16px] border border-dashed border-border/10 bg-background/16 px-5 text-center"
+          className="flex min-h-[180px] items-center justify-center rounded-[16px] border border-dashed border-border/[0.1] bg-background/[0.16] px-5 text-center"
           data-cy="action-result-empty"
         >
           <div className="space-y-1">
@@ -119,9 +119,7 @@ export function SearchResultsPanel({
           aria-selected={browserSearchSelected}
           className={cn(
             "grid w-full grid-cols-[18px_minmax(0,1fr)_auto_auto] items-center gap-2.5 rounded-[14px] px-3 py-2 text-left",
-            browserSearchSelected
-              ? "bg-primary/10 shadow-[inset_0_0_0_1px_rgba(90,145,255,0.2)] dark:bg-primary/12"
-              : "bg-transparent hover:bg-white/78 dark:hover:bg-card/40",
+            browserSearchSelected ? "interactive-row-selected" : "interactive-row",
           )}
           data-cy="browser-search-btn"
           type="button"
@@ -140,12 +138,12 @@ export function SearchResultsPanel({
             <div className="truncate text-[14px] font-medium leading-[1.25] text-foreground">
               {t("browserSearch", extractedSearchWord)}
             </div>
-            <div className="truncate text-[11px] leading-[1.25] text-foreground/56 dark:text-muted-foreground">
+            <div className="truncate text-[11px] leading-[1.25] text-foreground/[0.56] dark:text-muted-foreground">
               {searchEngine.name || t("browserSearchEngine")}
             </div>
           </div>
           <Badge variant="secondary">{t("browserSearchEngine")}</Badge>
-          <div className="inline-flex size-7 items-center justify-center rounded-lg border border-transparent bg-slate-100/88 text-foreground/52 dark:bg-background/52 dark:text-muted-foreground">
+          <div className="inline-flex size-7 items-center justify-center rounded-lg border border-transparent bg-slate-100/[0.88] text-foreground/[0.52] dark:bg-background/[0.52] dark:text-muted-foreground">
             <ExternalLink className="size-3.5" />
           </div>
         </button>
@@ -154,16 +152,16 @@ export function SearchResultsPanel({
 
     return (
       <div
-        className="flex min-h-[180px] items-center justify-center rounded-[16px] border border-dashed border-border/10 bg-background/16 px-5 text-center"
+        className="flex min-h-[180px] items-center justify-center rounded-[16px] border border-dashed border-border/[0.1] bg-background/[0.16] px-5 text-center"
         data-cy="search-result-empty"
       >
         <div className="space-y-2">
-          <div className="mx-auto flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <div className="mx-auto flex size-9 items-center justify-center rounded-full bg-primary/[0.1] text-primary">
             <Search className="size-4" />
           </div>
           <div className="space-y-1">
             <h2 className="text-base font-semibold">{t("searchEmptyTitle")}</h2>
-            <p className="text-[13px] text-foreground/56 dark:text-muted-foreground">
+            <p className="text-[13px] text-foreground/[0.56] dark:text-muted-foreground">
               {t("searchEmptyBody")}
             </p>
           </div>
@@ -174,7 +172,7 @@ export function SearchResultsPanel({
 
   return (
     <div
-      className="relative h-[367px] shrink-0 overflow-y-auto overflow-x-hidden rounded-[18px] border border-border/24 bg-slate-100/72 p-1.5 dark:border-border/14 dark:bg-card/12"
+      className="relative h-[367px] shrink-0 overflow-y-auto overflow-x-hidden rounded-[18px] border border-border/[0.24] bg-slate-100/[0.72] p-1.5 dark:border-border/[0.14] dark:bg-card/[0.12]"
       data-cy="search-result-wrapper"
     >
       <div className="space-y-1.5 pb-1">{renderResults()}</div>

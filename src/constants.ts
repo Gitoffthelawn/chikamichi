@@ -1,4 +1,4 @@
-import type Fuse from "fuse.js";
+import type { IFuseOptions } from "fuse.js";
 
 export const HISTORY_FETCH_DAYS = 180;
 export const HISTORY_FETCH_LIMIT = 5000;
@@ -18,7 +18,7 @@ export const SEARCH_ITEM_TYPE = {
   TAB: "tab",
 } as const;
 
-export const FUSE_OPTIONS: Fuse.IFuseOptions<any> = {
+export const FUSE_OPTIONS: IFuseOptions<SearchItem> = {
   distance: 300,
   includeMatches: true,
   includeScore: true,

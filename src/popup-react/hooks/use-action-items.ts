@@ -99,8 +99,14 @@ async function copyImageToClipboard(dataUrl: string) {
 }
 
 function captureVisibleArea(tab: browser.Tabs.Tab) {
+  if (tab.windowId === undefined) {
+    throw new Error("Tab window id is required");
+  }
+
+  const { windowId } = tab;
+
   return new Promise<string>((resolve) => {
-    chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, (dataUrl) => {
+    chrome.tabs.captureVisibleTab(windowId, { format: "png" }, (dataUrl) => {
       resolve(dataUrl);
     });
   });
@@ -143,7 +149,9 @@ async function captureFullPage(tab: browser.Tabs.Tab) {
     return null;
   }
 
-  const metrics = await executeScript(tab.id, () => ({
+  const tabId = tab.id;
+
+  const metrics = await executeScript(tabId, () => ({
     fullHeight: document.documentElement.scrollHeight,
     fullWidth: document.documentElement.scrollWidth,
     scrollX: window.scrollX,
@@ -161,7 +169,7 @@ async function captureFullPage(tab: browser.Tabs.Tab) {
     steps.push(y);
   }
 
-  await executeScript(tab.id, () => {
+  await executeScript(tabId, () => {
     document.documentElement.style.scrollBehavior = "auto";
     document.body.style.scrollBehavior = "auto";
   });
@@ -177,7 +185,7 @@ async function captureFullPage(tab: browser.Tabs.Tab) {
     }
 
     await executeScript(
-      tab.id,
+      tabId,
       (nextY?: number) => {
         window.scrollTo(0, nextY ?? 0);
       },
@@ -221,7 +229,7 @@ async function captureFullPage(tab: browser.Tabs.Tab) {
   await captureStep(0);
 
   await executeScript(
-    tab.id,
+    tabId,
     (nextScrollX?: number, nextScrollY?: number) => {
       window.scrollTo(nextScrollX ?? 0, nextScrollY ?? 0);
     },
@@ -229,9 +237,11 @@ async function captureFullPage(tab: browser.Tabs.Tab) {
     metrics.scrollY,
   );
 
-  const finalCanvas = stitchedCanvas;
+  if (stitchedCanvas === null) {
+    return null;
+  }
 
-  return finalCanvas ? finalCanvas.toDataURL("image/png") : null;
+  return (stitchedCanvas as HTMLCanvasElement).toDataURL("image/png");
 }
 
 type UseActionItemsParams = {

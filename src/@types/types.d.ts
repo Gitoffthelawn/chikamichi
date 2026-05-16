@@ -18,3 +18,10 @@ type SearchResult = SearchItem & {
 };
 
 type ValueOf<T> = T[keyof T];
+
+declare module "*.svg" {
+  const src: string;
+  export default src;
+}
+
+declare module "*.css";

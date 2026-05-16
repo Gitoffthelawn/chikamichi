@@ -18,15 +18,15 @@ export function SettingPage({
       description={t("settingDescription")}
       title={t("settingTitle")}
     >
-      <div className="space-y-0 rounded-[16px] bg-card/10">
+      <div className="space-y-0 rounded-[16px] bg-card/[0.1]">
         <div className="px-0.5 py-0.5 text-[12px] font-medium tracking-wide text-muted-foreground">
           {t("generalSectionTitle")}
         </div>
-        <div className="space-y-0 rounded-[16px] border border-border/40 bg-white/74 px-3.5 py-3 dark:border-border/10 dark:bg-background/10">
+        <div className="space-y-0 rounded-[16px] border border-border/[0.4] bg-white/[0.74] px-3.5 py-3 dark:border-border/[0.1] dark:bg-background/[0.1]">
           <SettingRow description={t("prefixDescription")} title={t("prefixTitle")}>
             <div className="relative">
               <select
-                className="flex h-9 w-full appearance-none rounded-xl border border-border/50 bg-white/92 px-3 pr-10 text-[13px] text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border/18 dark:bg-background/80"
+                className="flex h-9 w-full appearance-none rounded-xl border border-border/[0.5] bg-white/[0.92] px-3 pr-10 text-[13px] text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border/[0.18] dark:bg-background/[0.8]"
                 data-cy="select-prefix"
                 style={{
                   colorScheme: getResolvedTheme(settings.theme) === THEME.DARK ? "dark" : "light",
@@ -47,7 +47,7 @@ export function SettingPage({
             </div>
           </SettingRow>
           <SettingRow description={t("themeDescription")} title={t("themeTitle")}>
-            <div className="grid grid-cols-3 gap-2 rounded-[12px] bg-slate-100/82 p-0.5 dark:bg-background/18">
+            <div className="grid grid-cols-3 gap-2 rounded-[12px] bg-slate-100/82 p-0.5 dark:bg-background/[0.18]">
               {[THEME.AUTO, THEME.LIGHT, THEME.DARK].map((option) => (
                 <SettingToggleButton
                   active={settings.theme === option}
@@ -65,7 +65,7 @@ export function SettingPage({
             </div>
           </SettingRow>
           <SettingRow description={t("openLinkActionDescription")} title={t("openLinkActionTitle")}>
-            <div className="grid grid-cols-2 gap-2 rounded-[12px] bg-slate-100/82 p-0.5 dark:bg-background/18">
+            <div className="grid grid-cols-2 gap-2 rounded-[12px] bg-slate-100/82 p-0.5 dark:bg-background/[0.18]">
               <SettingToggleButton
                 active={settings.openLinkInCurrentTab}
                 data-cy="open-link-in-current-tab"

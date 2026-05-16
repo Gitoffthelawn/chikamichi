@@ -72,7 +72,7 @@ export async function getSettings(): Promise<AppSettings> {
 }
 
 export async function updateSettings(partial: Partial<AppSettings>) {
-  const tasks: Array<Promise<void>> = [];
+  const tasks: Array<Promise<unknown>> = [];
 
   if (partial.defaultSearchPrefix !== undefined) {
     tasks.push(storage.set(STORAGE_KEYS.defaultSearchPrefix, partial.defaultSearchPrefix));

@@ -20,7 +20,7 @@ export function SearchInputBar({
   onKeyDown,
 }: SearchInputBarProps) {
   return (
-    <div className="flex h-12 shrink-0 items-center gap-3 rounded-[16px] border border-border/42 bg-white/78 px-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:border-border/12 dark:bg-background/68 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
+    <div className="flex h-12 shrink-0 items-center gap-3 rounded-[16px] border border-border/[0.42] bg-white/[0.78] px-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:border-border/[0.12] dark:bg-background/[0.68] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
       <Search className="size-5 shrink-0 text-primary" />
       <Input
         autoComplete="off"

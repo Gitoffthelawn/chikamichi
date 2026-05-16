@@ -139,36 +139,6 @@ describe("sortSearchResult", () => {
     ]);
   });
 
-  it("boosts results from the current active hostname", () => {
-    const target = [
-      {
-        item: {
-          ...baseSearchResult,
-          title: "other-host",
-          url: "https://other.example.com/page",
-        },
-        matches: [{ indices: [[0, 3]], key: "title", value: "other-host" }],
-        score: 0.12,
-      },
-      {
-        item: {
-          ...baseSearchResult,
-          title: "same-host",
-          url: "https://current.example.com/page",
-        },
-        matches: [{ indices: [[0, 3]], key: "title", value: "same-host" }],
-        score: 0.12,
-      },
-    ] as any;
-
-    const result = sortAndFormatSearchResult(target, new Set(), {
-      activeHostname: "current.example.com",
-      recentHostnames: new Set<string>(),
-    });
-
-    expect(result[0]?.url).toBe("https://current.example.com/page");
-  });
-
   it("boosts results from recent hostnames", () => {
     const target = [
       {

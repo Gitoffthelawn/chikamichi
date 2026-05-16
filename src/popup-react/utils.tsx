@@ -35,6 +35,7 @@ export function toFavoriteResult(item: AppSettings["favoriteItems"][number]): Se
     isFavorite: true,
     matchedWord: "",
     score: 0,
+    searchTerm: `${item.title} ${item.url} ${item.folderName ?? ""}`.trim(),
   };
 }
 

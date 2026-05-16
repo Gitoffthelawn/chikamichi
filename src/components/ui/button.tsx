@@ -20,7 +20,7 @@ const buttonVariants = cva(
         default: "bg-primary text-primary-foreground shadow-sm hover:opacity-95",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         outline:
-          "border border-border/80 bg-card/70 text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground",
+          "border border-border/[0.8] bg-card/[0.7] text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:opacity-95",
       },
     },

@@ -68,3 +68,27 @@
     background-image: linear-gradient(180deg, hsl(224 32% 16%), hsl(var(--background)));
   }
 }
+
+@layer components {
+  .interactive-row {
+    @apply bg-transparent;
+  }
+
+  .interactive-row-selected {
+    @apply bg-[hsl(var(--primary)/0.2)] dark:bg-[hsl(var(--primary)/0.25)];
+    box-shadow: inset 0 0 0 1px rgba(90, 145, 255, 0.2);
+  }
+
+  .interactive-row-selected-subtle {
+    @apply bg-[hsl(var(--primary)/0.2)] dark:bg-[hsl(var(--primary)/0.25)];
+    box-shadow: inset 0 0 0 1px rgba(90, 145, 255, 0.2);
+  }
+
+  .interactive-row:hover {
+    background-color: rgb(255 255 255 / 0.78);
+  }
+
+  .dark .interactive-row:hover {
+    background-color: hsl(var(--card) / 0.4);
+  }
+}

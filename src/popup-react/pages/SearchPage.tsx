@@ -1,7 +1,7 @@
 import { sendToBackground } from "@plasmohq/messaging";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import browser from "webextension-polyfill";
+import browser, { type Search } from "webextension-polyfill";
 import { type AppSettings, DEFAULT_SETTINGS } from "~/core/storage";
 import {
   SEARCH_ICON_DATA_URL_DARK,
@@ -37,6 +37,13 @@ import { getSearchItems } from "~/popup/utils/getSearchItems";
 import { sortAndFormatSearchResult } from "~/popup/utils/sortAndFormatSearchResult";
 
 type SearchCollections = Awaited<ReturnType<typeof getSearchItems>>;
+type SearchEngineState = {
+  favIconUrl: string;
+  name: string;
+};
+type BrowserSearchWithDisposition = typeof browser.search & {
+  Disposition: Record<"CURRENT_TAB" | "NEW_TAB", Search.Disposition>;
+};
 
 function getHostname(value?: string | null) {
   if (!value) {
@@ -66,7 +73,7 @@ export function SearchPage({
   const [selectedKey, setSelectedKey] = useState("");
   const [draggedFavoriteIndex, setDraggedFavoriteIndex] = useState<number | null>(null);
   const [dragOverFavoriteIndex, setDragOverFavoriteIndex] = useState<number | null>(null);
-  const [searchEngine, setSearchEngine] = useState({
+  const [searchEngine, setSearchEngine] = useState<SearchEngineState>({
     favIconUrl: SEARCH_ICON_DATA_URL_LIGHT,
     name: "browser",
   });
@@ -212,7 +219,14 @@ export function SearchPage({
       .get()
       .then((engines) => {
         const defaultEngine = engines.find((engine) => engine.isDefault);
-        setSearchEngine(defaultEngine ?? fallbackSearchEngine);
+        setSearchEngine(
+          defaultEngine
+            ? {
+                favIconUrl: defaultEngine.favIconUrl ?? fallbackSearchEngine.favIconUrl,
+                name: defaultEngine.name,
+              }
+            : fallbackSearchEngine,
+        );
       })
       .catch(reportError);
   }, [settings.theme]);
@@ -265,7 +279,7 @@ export function SearchPage({
     }
 
     return sortAndFormatSearchResult(
-      targetFuse.search<SearchItem>(extractedSearchWord, {
+      targetFuse.search(extractedSearchWord, {
         limit: SEARCH_RESULT_LIMIT,
       }),
       favoriteLookup,
@@ -436,10 +450,10 @@ export function SearchPage({
       return;
     }
 
-    await browser.search.query({
-      disposition: inNewTab
-        ? browser.search.Disposition.NEW_TAB
-        : browser.search.Disposition.CURRENT_TAB,
+    const searchApi = browser.search as BrowserSearchWithDisposition;
+
+    await searchApi.query({
+      disposition: inNewTab ? searchApi.Disposition.NEW_TAB : searchApi.Disposition.CURRENT_TAB,
       text: query,
     });
   };

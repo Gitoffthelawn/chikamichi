@@ -49,7 +49,6 @@ function generateTab(
     index: 0,
     lastAccessed: args.lastAccessed ?? Date.now(),
     pinned: false,
-    selected: false,
     title: args.title ?? randCatchPhrase(),
     url: args.url ?? randUrl(),
     windowId: 1,

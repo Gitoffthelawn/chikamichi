@@ -41,9 +41,7 @@ export const SearchResultRow = memo(function SearchResultRow({
         favoriteReorderEnabled
           ? "grid-cols-[auto_18px_minmax(0,1fr)_auto_auto]"
           : "grid-cols-[18px_minmax(0,1fr)_auto_auto]",
-        selected
-          ? "bg-primary/10 shadow-[inset_0_0_0_1px_rgba(90,145,255,0.2)] dark:bg-primary/12"
-          : "bg-transparent hover:bg-white/78 dark:hover:bg-card/40",
+        selected ? "interactive-row-selected" : "interactive-row",
         draggedFavoriteIndex === index ? "opacity-55" : "",
         dragOverFavoriteIndex === index ? "shadow-[inset_0_0_0_1px_rgba(90,145,255,0.26)]" : "",
       )}
@@ -176,9 +174,7 @@ export const ActionResultRow = memo(function ActionResultRow({
       aria-selected={selected}
       className={cn(
         "grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[14px] px-3 py-2 text-left",
-        selected
-          ? "bg-primary/10 shadow-[inset_0_0_0_1px_rgba(90,145,255,0.2)] dark:bg-primary/12"
-          : "bg-transparent hover:bg-white/78 dark:hover:bg-card/40",
+        selected ? "interactive-row-selected-subtle" : "interactive-row",
       )}
       data-cy={`action-result-${index}`}
       data-selected={selected}

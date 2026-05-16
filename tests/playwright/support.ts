@@ -15,6 +15,67 @@ type MockCallKey =
   | "tabsRemove"
   | "tabsUpdate";
 
+type MockSearchItem = SearchItem;
+type MockSearchCollections = {
+  bookmarks: MockSearchItem[];
+  histories: MockSearchItem[];
+  tabs: MockSearchItem[];
+};
+
+type MockCallArgs = unknown[];
+type MockCallMap = Record<MockCallKey, MockCallArgs[]>;
+type StorageChangeRecord = Record<string, { newValue: unknown; oldValue: unknown }>;
+type StorageListener = (changes: StorageChangeRecord, areaName: string) => void;
+type StorageState = Record<string, unknown>;
+type BookmarkNodeWithChildren = Bookmarks.BookmarkTreeNode & {
+  children?: Bookmarks.BookmarkTreeNode[];
+};
+type SearchQueryPayload = {
+  query?: string;
+  tabId?: number;
+};
+
+type MockWindow = Window &
+  typeof globalThis & {
+    __chikamichiMockCalls?: MockCallMap;
+    __chikamichiMockSearchItems?: MockSearchCollections;
+    chikamichiMockActiveTab?: Partial<Tabs.Tab> | null;
+    browser?: {
+      bookmarks: {
+        getTree: () => Promise<Bookmarks.BookmarkTreeNode[]>;
+      };
+      history: {
+        search: () => Promise<History.HistoryItem[]>;
+      };
+      search: {
+        Disposition: {
+          CURRENT_TAB: number;
+          NEW_TAB: number;
+        };
+        get: () => Promise<unknown[]>;
+        query: (query: unknown) => Promise<void>;
+        search: (payload: SearchQueryPayload) => Promise<void>;
+      };
+      storage: {
+        local: {
+          get: (
+            keys: string | string[] | Record<string, unknown>,
+            callback?: (result: Record<string, unknown>) => void,
+          ) => Promise<Record<string, unknown>> | void;
+          remove: (keys: string | string[], callback?: () => void) => Promise<void>;
+          set: (items: Record<string, unknown>, callback?: () => void) => Promise<void>;
+        };
+        onChanged: {
+          addListener: (listener: StorageListener) => void;
+          removeListener: (listener: StorageListener) => void;
+        };
+      };
+      tabs: {
+        query: (queryInfo?: { active?: boolean }) => Promise<Partial<Tabs.Tab>[]>;
+      };
+    };
+  };
+
 export async function setupExtensionEnvironment(
   page: Page,
   {
@@ -29,36 +90,41 @@ export async function setupExtensionEnvironment(
 ) {
   await page.addInitScript(
     ({ bookmarks: initialBookmarks, histories: initialHistories, tabs: initialTabs }) => {
-      const storageState = {};
-      const storageListeners = [];
-      const faviconUrl = (url) => {
+      const storageState: StorageState = {};
+      const storageListeners: StorageListener[] = [];
+      const faviconUrl = (url: string) => {
         const hostname = new URL(url).hostname.replace(/^www\./u, "");
         return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
       };
-      const generateSearchTerm = (...args) => args.filter((arg) => arg).join(" ");
-      const mockCalls = {
-        chromeSearchQuery: [],
-        close: [],
-        copy: [],
-        copyImage: [],
-        downloadsDownload: [],
-        runtimeSendMessage: [],
-        scriptingExecuteScript: [],
-        tabsCaptureVisibleTab: [],
-        tabsDuplicate: [],
-        tabsReload: [],
-        tabsRemove: [],
-        tabsUpdate: [],
+      const generateSearchTerm = (...args: Array<string | undefined>) =>
+        args.filter((arg): arg is string => Boolean(arg)).join(" ");
+      const mockCalls: MockCallMap = {
+        chromeSearchQuery: [] as MockCallArgs[],
+        close: [] as MockCallArgs[],
+        copy: [] as MockCallArgs[],
+        copyImage: [] as MockCallArgs[],
+        downloadsDownload: [] as MockCallArgs[],
+        runtimeSendMessage: [] as MockCallArgs[],
+        scriptingExecuteScript: [] as MockCallArgs[],
+        tabsCaptureVisibleTab: [] as MockCallArgs[],
+        tabsDuplicate: [] as MockCallArgs[],
+        tabsReload: [] as MockCallArgs[],
+        tabsRemove: [] as MockCallArgs[],
+        tabsUpdate: [] as MockCallArgs[],
       };
+      const mockWindow = window as MockWindow;
 
-      const emitStorageChanged = (changes, areaName) => {
+      const emitStorageChanged = (changes: StorageChangeRecord, areaName: string) => {
         storageListeners.forEach((listener) => {
           listener(changes, areaName);
         });
       };
 
-      const bookmarkItems = [];
-      const collectBookmarkItems = (nodes, folderNames = []) => {
+      const bookmarkItems: SearchItem[] = [];
+      const collectBookmarkItems = (
+        nodes: BookmarkNodeWithChildren[],
+        folderNames: string[] = [],
+      ) => {
         nodes.forEach((node) => {
           if (node.type !== "bookmark" && node.children) {
             const folderName = node.parentId === "0" ? "" : node.title;
@@ -83,33 +149,33 @@ export async function setupExtensionEnvironment(
         });
       };
 
-      collectBookmarkItems(initialBookmarks);
+      collectBookmarkItems(initialBookmarks as BookmarkNodeWithChildren[]);
 
-      window["__chikamichiMockSearchItems"] = {
+      mockWindow["__chikamichiMockSearchItems"] = {
         bookmarks: bookmarkItems,
         histories: initialHistories.map((history) => ({
-          faviconUrl: faviconUrl(history.url),
+          faviconUrl: faviconUrl(history.url ?? ""),
           folderName: "",
           lastVisitTime: history.lastVisitTime,
           searchTerm: generateSearchTerm(history.title, history.url),
-          title: history.title,
+          title: history.title ?? history.url ?? "",
           type: "history",
-          url: history.url,
+          url: history.url ?? "",
         })),
         tabs: initialTabs.map((tab) => ({
-          faviconUrl: faviconUrl(tab.url),
+          faviconUrl: faviconUrl(tab.url ?? ""),
           folderName: "",
           lastVisitTime: tab.lastAccessed,
           searchTerm: generateSearchTerm(tab.title, tab.url),
           tabId: tab.id,
-          title: tab.title,
+          title: tab.title ?? tab.url ?? "",
           type: "tab",
-          url: tab.url,
+          url: tab.url ?? "",
         })),
       };
 
-      window["__chikamichiMockCalls"] = mockCalls;
-      window["chikamichiMockActiveTab"] = initialTabs[0] ?? null;
+      mockWindow["__chikamichiMockCalls"] = mockCalls;
+      mockWindow.chikamichiMockActiveTab = initialTabs[0] ?? null;
 
       const runtime = {
         getManifest: () => ({
@@ -122,7 +188,7 @@ export async function setupExtensionEnvironment(
         onMessage: {
           addListener: () => undefined,
         },
-        sendMessage: (...args) => {
+        sendMessage: (...args: MockCallArgs) => {
           mockCalls.runtimeSendMessage.push(args);
           return Promise.resolve(undefined);
         },
@@ -133,24 +199,30 @@ export async function setupExtensionEnvironment(
 
       const chromeApi = {
         bookmarks: {
-          getTree: (callback) => {
-            callback(bookmarks);
+          getTree: (callback: (nodes: Bookmarks.BookmarkTreeNode[]) => void) => {
+            callback(initialBookmarks);
           },
         },
         downloads: {
-          download: (options, callback) => {
+          download: (options: unknown, callback?: () => void) => {
             mockCalls.downloadsDownload.push([options]);
             callback?.();
           },
         },
         history: {
-          search: (_queryInfo, callback) => {
+          search: (_queryInfo: unknown, callback: (items: History.HistoryItem[]) => void) => {
             callback(initialHistories);
           },
         },
         runtime,
         scripting: {
-          executeScript: ({ args, func }) => {
+          executeScript: ({
+            args,
+            func,
+          }: {
+            args?: unknown[];
+            func: (...args: any[]) => unknown;
+          }) => {
             mockCalls.scriptingExecuteScript.push([{ args }]);
             return Promise.resolve([{ result: func(...(args ?? [])) }]);
           },
@@ -160,13 +232,16 @@ export async function setupExtensionEnvironment(
             CURRENT_TAB: 1,
             NEW_TAB: 2,
           },
-          query: (query) => {
+          query: (query: unknown) => {
             mockCalls.chromeSearchQuery.push([query]);
           },
         },
         storage: {
           local: {
-            get: (keys, callback) => {
+            get: (
+              keys: string | string[] | Record<string, unknown>,
+              callback?: (result: Record<string, unknown>) => void,
+            ) => {
               let keyList: string[] = [];
               if (Array.isArray(keys)) {
                 keyList = keys;
@@ -179,7 +254,9 @@ export async function setupExtensionEnvironment(
                 keyList.map((key) => [
                   key,
                   storageState[key] ??
-                    (typeof keys === "object" && !Array.isArray(keys) ? keys[key] : undefined),
+                    (typeof keys === "object" && !Array.isArray(keys)
+                      ? (keys as Record<string, unknown>)[key]
+                      : undefined),
                 ]),
               );
 
@@ -190,7 +267,7 @@ export async function setupExtensionEnvironment(
 
               return Promise.resolve(result);
             },
-            remove: (keys, callback) => {
+            remove: (keys: string | string[], callback?: () => void) => {
               const keyList = Array.isArray(keys) ? keys : [keys];
               const changes = Object.fromEntries(
                 keyList.map((key) => [
@@ -208,7 +285,7 @@ export async function setupExtensionEnvironment(
               callback?.();
               return Promise.resolve();
             },
-            set: (items, callback) => {
+            set: (items: Record<string, unknown>, callback?: () => void) => {
               const changes = Object.fromEntries(
                 Object.entries(items).map(([key, value]) => [
                   key,
@@ -225,10 +302,10 @@ export async function setupExtensionEnvironment(
             },
           },
           onChanged: {
-            addListener: (listener) => {
+            addListener: (listener: StorageListener) => {
               storageListeners.push(listener);
             },
-            removeListener: (listener) => {
+            removeListener: (listener: StorageListener) => {
               const index = storageListeners.indexOf(listener);
               if (index >= 0) {
                 storageListeners.splice(index, 1);
@@ -237,15 +314,22 @@ export async function setupExtensionEnvironment(
           },
         },
         tabs: {
-          captureVisibleTab: (_windowId, _options, callback) => {
+          captureVisibleTab: (
+            _windowId: unknown,
+            _options: unknown,
+            callback: (dataUrl: string) => void,
+          ) => {
             mockCalls.tabsCaptureVisibleTab.push([]);
             callback(captureDataUrl);
           },
-          duplicate: (tabId, callback) => {
+          duplicate: (tabId: unknown, callback?: () => void) => {
             mockCalls.tabsDuplicate.push([tabId]);
             callback?.();
           },
-          query: (queryInfo, callback) => {
+          query: (
+            queryInfo: { active?: boolean } | undefined,
+            callback: (tabs: Partial<Tabs.Tab>[]) => void,
+          ) => {
             window.setTimeout(() => {
               if (queryInfo?.active) {
                 callback(initialTabs.slice(0, 1));
@@ -255,15 +339,15 @@ export async function setupExtensionEnvironment(
               callback(initialTabs);
             }, 0);
           },
-          reload: (tabId, reloadProperties, callback) => {
+          reload: (tabId: unknown, reloadProperties: unknown, callback?: () => void) => {
             mockCalls.tabsReload.push([tabId, reloadProperties]);
             callback?.();
           },
-          remove: (tabIds, callback) => {
+          remove: (tabIds: unknown, callback?: () => void) => {
             mockCalls.tabsRemove.push([tabIds]);
             callback?.();
           },
-          update: (tabId, updateProperties, callback) => {
+          update: (tabId: unknown, updateProperties: unknown, callback?: () => void) => {
             mockCalls.tabsUpdate.push([tabId, updateProperties]);
             callback?.();
           },
@@ -288,11 +372,11 @@ export async function setupExtensionEnvironment(
           search: {
             Disposition: chromeApi.search.Disposition,
             get: () => Promise.resolve([]),
-            query: (query) => {
+            query: (query: unknown) => {
               mockCalls.chromeSearchQuery.push([query]);
               return Promise.resolve(undefined);
             },
-            search: ({ query, tabId }) => {
+            search: ({ query, tabId }: SearchQueryPayload) => {
               mockCalls.chromeSearchQuery.push([
                 {
                   query,
@@ -307,7 +391,7 @@ export async function setupExtensionEnvironment(
             onChanged: chromeApi.storage.onChanged,
           },
           tabs: {
-            query: (queryInfo) =>
+            query: (queryInfo?: { active?: boolean }) =>
               Promise.resolve(queryInfo?.active ? initialTabs.slice(0, 1) : initialTabs),
           },
         },
@@ -331,11 +415,11 @@ export async function setupExtensionEnvironment(
       Object.defineProperty(window.navigator, "clipboard", {
         configurable: true,
         value: {
-          write: (items) => {
+          write: (items: unknown) => {
             mockCalls.copyImage.push([items]);
             return Promise.resolve(undefined);
           },
-          writeText: (text) => {
+          writeText: (text: string) => {
             mockCalls.copy.push([text]);
             return Promise.resolve(undefined);
           },
@@ -351,18 +435,21 @@ export async function setupExtensionEnvironment(
 }
 
 export function getMockCalls<T = unknown>(page: Page, key: MockCallKey): Promise<T[]> {
-  return page.evaluate((callKey) => (window as any)["__chikamichiMockCalls"][callKey], key);
+  return page.evaluate((callKey) => {
+    const mockWindow = window as MockWindow;
+    return mockWindow["__chikamichiMockCalls"]?.[callKey] ?? [];
+  }, key) as Promise<T[]>;
 }
 
 export async function getLastMockCall<T = unknown>(
   page: Page,
   key: MockCallKey,
 ): Promise<T | undefined> {
-  const calls = await getMockCalls<T[]>(page, key);
+  const calls = await getMockCalls<T>(page, key);
   return calls.at(-1);
 }
 
 export async function getLastRuntimeMessage(page: Page): Promise<unknown> {
-  const lastCall = await getLastMockCall<any[]>(page, "runtimeSendMessage");
+  const lastCall = await getLastMockCall<MockCallArgs>(page, "runtimeSendMessage");
   return lastCall?.[1];
 }
