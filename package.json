@@ -16,7 +16,8 @@
     "format:check": "oxfmt --check .",
     "test": "vitest",
     "test:ci": "vitest run",
-    "check": "pnpm format:check && pnpm lint:check && pnpm knip && pnpm test:ci && pnpm build",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm format:check && pnpm lint:check && pnpm typecheck && pnpm knip && pnpm test:ci && pnpm build",
     "prepare": "lefthook install --reset-hooks-path",
     "e2e:run": "playwright test",
     "e2e:ui": "playwright test --ui"
