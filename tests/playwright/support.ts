@@ -81,16 +81,23 @@ export async function setupExtensionEnvironment(
   {
     bookmarks,
     histories,
+    storage,
     tabs,
   }: {
     bookmarks: Bookmarks.BookmarkTreeNode[];
     histories: History.HistoryItem[];
+    storage?: StorageState;
     tabs: Partial<Tabs.Tab>[];
   },
 ) {
   await page.addInitScript(
-    ({ bookmarks: initialBookmarks, histories: initialHistories, tabs: initialTabs }) => {
-      const storageState: StorageState = {};
+    ({
+      bookmarks: initialBookmarks,
+      histories: initialHistories,
+      storage: initialStorage,
+      tabs: initialTabs,
+    }) => {
+      const storageState: StorageState = { ...initialStorage };
       const storageListeners: StorageListener[] = [];
       const faviconUrl = (url: string) => {
         const hostname = new URL(url).hostname.replace(/^www\./u, "");
@@ -430,7 +437,7 @@ export async function setupExtensionEnvironment(
         mockCalls.close.push([]);
       };
     },
-    { bookmarks, histories, tabs },
+    { bookmarks, histories, storage, tabs },
   );
 }
 
@@ -463,14 +470,4 @@ export function getMockStorageValue<T = unknown>(page: Page, key: string): Promi
     }
     return result[storageKey] as T;
   }, key);
-}
-
-export function setMockStorageValue(page: Page, key: string, value: unknown): Promise<void> {
-  return page.evaluate(
-    async ({ storageKey, storageValue }) => {
-      const mockWindow = window as MockWindow;
-      await mockWindow.browser?.storage.local.set({ [storageKey]: storageValue });
-    },
-    { storageKey: key, storageValue: value },
-  );
 }

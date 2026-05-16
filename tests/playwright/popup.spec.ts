@@ -6,7 +6,6 @@ import {
   getLastRuntimeMessage,
   getMockCalls,
   getMockStorageValue,
-  setMockStorageValue,
   setupExtensionEnvironment,
 } from "./support";
 
@@ -24,7 +23,11 @@ async function pressMany(
 }
 
 test.describe("popup", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (testInfo.title === "boosts previously opened results in search ranking") {
+      return;
+    }
+
     const tabs = [...Array(16)].map((_, i) =>
       generateTab({
         id: i + 1,
@@ -178,19 +181,35 @@ test.describe("popup", () => {
   });
 
   test("boosts previously opened results in search ranking", async ({ page }) => {
-    await setMockStorageValue(page, "chikamichi-open-stats", [
-      {
-        lastOpenedAt: Date.now(),
-        openCount: 10,
-        url: "https://history-item.com/0",
+    await setupExtensionEnvironment(page, {
+      bookmarks: [],
+      histories: [14, 15].map((i) =>
+        generateHistory({
+          lastVisitTime: 2000 + i,
+          title: `shared-history-${i}`,
+          url: `https://history-item.com/${i}`,
+        }),
+      ),
+      storage: {
+        "chikamichi-open-stats": JSON.stringify([
+          {
+            lastOpenedAt: Date.now(),
+            openCount: 10,
+            url: "https://history-item.com/14",
+          },
+        ]),
       },
-    ]);
-    await page.reload();
+      tabs: [],
+    });
+    await page.goto("/popup.html");
+    await expect(page.locator("[data-cy=search-input]")).toBeVisible();
 
     const input = page.locator("[data-cy=search-input]");
-    await input.fill("/h history-item");
+    await input.fill("/h shared-history");
 
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-0");
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText(
+      "https://history-item.com/14",
+    );
   });
 
   test("keeps keyboard selection stable while scrolling long results", async ({ page }) => {

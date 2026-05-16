@@ -117,12 +117,10 @@ export function sortAndFormatSearchResult(
         result!.matches![0].value!,
         result!.matches![0].indices as [number, number][],
       ),
-      score: Math.max(
-        0,
+      score:
         (result.score ?? 0) -
-          getRecentContextBoostScore(result.item, recentContext) -
-          getOpenStatsBoostScore(result.item, openStatsLookup, now),
-      ),
+        getRecentContextBoostScore(result.item, recentContext) -
+        getOpenStatsBoostScore(result.item, openStatsLookup, now),
     })),
   );
 }
