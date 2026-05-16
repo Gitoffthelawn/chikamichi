@@ -78,7 +78,7 @@ export function SearchResultsPanel({
 
       return (
         <div
-          className="flex min-h-[180px] items-center justify-center rounded-[16px] border border-dashed border-border/[0.1] bg-background/[0.16] px-5 text-center"
+          className="flex min-h-[180px] items-center justify-center rounded-[16px] border border-dashed border-search-border/[0.1] bg-background/[0.16] px-5 text-center dark:border-search-border/[0.2]"
           data-cy="action-result-empty"
         >
           <div className="space-y-1">
@@ -152,7 +152,7 @@ export function SearchResultsPanel({
 
     return (
       <div
-        className="flex min-h-[180px] items-center justify-center rounded-[16px] border border-dashed border-border/[0.1] bg-background/[0.16] px-5 text-center"
+        className="flex min-h-[180px] items-center justify-center rounded-[16px] border border-dashed border-search-border/[0.1] bg-background/[0.16] px-5 text-center dark:border-search-border/[0.2]"
         data-cy="search-result-empty"
       >
         <div className="space-y-2">
@@ -172,7 +172,7 @@ export function SearchResultsPanel({
 
   return (
     <div
-      className="relative h-[367px] shrink-0 overflow-y-auto overflow-x-hidden rounded-[18px] border border-border/[0.24] bg-slate-100/[0.72] p-1.5 dark:border-border/[0.14] dark:bg-card/[0.12]"
+      className="relative h-[367px] shrink-0 overflow-y-auto overflow-x-hidden rounded-[18px] border border-search-border/[0.24] bg-slate-100/[0.72] p-1.5 dark:border-search-border/[0.28] dark:bg-card/[0.12]"
       data-cy="search-result-wrapper"
     >
       <div className="space-y-1.5 pb-1">{renderResults()}</div>

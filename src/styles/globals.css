@@ -21,8 +21,14 @@
   --destructive: 0 72% 52%;
   --destructive-foreground: 210 40% 98%;
   --border: 220 24% 81%;
+  --border-product: 220 24% 81%;
+  --border-control: var(--border-product);
+  --border-divider: var(--border-product);
+  --border-panel: var(--border-product);
+  --border-subtle: var(--border-product);
   --input: 220 26% 84%;
   --ring: 221 71% 57%;
+  --search-border: var(--border-product);
 }
 
 .dark {
@@ -43,8 +49,14 @@
   --destructive: 0 70% 60%;
   --destructive-foreground: 210 40% 96%;
   --border: 223 18% 38%;
+  --border-product: 214 34% 70%;
+  --border-control: var(--border-product);
+  --border-divider: var(--border-product);
+  --border-panel: var(--border-product);
+  --border-subtle: var(--border-product);
   --input: 223 20% 34%;
   --ring: 213 89% 76%;
+  --search-border: var(--border-product);
 }
 
 @layer base {

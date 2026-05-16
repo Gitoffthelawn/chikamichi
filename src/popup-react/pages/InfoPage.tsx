@@ -15,8 +15,8 @@ export function InfoPage({
     <PageShell dataCy="page-info" description={t("infoDescription")} title={t("infoTitle")}>
       <div className="space-y-4">
         <FlatSection title={t("quickReferenceTitle")}>
-          <div className="space-y-0 rounded-[16px] border border-border/[0.4] bg-white/[0.72] px-3.5 py-2.5 dark:border-border/[0.1] dark:bg-background/[0.1]">
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border/[0.1] py-2.5 first:pt-0">
+          <div className="space-y-0 rounded-[16px] border border-border-panel/[0.4] bg-white/[0.72] px-3.5 py-2.5 dark:border-border-panel/[0.24] dark:bg-background/[0.1]">
+            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 first:pt-0 dark:border-border-divider/[0.18]">
               <div className="text-[12px] text-muted-foreground">{t("labelSearchTargets")}</div>
               <div className="flex flex-wrap gap-1.5">
                 <Badge variant="secondary">{t("searchTargetTabs")}</Badge>
@@ -24,21 +24,21 @@ export function InfoPage({
                 <Badge variant="secondary">{t("searchTargetHistory")}</Badge>
               </div>
             </div>
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border/[0.1] py-2.5">
+            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 dark:border-border-divider/[0.18]">
               <div className="text-[12px] text-muted-foreground">{t("labelMoveSelection")}</div>
               <div className="flex flex-wrap items-center gap-2 text-[13px] text-foreground">
                 <Kbd>↑ ↓</Kbd>
                 <span>{t("shortcutsMoveSelection")}</span>
               </div>
             </div>
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border/[0.1] py-2.5">
+            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 dark:border-border-divider/[0.18]">
               <div className="text-[12px] text-muted-foreground">{t("labelOpenPopup")}</div>
               <div className="flex flex-wrap items-center gap-2 text-[13px] text-foreground">
                 <Kbd>⌘ K</Kbd>
                 <span>{t("shortcutOpenPopup")}</span>
               </div>
             </div>
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border/[0.1] py-2.5">
+            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 dark:border-border-divider/[0.18]">
               <div className="text-[12px] text-muted-foreground">{t("altOpen")}</div>
               <div className="flex flex-wrap items-center gap-2 text-[13px] text-foreground">
                 <Kbd>⌘ ↵</Kbd>
@@ -50,7 +50,7 @@ export function InfoPage({
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border/[0.1] py-2.5">
+            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 dark:border-border-divider/[0.18]">
               <div className="text-[12px] text-muted-foreground">
                 {t("actionModeShortcutTitle")}
               </div>
@@ -73,12 +73,12 @@ export function InfoPage({
           description={t("feedbackDescription")}
           title={t("feedbackTitle")}
         >
-          <div className="flex items-center justify-between gap-4 rounded-[16px] border border-border/[0.1] bg-background/10 px-3.5 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-[16px] border border-border-subtle/[0.1] bg-background/10 px-3.5 py-3 dark:border-border-subtle/[0.18]">
             <div className="text-[12px] leading-5 text-foreground/[0.6] dark:text-muted-foreground">
               {t("feedbackBody")}
             </div>
             <Button
-              className="h-9 shrink-0 rounded-xl border border-border/[0.18] bg-primary/[0.12] px-3 text-sm hover:bg-primary/[0.16]"
+              className="h-9 shrink-0 rounded-xl border border-border-control/[0.18] bg-primary/[0.12] px-3 text-sm hover:bg-primary/[0.16] dark:border-border-control/[0.24]"
               type="button"
               variant="ghost"
               onClick={onOpenIssue}

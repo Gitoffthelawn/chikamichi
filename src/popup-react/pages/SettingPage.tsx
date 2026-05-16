@@ -22,11 +22,11 @@ export function SettingPage({
         <div className="px-0.5 py-0.5 text-[12px] font-medium tracking-wide text-muted-foreground">
           {t("generalSectionTitle")}
         </div>
-        <div className="space-y-0 rounded-[16px] border border-border/[0.4] bg-white/[0.74] px-3.5 py-3 dark:border-border/[0.1] dark:bg-background/[0.1]">
+        <div className="space-y-0 rounded-[16px] border border-border-panel/[0.4] bg-white/[0.74] px-3.5 py-3 dark:border-border-panel/[0.24] dark:bg-background/[0.1]">
           <SettingRow description={t("prefixDescription")} title={t("prefixTitle")}>
             <div className="relative">
               <select
-                className="flex h-9 w-full appearance-none rounded-xl border border-border/[0.5] bg-white/[0.92] px-3 pr-10 text-[13px] text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border/[0.18] dark:bg-background/[0.8]"
+                className="flex h-9 w-full appearance-none rounded-xl border border-border-control/[0.5] bg-white/[0.92] px-3 pr-10 text-[13px] text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border-control/[0.28] dark:bg-background/[0.8]"
                 data-cy="select-prefix"
                 style={{
                   colorScheme: getResolvedTheme(settings.theme) === THEME.DARK ? "dark" : "light",
