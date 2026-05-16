@@ -40,6 +40,9 @@ jobs:
       - name: Check types
         run: pnpm typecheck
 
+      - name: Check unused files and dependencies
+        run: pnpm knip
+
       - name: Run unit tests
         run: pnpm test:ci
 
