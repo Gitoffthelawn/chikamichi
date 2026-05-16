@@ -1,5 +1,5 @@
 import type { FuseResult } from "fuse.js";
-import { SEARCH_RANKING_CONFIG } from "~/core/config";
+import { SEARCH_RANKING_CONFIG } from "~/constants";
 import { getMatchedRegExp } from "./getMatchedRegExp";
 
 type RecentContextBoost = {

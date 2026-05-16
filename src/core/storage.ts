@@ -1,6 +1,5 @@
 import { Storage } from "@plasmohq/storage";
-import { OPEN_STATS_CONFIG } from "~/core/config";
-import { THEME } from "~/constants";
+import { OPEN_STATS_CONFIG, THEME } from "~/constants";
 
 export interface FavoriteItemRecord {
   faviconUrl: string;

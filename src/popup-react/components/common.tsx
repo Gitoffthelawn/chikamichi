@@ -5,7 +5,7 @@ import { PAGES } from "~/constants";
 import { cn } from "~/lib/utils";
 import { getPageMeta } from "~/popup-react/utils";
 
-export function SectionHeading({ description, title }: { description: string; title: string }) {
+function SectionHeading({ description, title }: { description: string; title: string }) {
   return (
     <div className="space-y-1">
       <h2 className="text-[18px] font-semibold leading-none tracking-tight text-foreground/[0.96]">
@@ -26,7 +26,7 @@ export function Kbd({ children }: { children: ReactNode }) {
   );
 }
 
-export function SideMenuButton({
+function SideMenuButton({
   icon: Icon,
   active,
   dataCy,
