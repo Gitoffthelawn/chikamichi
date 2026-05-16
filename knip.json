@@ -7,6 +7,6 @@
     "scripts/*.mjs"
   ],
   "ignore": ["src/components/ui/**"],
-  "ignoreDependencies": ["shadcn"],
+  "ignoreDependencies": ["@iconify/json", "shadcn"],
   "project": ["src/**/*.{ts,tsx}", "tests/**/*.ts", "scripts/**/*.mjs", "*.config.{js,ts}"]
 }
