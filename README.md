@@ -63,10 +63,10 @@ Type `>` in the search input to switch into Action Mode for the current page.
 - `Mute/Unmute Tab`
 - `Pin/Unpin Tab`
 - `Duplicate Tab`
-- `Reload Tab`
-- `Close Tab`
 - `Capture Visible Area`
+- `Copy Visible Area to Clipboard`
 - `Capture Full Page`
+- `Copy Full Page to Clipboard`
 
 ### Favorite
 
