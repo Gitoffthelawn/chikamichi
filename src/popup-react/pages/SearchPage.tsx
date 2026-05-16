@@ -8,13 +8,11 @@ import {
   Link2,
   Pin,
   PinOff,
-  RefreshCw,
   Search,
   SquareStack,
   Type,
   Volume2,
   VolumeOff,
-  X,
 } from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -54,6 +52,7 @@ import { getSearchItems } from "~/popup/utils/getSearchItems";
 import { sortAndFormatSearchResult } from "~/popup/utils/sortAndFormatSearchResult";
 
 type SearchCollections = Awaited<ReturnType<typeof getSearchItems>>;
+type RankedActionItem = ActionItem & { priority: number };
 
 async function downloadDataUrl(dataUrl: string, filename: string) {
   if (!chrome.downloads?.download) {
@@ -167,22 +166,6 @@ function updateTab(tabId: number, properties: chrome.tabs.UpdateProperties) {
 function duplicateTab(tabId: number) {
   return new Promise<void>((resolve) => {
     chrome.tabs.duplicate(tabId, () => {
-      resolve();
-    });
-  });
-}
-
-function reloadTab(tabId: number) {
-  return new Promise<void>((resolve) => {
-    chrome.tabs.reload(tabId, {}, () => {
-      resolve();
-    });
-  });
-}
-
-function removeTab(tabId: number) {
-  return new Promise<void>((resolve) => {
-    chrome.tabs.remove(tabId, () => {
       resolve();
     });
   });
@@ -553,23 +536,25 @@ export function SearchPage({
     const currentTitle = currentTab.title ?? currentUrl;
     const screenshotBaseName = sanitizeFilename(currentTitle || "page");
 
-    return [
+    const rankedItems: RankedActionItem[] = [
       {
-        description: t("actionDescriptionCopyTitle"),
-        icon: Type,
-        id: "copy-title",
-        keywords: "copy title text name",
+        description: t("actionDescriptionCopyMarkdownLink"),
+        icon: Copy,
+        id: "copy-markdown-link",
+        keywords: "copy markdown link md",
+        priority: 10,
         run: async () => {
-          await navigator.clipboard.writeText(currentTitle);
-          await showBadge(t("badgeCopiedTitle"));
+          await navigator.clipboard.writeText(`[${currentTitle}](${currentUrl})`);
+          await showBadge(t("badgeCopiedMarkdown"));
         },
-        title: t("actionCopyTitle"),
+        title: t("actionCopyMarkdownLink"),
       },
       {
         description: t("actionDescriptionCopyUrl"),
         icon: Link2,
         id: "copy-url",
         keywords: "copy url link address",
+        priority: 20,
         run: async () => {
           await navigator.clipboard.writeText(currentUrl);
           await showBadge(t("badgeCopied"));
@@ -577,15 +562,16 @@ export function SearchPage({
         title: t("actionCopyUrl"),
       },
       {
-        description: t("actionDescriptionCopyMarkdownLink"),
-        icon: Copy,
-        id: "copy-markdown-link",
-        keywords: "copy markdown link md",
+        description: t("actionDescriptionCopyTitle"),
+        icon: Type,
+        id: "copy-title",
+        keywords: "copy title text name",
+        priority: 30,
         run: async () => {
-          await navigator.clipboard.writeText(`[${currentTitle}](${currentUrl})`);
-          await showBadge(t("badgeCopiedMarkdown"));
+          await navigator.clipboard.writeText(currentTitle);
+          await showBadge(t("badgeCopiedTitle"));
         },
-        title: t("actionCopyMarkdownLink"),
+        title: t("actionCopyTitle"),
       },
       {
         description: currentTab.mutedInfo?.muted
@@ -594,6 +580,7 @@ export function SearchPage({
         icon: currentTab.mutedInfo?.muted ? Volume2 : VolumeOff,
         id: currentTab.mutedInfo?.muted ? "unmute-tab" : "mute-tab",
         keywords: "audio mute unmute sound volume",
+        priority: 40,
         run: async () => {
           if (currentTab.id === undefined) {
             return;
@@ -613,6 +600,7 @@ export function SearchPage({
         icon: currentTab.pinned ? PinOff : Pin,
         id: currentTab.pinned ? "unpin-tab" : "pin-tab",
         keywords: "pin unpin keep tab",
+        priority: 50,
         run: async () => {
           if (currentTab.id === undefined) {
             return;
@@ -630,6 +618,7 @@ export function SearchPage({
         icon: SquareStack,
         id: "duplicate-tab",
         keywords: "duplicate clone copy tab",
+        priority: 60,
         run: async () => {
           if (currentTab.id === undefined) {
             return;
@@ -640,39 +629,11 @@ export function SearchPage({
         title: t("actionDuplicateTab"),
       },
       {
-        description: t("actionDescriptionReloadTab"),
-        icon: RefreshCw,
-        id: "reload-tab",
-        keywords: "refresh reload current page",
-        run: async () => {
-          if (currentTab.id === undefined) {
-            return;
-          }
-          await reloadTab(currentTab.id);
-          await showBadge(t("actionReloadTab"));
-        },
-        title: t("actionReloadTab"),
-      },
-      {
-        description: t("actionDescriptionCloseTab"),
-        icon: X,
-        id: "close-tab",
-        keywords: "close remove current tab",
-        run: async () => {
-          if (currentTab.id === undefined) {
-            return;
-          }
-          await removeTab(currentTab.id);
-          await showBadge(t("actionCloseTab"), 180);
-          closePopup();
-        },
-        title: t("actionCloseTab"),
-      },
-      {
         description: t("actionDescriptionScreenshotVisibleArea"),
         icon: Camera,
         id: "screenshot-visible-area",
         keywords: "screenshot capture visible area image png",
+        priority: 70,
         run: async () => {
           const tab = (await refreshActiveTab()) ?? currentTab;
           if (!tab) {
@@ -689,6 +650,7 @@ export function SearchPage({
         icon: Camera,
         id: "screenshot-visible-area-clipboard",
         keywords: "screenshot capture visible area image png clipboard copy",
+        priority: 80,
         run: async () => {
           const tab = (await refreshActiveTab()) ?? currentTab;
           if (!tab) {
@@ -705,6 +667,7 @@ export function SearchPage({
         icon: CameraIcon,
         id: "screenshot-full-page",
         keywords: "screenshot capture full page image png",
+        priority: 90,
         run: async () => {
           const tab = (await refreshActiveTab()) ?? currentTab;
           if (!tab) {
@@ -724,6 +687,7 @@ export function SearchPage({
         icon: CameraIcon,
         id: "screenshot-full-page-clipboard",
         keywords: "screenshot capture full page image png clipboard copy",
+        priority: 100,
         run: async () => {
           const tab = (await refreshActiveTab()) ?? currentTab;
           if (!tab) {
@@ -739,6 +703,10 @@ export function SearchPage({
         title: t("actionScreenshotFullPageClipboard"),
       },
     ];
+
+    return rankedItems
+      .sort((left, right) => left.priority - right.priority)
+      .map(({ priority: _priority, ...item }) => item);
   }, [activeTab]);
 
   const actionResults = useMemo(() => {

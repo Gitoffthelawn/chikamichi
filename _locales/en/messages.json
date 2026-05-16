@@ -1,10 +1,8 @@
 {
   "altOpen": { "message": "Alternative open" },
-  "actionCloseTab": { "message": "Close Tab" },
   "actionCopyMarkdownLink": { "message": "Copy Markdown Link" },
   "actionCopyTitle": { "message": "Copy Title" },
   "actionCopyUrl": { "message": "Copy URL" },
-  "actionDescriptionCloseTab": { "message": "Close the current tab." },
   "actionDescriptionCopyMarkdownLink": {
     "message": "Copy the current page as a Markdown link."
   },
@@ -13,7 +11,6 @@
   "actionDescriptionDuplicateTab": { "message": "Open a duplicate of the current tab." },
   "actionDescriptionMuteTab": { "message": "Mute audio for the current tab." },
   "actionDescriptionPinTab": { "message": "Pin the current tab." },
-  "actionDescriptionReloadTab": { "message": "Reload the current tab." },
   "actionDescriptionScreenshotFullPageClipboard": {
     "message": "Copy a full-page screenshot to the clipboard."
   },
@@ -33,13 +30,12 @@
   "actionModeLabel": { "message": "Actions" },
   "actionModePlaceholder": { "message": "Type an action for this page..." },
   "actionModeShortcutBody": {
-    "message": "Type `>` to run commands like copy title, markdown link, mute, pin, close, and screenshots."
+    "message": "Type `>` to run commands like copy title, markdown link, mute, pin, and screenshots."
   },
   "actionModeShortcutTitle": { "message": "Action mode" },
   "actionModeTitle": { "message": "Current page actions" },
   "actionMuteTab": { "message": "Mute Tab" },
   "actionPinTab": { "message": "Pin Tab" },
-  "actionReloadTab": { "message": "Reload Tab" },
   "actionScreenshotFullPageClipboard": { "message": "Copy Full Page to Clipboard" },
   "actionScreenshotFullPage": { "message": "Capture Full Page" },
   "actionScreenshotVisibleAreaClipboard": { "message": "Copy Visible Area to Clipboard" },

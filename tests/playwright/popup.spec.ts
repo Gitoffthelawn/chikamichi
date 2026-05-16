@@ -370,7 +370,7 @@ test.describe("popup", () => {
   test("supports keyboard selection and execution in action mode", async ({ page }) => {
     const input = page.locator("[data-cy=search-input]");
     await input.fill("> copy");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Copy Title");
+    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Copy Markdown Link");
     await expect(page.locator("[data-cy=action-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
@@ -386,6 +386,14 @@ test.describe("popup", () => {
       .poll(() => getLastMockCall<string[]>(page, "copy"))
       .toEqual(["https://tab-item.com/0"]);
     await expect(page.locator("[data-cy=action-feedback]")).toContainText("Copied");
+  });
+
+  test("shows frequently used actions first in action mode", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill(">");
+    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Copy Markdown Link");
+    await expect(page.locator("[data-cy=action-result-1]")).toContainText("Copy URL");
+    await expect(page.locator("[data-cy=action-result-2]")).toContainText("Copy Title");
   });
 
   test("shows an empty state for unmatched action mode queries", async ({ page }) => {

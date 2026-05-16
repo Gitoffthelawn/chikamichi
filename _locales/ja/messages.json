@@ -1,10 +1,8 @@
 {
   "altOpen": { "message": "別の開き方" },
-  "actionCloseTab": { "message": "Close Tab" },
   "actionCopyMarkdownLink": { "message": "Copy Markdown Link" },
   "actionCopyTitle": { "message": "Copy Title" },
   "actionCopyUrl": { "message": "Copy URL" },
-  "actionDescriptionCloseTab": { "message": "現在のタブを閉じます。" },
   "actionDescriptionCopyMarkdownLink": {
     "message": "現在のページを Markdown リンクとしてコピーします。"
   },
@@ -13,7 +11,6 @@
   "actionDescriptionDuplicateTab": { "message": "現在のタブを複製します。" },
   "actionDescriptionMuteTab": { "message": "現在のタブをミュートします。" },
   "actionDescriptionPinTab": { "message": "現在のタブをピン留めします。" },
-  "actionDescriptionReloadTab": { "message": "現在のタブを再読み込みします。" },
   "actionDescriptionScreenshotFullPageClipboard": {
     "message": "ページ全体のスクリーンショットをクリップボードにコピーします。"
   },
@@ -33,13 +30,12 @@
   "actionModeLabel": { "message": "Actions" },
   "actionModePlaceholder": { "message": "このページに対するアクションを入力..." },
   "actionModeShortcutBody": {
-    "message": "`>` で Action Mode に入り、タイトルコピー、Markdown リンク、ミュート、ピン、閉じる、スクリーンショットを実行できます。"
+    "message": "`>` で Action Mode に入り、タイトルコピー、Markdown リンク、ミュート、ピン、スクリーンショットを実行できます。"
   },
   "actionModeShortcutTitle": { "message": "Action Mode" },
   "actionModeTitle": { "message": "Current page actions" },
   "actionMuteTab": { "message": "Mute Tab" },
   "actionPinTab": { "message": "Pin Tab" },
-  "actionReloadTab": { "message": "Reload Tab" },
   "actionScreenshotFullPageClipboard": { "message": "Copy Full Page to Clipboard" },
   "actionScreenshotFullPage": { "message": "Capture Full Page" },
   "actionScreenshotVisibleAreaClipboard": { "message": "Copy Visible Area to Clipboard" },
