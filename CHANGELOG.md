@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0
+
+### feature
+
+- Migrate the extension popup to a Plasmo + React implementation
+- Polish the popup UI and refresh the extension assets
+
+### test
+
+- Replace Cypress e2e coverage with Playwright-based popup tests
+
+### chore
+
+- Refresh the build, lint, and localization tooling for the new extension stack
+
+## 3.4.0
+
+### feature
+
+- Enable changing the display order of favorite items #684
+
 ## 3.3.1
 
 ### design
