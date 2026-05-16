@@ -16,14 +16,7 @@ import {
   VolumeOff,
   X,
 } from "lucide-react";
-import {
-  useCallback,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import browser from "webextension-polyfill";
 import { Badge } from "~/components/ui/badge";
@@ -43,10 +36,7 @@ import {
   moveFavoriteItemToIndex,
   toggleFavoriteItems,
 } from "~/popup-react/favorites";
-import {
-  ActionResultRow,
-  SearchResultRow,
-} from "~/popup-react/components/result-rows";
+import { ActionResultRow, SearchResultRow } from "~/popup-react/components/result-rows";
 import { Kbd } from "~/popup-react/components/common";
 import type { ActionItem } from "~/popup-react/types";
 import {
@@ -160,13 +150,9 @@ async function copyImageToClipboard(dataUrl: string) {
 
 function captureVisibleArea(tab: browser.Tabs.Tab) {
   return new Promise<string>((resolve) => {
-    chrome.tabs.captureVisibleTab(
-      tab.windowId,
-      { format: "png" },
-      (dataUrl) => {
-        resolve(dataUrl);
-      },
-    );
+    chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" }, (dataUrl) => {
+      resolve(dataUrl);
+    });
   });
 }
 
@@ -280,8 +266,7 @@ async function captureFullPage(tab: browser.Tabs.Tab) {
     const context = stitchedCanvas.getContext("2d");
 
     if (context) {
-      const sourceHeight =
-        Math.min(metrics.viewportHeight, metrics.fullHeight - y) * scale;
+      const sourceHeight = Math.min(metrics.viewportHeight, metrics.fullHeight - y) * scale;
 
       context.drawImage(
         image,
@@ -321,20 +306,15 @@ export function SearchPage({
   settings: AppSettings;
 }) {
   const [activeTab, setActiveTab] = useState<browser.Tabs.Tab | null>(null);
-  const [collections, setCollections] =
-    useState<SearchCollections>(EMPTY_COLLECTIONS);
+  const [collections, setCollections] = useState<SearchCollections>(EMPTY_COLLECTIONS);
   const [favoriteItems, setFavoriteItems] = useState(settings.favoriteItems);
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [searchWord, setSearchWord] = useState(settings.defaultSearchPrefix);
   const [selectedNumber, setSelectedNumber] = useState(0);
   const [selectedKey, setSelectedKey] = useState("");
   const [badgeText, setBadgeText] = useState("");
-  const [draggedFavoriteIndex, setDraggedFavoriteIndex] = useState<
-    number | null
-  >(null);
-  const [dragOverFavoriteIndex, setDragOverFavoriteIndex] = useState<
-    number | null
-  >(null);
+  const [draggedFavoriteIndex, setDraggedFavoriteIndex] = useState<number | null>(null);
+  const [dragOverFavoriteIndex, setDragOverFavoriteIndex] = useState<number | null>(null);
   const [searchEngine, setSearchEngine] = useState({
     favIconUrl: SEARCH_ICON_DATA_URL_LIGHT,
     name: "browser",
@@ -359,10 +339,7 @@ export function SearchPage({
     );
   }, []);
   const deferredSearchWord = useDeferredValue(searchWord);
-  const inputActionMode = useMemo(
-    () => SEARCH_TARGET_REGEX.ACTION.test(searchWord),
-    [searchWord],
-  );
+  const inputActionMode = useMemo(() => SEARCH_TARGET_REGEX.ACTION.test(searchWord), [searchWord]);
   const inputActionQuery = useMemo(() => {
     if (!inputActionMode) {
       return "";
@@ -413,11 +390,7 @@ export function SearchPage({
     };
   }, [activeTab?.url, collections.histories, collections.tabs]);
   const fuseIndexes = useMemo(() => {
-    const allItems = [
-      ...collections.histories,
-      ...collections.bookmarks,
-      ...collections.tabs,
-    ];
+    const allItems = [...collections.histories, ...collections.bookmarks, ...collections.tabs];
 
     return {
       all: createFuseIndex(allItems),
@@ -609,9 +582,7 @@ export function SearchPage({
         id: "copy-markdown-link",
         keywords: "copy markdown link md",
         run: async () => {
-          await navigator.clipboard.writeText(
-            `[${currentTitle}](${currentUrl})`,
-          );
+          await navigator.clipboard.writeText(`[${currentTitle}](${currentUrl})`);
           await showBadge(t("badgeCopiedMarkdown"));
         },
         title: t("actionCopyMarkdownLink"),
@@ -631,15 +602,9 @@ export function SearchPage({
             muted: !currentTab.mutedInfo?.muted,
           });
           await refreshActiveTab();
-          await showBadge(
-            currentTab.mutedInfo?.muted
-              ? t("badgeUnmutedTab")
-              : t("badgeMutedTab"),
-          );
+          await showBadge(currentTab.mutedInfo?.muted ? t("badgeUnmutedTab") : t("badgeMutedTab"));
         },
-        title: currentTab.mutedInfo?.muted
-          ? t("actionUnmuteTab")
-          : t("actionMuteTab"),
+        title: currentTab.mutedInfo?.muted ? t("actionUnmuteTab") : t("actionMuteTab"),
       },
       {
         description: currentTab.pinned
@@ -656,9 +621,7 @@ export function SearchPage({
             pinned: !currentTab.pinned,
           });
           await refreshActiveTab();
-          await showBadge(
-            currentTab.pinned ? t("badgeUnpinnedTab") : t("badgePinnedTab"),
-          );
+          await showBadge(currentTab.pinned ? t("badgeUnpinnedTab") : t("badgePinnedTab"));
         },
         title: currentTab.pinned ? t("actionUnpinTab") : t("actionPinTab"),
       },
@@ -716,10 +679,7 @@ export function SearchPage({
             return;
           }
           const dataUrl = await captureVisibleArea(tab);
-          await downloadDataUrl(
-            dataUrl,
-            `chikamichi-${screenshotBaseName}-visible.png`,
-          );
+          await downloadDataUrl(dataUrl, `chikamichi-${screenshotBaseName}-visible.png`);
           await showBadge(t("badgeSavedScreenshot"));
         },
         title: t("actionScreenshotVisibleArea"),
@@ -754,10 +714,7 @@ export function SearchPage({
           if (!dataUrl) {
             return;
           }
-          await downloadDataUrl(
-            dataUrl,
-            `chikamichi-${screenshotBaseName}-full-page.png`,
-          );
+          await downloadDataUrl(dataUrl, `chikamichi-${screenshotBaseName}-full-page.png`);
           await showBadge(t("badgeSavedScreenshot"));
         },
         title: t("actionScreenshotFullPage"),
@@ -797,8 +754,7 @@ export function SearchPage({
     [actionItems, inputActionQuery],
   );
 
-  const favoriteReorderEnabled =
-    searchWord === "" && !actionMode && favoriteItems.length > 1;
+  const favoriteReorderEnabled = searchWord === "" && !actionMode && favoriteItems.length > 1;
 
   const currentResultKeys = useMemo(
     () =>
@@ -830,9 +786,7 @@ export function SearchPage({
       return;
     }
 
-    const nextIndex = currentResultKeys.findIndex(
-      (item) => item === selectedKey,
-    );
+    const nextIndex = currentResultKeys.findIndex((item) => item === selectedKey);
 
     if (nextIndex >= 0) {
       if (nextIndex !== selectedNumber) {
@@ -841,10 +795,7 @@ export function SearchPage({
       return;
     }
 
-    const fallbackIndex = Math.min(
-      selectedNumber,
-      currentResultKeys.length - 1,
-    );
+    const fallbackIndex = Math.min(selectedNumber, currentResultKeys.length - 1);
     const fallbackKey = currentResultKeys[fallbackIndex];
 
     if (fallbackIndex !== selectedNumber) {
@@ -965,9 +916,7 @@ export function SearchPage({
       }
 
       const messageName =
-        settings.openLinkInCurrentTab === inNewTab
-          ? "open-new-tab-page"
-          : "update-current-page";
+        settings.openLinkInCurrentTab === inNewTab ? "open-new-tab-page" : "update-current-page";
 
       await sendToBackground({
         body: {
@@ -986,8 +935,7 @@ export function SearchPage({
       }
 
       const isFavorite = favoriteItems.some(
-        (favorite) =>
-          favorite.url === item.url && favorite.title === item.title,
+        (favorite) => favorite.url === item.url && favorite.title === item.title,
       );
       const nextFavoriteItems = toggleFavoriteItems(favoriteItems, item);
 
@@ -996,9 +944,7 @@ export function SearchPage({
       await onUpdateSettings({
         favoriteItems: nextFavoriteItems,
       });
-      await showBadge(
-        isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite"),
-      );
+      await showBadge(isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite"));
     },
     [favoriteItems, onUpdateSettings, searchResult, selectedNumber],
   );
@@ -1093,17 +1039,13 @@ export function SearchPage({
     await showBadge(t("badgeCopied"));
   };
 
-  const handleEnterKey = async (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleEnterKey = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     event.preventDefault();
 
     if (inputActionMode) {
       const actionItem =
         immediateActionResults[selectedNumber] ??
-        immediateActionResults.find(
-          (item) => getActionKey(item) === selectedKey,
-        ) ??
+        immediateActionResults.find((item) => getActionKey(item) === selectedKey) ??
         immediateActionResults[0];
       if (actionItem) {
         await actionItem.run();
@@ -1112,10 +1054,7 @@ export function SearchPage({
     }
 
     if (searchResult.length > 0) {
-      await openResult(
-        searchResult[selectedNumber],
-        event.ctrlKey || event.metaKey,
-      );
+      await openResult(searchResult[selectedNumber], event.ctrlKey || event.metaKey);
       closePopup();
       return;
     }
@@ -1127,9 +1066,7 @@ export function SearchPage({
   };
 
   const handleMoveKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const resultCount = inputActionMode
-      ? immediateActionResults.length
-      : searchResult.length;
+    const resultCount = inputActionMode ? immediateActionResults.length : searchResult.length;
 
     if (resultCount === 0) {
       return false;
@@ -1143,10 +1080,7 @@ export function SearchPage({
       return true;
     }
 
-    if (
-      event.key === "ArrowUp" ||
-      (event.ctrlKey && event.key === "p" && !event.shiftKey)
-    ) {
+    if (event.key === "ArrowUp" || (event.ctrlKey && event.key === "p" && !event.shiftKey)) {
       event.preventDefault();
       const nextIndex = Math.max(selectedNumber - 1, 0);
       changeSelectedItemByKeyboard(nextIndex);
@@ -1157,9 +1091,7 @@ export function SearchPage({
     return false;
   };
 
-  const handleShortcutKey = async (
-    event: React.KeyboardEvent<HTMLInputElement>,
-  ) => {
+  const handleShortcutKey = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "n") {
       event.preventDefault();
       await moveFavorite("down");
@@ -1239,9 +1171,7 @@ export function SearchPage({
         >
           <div className="space-y-1">
             <h2 className="text-base font-semibold">{t("actionModeTitle")}</h2>
-            <p className="text-[13px] text-muted-foreground">
-              {t("actionModeEmpty")}
-            </p>
+            <p className="text-[13px] text-muted-foreground">{t("actionModeEmpty")}</p>
           </div>
         </div>
       );
@@ -1339,9 +1269,7 @@ export function SearchPage({
             autoComplete="off"
             className="h-full border-0 bg-transparent px-0 text-[15px] shadow-none focus-visible:ring-0"
             data-cy="search-input"
-            placeholder={
-              actionMode ? t("actionModePlaceholder") : t("placeholderSearch")
-            }
+            placeholder={actionMode ? t("actionModePlaceholder") : t("placeholderSearch")}
             ref={inputRef}
             type="search"
             value={searchWord}

@@ -16,9 +16,7 @@ import { SettingPage } from "~/popup-react/pages/SettingPage";
 import { getResolvedTheme, reportError } from "~/popup-react/utils";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<ValueOf<typeof PAGES>>(
-    PAGES.SEARCH,
-  );
+  const [currentPage, setCurrentPage] = useState<ValueOf<typeof PAGES>>(PAGES.SEARCH);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
 
   const saveSettings = async (partial: Partial<AppSettings>) => {
@@ -36,10 +34,7 @@ function App() {
 
   useEffect(() => {
     const applyTheme = () => {
-      document.body.classList.toggle(
-        "dark",
-        getResolvedTheme(settings.theme) === THEME.DARK,
-      );
+      document.body.classList.toggle("dark", getResolvedTheme(settings.theme) === THEME.DARK);
     };
 
     applyTheme();
