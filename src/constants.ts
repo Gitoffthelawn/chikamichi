@@ -5,7 +5,7 @@ const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 // Days of browser history loaded into search.
 export const HISTORY_FETCH_DAYS = 180;
 // Maximum browser history entries loaded at once.
-export const HISTORY_FETCH_LIMIT = 5000;
+export const HISTORY_FETCH_LIMIT = 10000;
 // Maximum rendered search results.
 export const SEARCH_RESULT_LIMIT = 100;
 
