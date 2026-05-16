@@ -16,12 +16,21 @@ export interface AppSettings {
   theme: ValueOf<typeof THEME>;
 }
 
+export interface OpenStatsRecord {
+  lastOpenedAt: number;
+  openCount: number;
+  url: string;
+}
+
 const STORAGE_KEYS = {
   defaultSearchPrefix: "chikamichi-default-search-prefix",
   favoriteItems: "chikamichi-favorite-items",
   openLinkInCurrentTab: "chikamichi-open-link-in-current-tab",
   theme: "chikamichi-theme",
 } as const;
+
+const OPEN_STATS_STORAGE_KEY = "chikamichi-open-stats";
+const OPEN_STATS_LIMIT = 500;
 
 const storage = new Storage({
   area: "local",
@@ -47,6 +56,52 @@ function parseFavoriteItems(value: unknown): FavoriteItemRecord[] {
     }
   }
   return [];
+}
+
+function parseOpenStats(value: unknown): OpenStatsRecord[] {
+  if (Array.isArray(value)) {
+    return value.filter(
+      (item): item is OpenStatsRecord =>
+        typeof item === "object" &&
+        item !== null &&
+        typeof (item as OpenStatsRecord).url === "string" &&
+        typeof (item as OpenStatsRecord).openCount === "number" &&
+        typeof (item as OpenStatsRecord).lastOpenedAt === "number",
+    );
+  }
+  if (typeof value === "string") {
+    try {
+      return parseOpenStats(JSON.parse(value));
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+export async function getOpenStats(): Promise<OpenStatsRecord[]> {
+  return parseOpenStats(await storage.get<OpenStatsRecord[] | string>(OPEN_STATS_STORAGE_KEY));
+}
+
+export async function recordOpenedUrl(url: string, now = Date.now()) {
+  if (!url) {
+    return;
+  }
+
+  const stats = await getOpenStats();
+  const current = stats.find((item) => item.url === url);
+  const nextStats = [
+    {
+      lastOpenedAt: now,
+      openCount: (current?.openCount ?? 0) + 1,
+      url,
+    },
+    ...stats.filter((item) => item.url !== url),
+  ]
+    .sort((a, b) => b.lastOpenedAt - a.lastOpenedAt)
+    .slice(0, OPEN_STATS_LIMIT);
+
+  await storage.set(OPEN_STATS_STORAGE_KEY, nextStats);
 }
 
 export async function getSettings(): Promise<AppSettings> {

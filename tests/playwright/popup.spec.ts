@@ -5,6 +5,8 @@ import {
   getLastMockCall,
   getLastRuntimeMessage,
   getMockCalls,
+  getMockStorageValue,
+  setMockStorageValue,
   setupExtensionEnvironment,
 } from "./support";
 
@@ -151,6 +153,44 @@ test.describe("popup", () => {
 
     const runtimeSendMessage = await getMockCalls(page, "runtimeSendMessage");
     expect(runtimeSendMessage.length).toBeGreaterThan(0);
+  });
+
+  test("records opened results for learned ranking", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("/h history-item-0");
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-0");
+    await input.press("Enter");
+
+    await expect
+      .poll(async () => {
+        const value = await getMockStorageValue<string | Array<{ openCount: number; url: string }>>(
+          page,
+          "chikamichi-open-stats",
+        );
+        return typeof value === "string" ? JSON.parse(value) : value;
+      })
+      .toEqual([
+        expect.objectContaining({
+          openCount: 1,
+          url: "https://history-item.com/0",
+        }),
+      ]);
+  });
+
+  test("boosts previously opened results in search ranking", async ({ page }) => {
+    await setMockStorageValue(page, "chikamichi-open-stats", [
+      {
+        lastOpenedAt: Date.now(),
+        openCount: 10,
+        url: "https://history-item.com/0",
+      },
+    ]);
+    await page.reload();
+
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("/h history-item");
+
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-0");
   });
 
   test("keeps keyboard selection stable while scrolling long results", async ({ page }) => {

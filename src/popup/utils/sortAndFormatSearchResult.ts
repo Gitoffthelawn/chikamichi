@@ -6,7 +6,18 @@ type RecentContextBoost = {
   recentHostnames: Set<string>;
 };
 
+export type OpenStatsLookup = Map<string, { lastOpenedAt: number; openCount: number }>;
+
+type SortAndFormatSearchResultOptions = {
+  favoriteLookup: Set<string>;
+  now?: number;
+  openStatsLookup?: OpenStatsLookup;
+  recentContext?: RecentContextBoost;
+};
+
 const RECENT_HOSTNAME_BOOST = 0.025;
+const OPEN_STATS_MAX_BOOST = 0.06;
+const OPEN_STATS_RECENCY_WINDOW_MS = 1000 * 60 * 60 * 24 * 30;
 
 function getHostname(value: string) {
   try {
@@ -28,6 +39,24 @@ function getRecentContextBoostScore(item: SearchItem, recentContext: RecentConte
   }
 
   return 0;
+}
+
+function getOpenStatsBoostScore(
+  item: SearchItem,
+  openStatsLookup: OpenStatsLookup,
+  now = Date.now(),
+) {
+  const stats = openStatsLookup.get(item.url);
+
+  if (!stats) {
+    return 0;
+  }
+
+  const frequencyBoost = Math.min(Math.log2(stats.openCount + 1) * 0.012, 0.036);
+  const age = Math.max(0, now - stats.lastOpenedAt);
+  const recencyBoost = Math.max(0, 1 - age / OPEN_STATS_RECENCY_WINDOW_MS) * 0.024;
+
+  return Math.min(OPEN_STATS_MAX_BOOST, frequencyBoost + recencyBoost);
 }
 
 export function sortSearchResult(searchResult: SearchResult[]) {
@@ -70,11 +99,15 @@ export function sortSearchResult(searchResult: SearchResult[]) {
 
 export function sortAndFormatSearchResult(
   searchResult: FuseResult<SearchItem>[],
-  favoriteLookup: Set<string>,
-  recentContext: RecentContextBoost = {
-    activeHostname: null,
-    recentHostnames: new Set<string>(),
-  },
+  {
+    favoriteLookup,
+    now = Date.now(),
+    openStatsLookup = new Map(),
+    recentContext = {
+      activeHostname: null,
+      recentHostnames: new Set<string>(),
+    },
+  }: SortAndFormatSearchResultOptions,
 ) {
   return sortSearchResult(
     searchResult.map((result) => ({
@@ -86,7 +119,9 @@ export function sortAndFormatSearchResult(
       ),
       score: Math.max(
         0,
-        (result.score ?? 0) - getRecentContextBoostScore(result.item, recentContext),
+        (result.score ?? 0) -
+          getRecentContextBoostScore(result.item, recentContext) -
+          getOpenStatsBoostScore(result.item, openStatsLookup, now),
       ),
     })),
   );
