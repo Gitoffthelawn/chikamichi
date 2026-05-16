@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 18px;
+  --background: 218 35% 97%;
+  --foreground: 222 30% 18%;
+  --card: 220 38% 99%;
+  --card-foreground: 222 30% 18%;
+  --popover: 220 38% 99%;
+  --popover-foreground: 222 30% 18%;
+  --primary: 221 71% 57%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 220 28% 93%;
+  --secondary-foreground: 222 28% 23%;
+  --muted: 216 28% 93%;
+  --muted-foreground: 219 18% 36%;
+  --accent: 214 45% 92%;
+  --accent-foreground: 222 30% 18%;
+  --destructive: 0 72% 52%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 220 24% 81%;
+  --input: 220 26% 84%;
+  --ring: 221 71% 57%;
+}
+
+.dark {
+  --background: 224 29% 14%;
+  --foreground: 210 40% 96%;
+  --card: 222 28% 18%;
+  --card-foreground: 210 40% 96%;
+  --popover: 222 28% 18%;
+  --popover-foreground: 210 40% 96%;
+  --primary: 213 89% 76%;
+  --primary-foreground: 224 29% 14%;
+  --secondary: 222 22% 26%;
+  --secondary-foreground: 210 40% 96%;
+  --muted: 222 21% 24%;
+  --muted-foreground: 215 20% 74%;
+  --accent: 204 38% 28%;
+  --accent-foreground: 210 40% 96%;
+  --destructive: 0 70% 60%;
+  --destructive-foreground: 210 40% 96%;
+  --border: 223 18% 38%;
+  --input: 223 20% 34%;
+  --ring: 213 89% 76%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    font-family: "SF Pro Text", "Segoe UI", ui-sans-serif, sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image: linear-gradient(180deg, hsl(220 45% 99%), hsl(var(--background)));
+  }
+
+  body.dark {
+    background-image: linear-gradient(180deg, hsl(224 32% 16%), hsl(var(--background)));
+  }
+}

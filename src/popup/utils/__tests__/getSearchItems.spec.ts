@@ -1,36 +1,60 @@
+import type { Bookmarks, History, Tabs } from "webextension-polyfill";
 import { randCatchPhrase, randNumber, randUrl, randUuid } from "@ngneat/falso";
-import type { Bookmarks, History } from "webextension-polyfill";
-import { expect } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { SEARCH_ITEM_TYPE } from "~/constants";
 import {
   convertToSearchItemsFromBookmarks,
   convertToSearchItemsFromHistories,
+  convertToSearchItemsFromTabs,
   faviconUrl,
 } from "~/popup/utils/getSearchItems";
-import { SEARCH_ITEM_TYPE } from "~/constants";
 
 vi.mock("webextension-polyfill", () => ({}));
 
-const generateBookmark = (overwrites?: {
-  title?: string;
-}): Bookmarks.BookmarkTreeNode => ({
-  id: randUuid(),
-  parentId: randUuid(),
-  index: randNumber(),
-  url: randUrl(),
-  title: randCatchPhrase(),
-  dateAdded: randNumber(),
-  dateGroupModified: randNumber(),
-  type: "bookmark" as const,
-  ...overwrites,
-});
+function generateBookmark(overwrites?: { title?: string }): Bookmarks.BookmarkTreeNode {
+  return {
+    dateAdded: randNumber(),
+    dateGroupModified: randNumber(),
+    id: randUuid(),
+    index: randNumber(),
+    parentId: randUuid(),
+    title: randCatchPhrase(),
+    type: "bookmark" as const,
+    url: randUrl(),
+    ...overwrites,
+  };
+}
 
-const generateHistory = (
-  args: { title?: string; url?: string } = {}
-): History.HistoryItem => ({
-  id: randUuid(),
-  url: args.url ?? randUrl(),
-  title: args.title ?? randCatchPhrase(),
-});
+function generateHistory(args: { title?: string; url?: string } = {}): History.HistoryItem {
+  return {
+    id: randUuid(),
+    title: args.title ?? randCatchPhrase(),
+    url: args.url ?? randUrl(),
+  };
+}
+
+function generateTab(
+  args: {
+    id?: number;
+    lastAccessed?: number;
+    title?: string;
+    url?: string;
+  } = {},
+): Tabs.Tab {
+  return {
+    active: false,
+    highlighted: false,
+    id: args.id ?? randNumber(),
+    incognito: false,
+    index: 0,
+    lastAccessed: args.lastAccessed ?? Date.now(),
+    pinned: false,
+    selected: false,
+    title: args.title ?? randCatchPhrase(),
+    url: args.url ?? randUrl(),
+    windowId: 1,
+  };
+}
 
 describe("convertToSearchItemsFromBookmarks", () => {
   it("get search items from bookmarks", () => {
@@ -40,13 +64,13 @@ describe("convertToSearchItemsFromBookmarks", () => {
     const bookmark4 = generateBookmark({ title: "" });
     const nestedFolder = {
       ...generateBookmark(),
-      type: "folder" as const,
       children: [bookmark3],
+      type: "folder" as const,
     };
     const folder = {
       ...generateBookmark(),
-      type: "folder" as const,
       children: [bookmark2, nestedFolder],
+      type: "folder" as const,
     };
     const bookmarks = [bookmark1, folder, bookmark4];
 
@@ -55,63 +79,80 @@ describe("convertToSearchItemsFromBookmarks", () => {
     expect(searchItems.length).toBe(4);
     expect(searchItems).toEqual([
       {
-        url: bookmark1.url,
-        title: bookmark1.title,
         faviconUrl: faviconUrl(bookmark1.url!),
-        type: SEARCH_ITEM_TYPE.BOOKMARK,
         folderName: "",
         searchTerm: `${bookmark1.title} ${bookmark1.url}`,
+        title: bookmark1.title,
+        type: SEARCH_ITEM_TYPE.BOOKMARK,
+        url: bookmark1.url,
       },
       {
-        url: bookmark2.url,
-        title: bookmark2.title,
         faviconUrl: faviconUrl(bookmark2.url!),
-        type: SEARCH_ITEM_TYPE.BOOKMARK,
         folderName: folder.title,
         searchTerm: `${bookmark2.title} ${bookmark2.url} ${folder.title}`,
+        title: bookmark2.title,
+        type: SEARCH_ITEM_TYPE.BOOKMARK,
+        url: bookmark2.url,
       },
       {
-        url: bookmark3.url,
-        title: bookmark3.title,
         faviconUrl: faviconUrl(bookmark3.url!),
-        type: SEARCH_ITEM_TYPE.BOOKMARK,
         folderName: `${folder.title}/${nestedFolder.title}`,
         searchTerm: `${bookmark3.title} ${bookmark3.url} ${folder.title}/${nestedFolder.title}`,
+        title: bookmark3.title,
+        type: SEARCH_ITEM_TYPE.BOOKMARK,
+        url: bookmark3.url,
       },
       {
-        url: bookmark4.url,
-        title: bookmark4.url,
         faviconUrl: faviconUrl(bookmark4.url!),
-        type: SEARCH_ITEM_TYPE.BOOKMARK,
         folderName: "",
         searchTerm: `${bookmark4.url}`,
+        title: bookmark4.url,
+        type: SEARCH_ITEM_TYPE.BOOKMARK,
+        url: bookmark4.url,
       },
     ]);
   });
 
   describe("convertToSearchItemsFromHistories", () => {
     it("get search items from histories", () => {
-      const histories = [generateHistory(), generateHistory()];
+      const histories = [
+        {
+          ...generateHistory({
+            title: "history-item-0",
+            url: "https://history-item.com/0",
+          }),
+          lastVisitTime: 100,
+        },
+        {
+          ...generateHistory({
+            title: "history-item-1",
+            url: "https://history-item.com/1",
+          }),
+          lastVisitTime: 200,
+        },
+      ];
 
       const searchItems = convertToSearchItemsFromHistories(histories);
 
       expect(searchItems.length).toBe(2);
       expect(searchItems).toEqual([
         {
-          url: histories[0].url,
-          title: histories[0].title!,
-          faviconUrl: faviconUrl(histories[0].url!),
-          type: SEARCH_ITEM_TYPE.HISTORY,
+          faviconUrl: faviconUrl(histories[1].url!),
           folderName: "",
-          searchTerm: `${histories[0].title!} ${histories[0].url}`,
+          lastVisitTime: 200,
+          searchTerm: `${histories[1].title!} ${histories[1].url}`,
+          title: histories[1].title!,
+          type: SEARCH_ITEM_TYPE.HISTORY,
+          url: histories[1].url,
         },
         {
-          url: histories[1].url,
-          title: histories[1].title!,
-          faviconUrl: faviconUrl(histories[1].url!),
-          type: SEARCH_ITEM_TYPE.HISTORY,
+          faviconUrl: faviconUrl(histories[0].url!),
           folderName: "",
-          searchTerm: `${histories[1].title!} ${histories[1].url}`,
+          lastVisitTime: 100,
+          searchTerm: `${histories[0].title!} ${histories[0].url}`,
+          title: histories[0].title!,
+          type: SEARCH_ITEM_TYPE.HISTORY,
+          url: histories[0].url,
         },
       ]);
     });
@@ -128,12 +169,12 @@ describe("convertToSearchItemsFromBookmarks", () => {
     expect(searchItems.length).toBe(1);
     expect(searchItems).toEqual([
       {
-        url: histories[1].url,
-        title: histories[1].title!,
         faviconUrl: faviconUrl(histories[1].url!),
-        type: SEARCH_ITEM_TYPE.HISTORY,
         folderName: "",
         searchTerm: `${histories[1].title!} ${histories[1].url}`,
+        title: histories[1].title!,
+        type: SEARCH_ITEM_TYPE.HISTORY,
+        url: histories[1].url,
       },
     ]);
   });
@@ -149,29 +190,70 @@ describe("convertToSearchItemsFromBookmarks", () => {
 
     expect(searchItems.length).toBe(2);
     expect(searchItems).toContainEqual({
-      url: histories[1].url,
-      title: histories[1].title!,
       faviconUrl: faviconUrl(histories[1].url!),
-      type: SEARCH_ITEM_TYPE.HISTORY,
       folderName: "",
       searchTerm: `${histories[1].title!} ${histories[1].url}`,
+      title: histories[1].title!,
+      type: SEARCH_ITEM_TYPE.HISTORY,
+      url: histories[1].url,
     });
     expect(searchItems).toContainEqual({
-      url: histories[2].url,
-      title: histories[2].title!,
       faviconUrl: faviconUrl(histories[2].url!),
-      type: SEARCH_ITEM_TYPE.HISTORY,
       folderName: "",
       searchTerm: `${histories[2].title!} ${histories[2].url}`,
+      title: histories[2].title!,
+      type: SEARCH_ITEM_TYPE.HISTORY,
+      url: histories[2].url,
     });
   });
 
   describe("faviconUrl", () => {
     it("get domain", () => {
       const url = "https://www.google.com/search?q=Compiler+API";
-      expect(faviconUrl(url)).toBe(
-        "https://www.google.com/s2/favicons?domain=google.com"
-      );
+      expect(faviconUrl(url)).toBe("https://www.google.com/s2/favicons?domain=google.com&sz=64");
     });
+  });
+});
+
+describe("convertToSearchItemsFromTabs", () => {
+  it("sorts tabs by last accessed order", () => {
+    const tabs = [
+      generateTab({ id: 1, lastAccessed: 100, title: "older", url: "https://older.com" }),
+      generateTab({ id: 2, lastAccessed: 300, title: "newer", url: "https://newer.com" }),
+      generateTab({ id: 3, lastAccessed: 200, title: "middle", url: "https://middle.com" }),
+    ];
+
+    expect(convertToSearchItemsFromTabs(tabs)).toEqual([
+      {
+        faviconUrl: faviconUrl("https://newer.com"),
+        folderName: "",
+        lastVisitTime: 300,
+        searchTerm: "newer https://newer.com",
+        tabId: 2,
+        title: "newer",
+        type: SEARCH_ITEM_TYPE.TAB,
+        url: "https://newer.com",
+      },
+      {
+        faviconUrl: faviconUrl("https://middle.com"),
+        folderName: "",
+        lastVisitTime: 200,
+        searchTerm: "middle https://middle.com",
+        tabId: 3,
+        title: "middle",
+        type: SEARCH_ITEM_TYPE.TAB,
+        url: "https://middle.com",
+      },
+      {
+        faviconUrl: faviconUrl("https://older.com"),
+        folderName: "",
+        lastVisitTime: 100,
+        searchTerm: "older https://older.com",
+        tabId: 1,
+        title: "older",
+        type: SEARCH_ITEM_TYPE.TAB,
+        url: "https://older.com",
+      },
+    ]);
   });
 });

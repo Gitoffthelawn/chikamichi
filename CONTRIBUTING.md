@@ -17,8 +17,7 @@ Please click [here](https://github.com/kawamataryo/chikamichi/issues/new) to iss
 
 Pull requests are always welcome.
 
-The following types of Pull Requests are accepted.  For basic Pull Requests (especially minor ones), you may send a Pull Request without creating an Issue.
-
+The following types of Pull Requests are accepted. For basic Pull Requests (especially minor ones), you may send a Pull Request without creating an Issue.
 
 - Bug Fixes
 - Add functionality
@@ -36,9 +35,9 @@ Please follow these steps to create a pull request.
 3. Add or modify feature
 4. Run e2e and unit test
 5. Check the feature in your browser
-5. Commit Changes
-6. Push branch
-7. Create Pull Request
+6. Commit Changes
+7. Push branch
+8. Create Pull Request
 
 Also, when creating a pull request, please keep the following in mind
 
@@ -47,7 +46,6 @@ Also, when creating a pull request, please keep the following in mind
 - **Keep the same style** - eslint will automatically be ran before committing
 - **Document any change in behavior** - Make sure the `README.md` and any other relevant documentation are kept up-to-date.
 - **Send coherent history** - Make sure your commits message means something
-
 
 ## How to set up a Local Development Environment
 
@@ -67,33 +65,41 @@ $ pnpm i
 The dev command starts the development server.
 
 ```bash
-$ pnpm run dev
+$ pnpm dev
 ```
 
-When the development server starts, the Extension build results are output to the `extension`.
+When the development server starts, the extension build results are output to `build/chrome-mv3-dev`.
 
-You can use extensions in your browser by loading the contents of the extensions folder in Chrome Exteinsions.
+Load that directory from `chrome://extensions` with `Developer mode` enabled.
 
 <img width="560" alt="image" src="https://user-images.githubusercontent.com/11070996/158058979-6d7f58a9-3d9b-46d3-ad14-f5e7a8c787e7.png">
 
 <img width="560" alt="image" src="https://user-images.githubusercontent.com/11070996/158059064-c1773e32-ecd7-4a52-b01e-ba0ad2426502.png">
 
-When you modify the code, the change is automatically reflected.
+`pnpm dev` also syncs `_locales` into the Plasmo build output, so use it instead of invoking `plasmo dev` directly.
+
+When you modify the code, changes are reflected in the dev build output.
 
 ## How to run test
 
-Chikamichi have e2e test and unit test.
+Chikamichi has unit tests and Playwright e2e tests.
 
-Run unit test.
+Run unit tests.
 
+```bash
+$ pnpm test:ci
 ```
-$ pnpm run test
+
+Run lint, format check, unit test, and build.
+
+```bash
+$ pnpm check
 ```
 
-Run e2e test.
+Run e2e tests locally.
 
-```
-$ pnpm run cypress:open
+```bash
+$ pnpm playwright:run
 ```
 
 That's it. Happy coding 👍

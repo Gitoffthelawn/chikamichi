@@ -1,72 +1,60 @@
-import { ParseResultType, fromUrl, parseDomain } from "parse-domain";
 import type { Bookmarks, History, Tabs } from "webextension-polyfill";
-import { SEARCH_ITEM_TYPE } from "~/constants";
+import { HISTORY_FETCH_DAYS, HISTORY_FETCH_LIMIT, SEARCH_ITEM_TYPE } from "~/constants";
 
-export const faviconUrl = (url: string) => {
-  const parseResult = parseDomain(fromUrl(url));
-  const domain =
-    parseResult.type === ParseResultType.Listed
-      ? `${parseResult.domain}.${parseResult.topLevelDomains.join(".")}`
-      : new URL(url).hostname;
-  return `https://www.google.com/s2/favicons?domain=${domain}`;
-};
+export function faviconUrl(url: string) {
+  const hostname = new URL(url).hostname.replace(/^www\./u, "");
+  return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+}
 
-const generateSearchTerm = (...args: string[]): string => {
+function generateSearchTerm(...args: string[]): string {
   return args.filter((arg) => arg).join(" ");
-};
+}
 
-const removeDeprecatedItem = (
-  searchItems: SearchItem[],
-  key: "title" | "url"
-) => {
+function removeDeprecatedItem(searchItems: SearchItem[], key: "title" | "url") {
   return Array.from(
     searchItems
       .reduce(
         (map, currentItem) => map.set(currentItem[key], currentItem),
-        new Map<string, SearchItem>()
+        new Map<string, SearchItem>(),
       )
-      .values()
+      .values(),
   );
-};
+}
 
-export const convertToSearchItemsFromHistories = (
-  histories: History.HistoryItem[]
-): SearchItem[] => {
+export function convertToSearchItemsFromHistories(histories: History.HistoryItem[]): SearchItem[] {
   const searchItems = histories
     .filter((history) => {
-      // remove google search's history
-      if (/google\..+\/search/.test(history.url!)) {
+      // Remove google search's history
+      if (/google\..+\/search/u.test(history.url!)) {
         return false;
       }
       return true;
     })
     .map((history) => ({
-      url: history.url!,
-      title: history.title!,
       faviconUrl: faviconUrl(history.url!),
-      type: SEARCH_ITEM_TYPE.HISTORY,
       folderName: "",
-      searchTerm: generateSearchTerm(history.title!, history.url!),
       lastVisitTime: history.lastVisitTime!,
-    }));
+      searchTerm: generateSearchTerm(history.title!, history.url!),
+      title: history.title!,
+      type: SEARCH_ITEM_TYPE.HISTORY,
+      url: history.url!,
+    }))
+    .sort((a, b) => (b.lastVisitTime ?? 0) - (a.lastVisitTime ?? 0));
 
-  // remove same title items
+  // Remove same title items
   return removeDeprecatedItem(searchItems, "title");
-};
+}
 
-export const convertToSearchItemsFromBookmarks = (
-  bookmarkTreeNodes: Bookmarks.BookmarkTreeNode[]
-): SearchItem[] => {
-  // FIXME: want to rewrites it into a clean recursive function that doesn't use side effects.
+export function convertToSearchItemsFromBookmarks(
+  bookmarkTreeNodes: Bookmarks.BookmarkTreeNode[],
+): SearchItem[] {
+  // This keeps the current traversal behavior until the bookmark conversion is refactored.
   const result: SearchItem[] = [];
-  const getTitleAndUrl = (
-    bookmarkTreeNodes: Bookmarks.BookmarkTreeNode[],
-    folderNames: string[]
-  ) => {
-    bookmarkTreeNodes.forEach((node) => {
+  const getTitleAndUrl = (nodes: Bookmarks.BookmarkTreeNode[], folderNames: string[]) => {
+    nodes.forEach((node) => {
       if (node.type !== "bookmark" && node.children) {
-        const _folderName = node.parentId === "0" ? "" : node.title;
-        getTitleAndUrl(node.children, [...folderNames, _folderName]);
+        const folderName = node.parentId === "0" ? "" : node.title;
+        getTitleAndUrl(node.children, [...folderNames, folderName]);
         return;
       }
 
@@ -74,50 +62,60 @@ export const convertToSearchItemsFromBookmarks = (
         return;
       }
 
-      const folderName =
-        node.parentId === "1"
-          ? ""
-          : folderNames.filter((name) => name).join("/"); // Exclude top level folder name
+      // Exclude the top level folder name.
+      const folderName = node.parentId === "1" ? "" : folderNames.filter((name) => name).join("/");
       result.push({
-        url: node.url,
-        title: node.title || node.url,
         faviconUrl: faviconUrl(node.url),
-        type: SEARCH_ITEM_TYPE.BOOKMARK,
         folderName,
         searchTerm: generateSearchTerm(node.title, node.url, folderName),
+        title: node.title || node.url,
+        type: SEARCH_ITEM_TYPE.BOOKMARK,
+        url: node.url,
       });
     });
   };
   getTitleAndUrl(bookmarkTreeNodes, []);
   return result;
-};
+}
 
-export const convertToSearchItemsFromTabs = (
-  tabs: Tabs.Tab[]
-): SearchItem[] => {
-  return tabs.map((tab) => ({
-    url: tab.url!,
-    title: tab.title!,
-    faviconUrl: faviconUrl(tab.url!),
-    type: SEARCH_ITEM_TYPE.TAB,
-    tabId: tab.id,
-    folderName: "",
-    searchTerm: generateSearchTerm(tab.title!, tab.url!),
-  }));
-};
+export function convertToSearchItemsFromTabs(tabs: Tabs.Tab[]): SearchItem[] {
+  return tabs
+    .map((tab) => ({
+      faviconUrl: faviconUrl(tab.url!),
+      folderName: "",
+      lastVisitTime: tab.lastAccessed,
+      searchTerm: generateSearchTerm(tab.title!, tab.url!),
+      tabId: tab.id,
+      title: tab.title!,
+      type: SEARCH_ITEM_TYPE.TAB,
+      url: tab.url!,
+    }))
+    .sort((a, b) => (b.lastVisitTime ?? 0) - (a.lastVisitTime ?? 0));
+}
 
-export const getSearchItems = async () => {
-  const tabs = await browser.tabs.query({});
-  const bookmarks = await browser.bookmarks.getTree();
-  const histories = await browser.history.search({
-    text: "",
-    maxResults: 100000,
-    startTime: new Date().setDate(new Date().getDate() - 360),
-  });
+export async function getSearchItems() {
+  if (typeof window !== "undefined" && (window as any).chikamichiMockSearchItems) {
+    return (window as any).chikamichiMockSearchItems as {
+      bookmarks: SearchItem[];
+      histories: SearchItem[];
+      tabs: SearchItem[];
+    };
+  }
+
+  const startTime = new Date().setDate(new Date().getDate() - HISTORY_FETCH_DAYS);
+  const [tabs, bookmarks, histories] = await Promise.all([
+    browser.tabs.query({}),
+    browser.bookmarks.getTree(),
+    browser.history.search({
+      maxResults: HISTORY_FETCH_LIMIT,
+      startTime,
+      text: "",
+    }),
+  ]);
 
   return {
-    histories: convertToSearchItemsFromHistories(histories),
     bookmarks: convertToSearchItemsFromBookmarks(bookmarks),
+    histories: convertToSearchItemsFromHistories(histories),
     tabs: convertToSearchItemsFromTabs(tabs),
   };
-};
+}

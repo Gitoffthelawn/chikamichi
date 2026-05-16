@@ -1,0 +1,7 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">chikamichi extension icon</title>
+  <desc id="desc">Rounded square blue icon with a minimal shortcut path cut through the center.</desc>
+  <rect x="12" y="12" width="104" height="104" rx="28" fill="#4A78DF"/>
+  <path d="M38 86L65 42H90" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="38" cy="86" r="6" fill="white"/>
+</svg>

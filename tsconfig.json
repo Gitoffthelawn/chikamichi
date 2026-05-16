@@ -1,21 +1,19 @@
 {
+  "extends": "plasmo/templates/tsconfig.base",
   "compilerOptions": {
     "baseUrl": ".",
-    "module": "ESNext",
-    "target": "es2016",
-    "lib": ["DOM", "ESNext"],
     "strict": true,
-    "esModuleInterop": true,
     "incremental": false,
+    "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["vite/client", "vitest/globals", "cypress", "chrome"],
+    "types": ["vitest/globals", "chrome"],
     "paths": {
-      "~/*": ["src/*"]
+      "~*": ["./src/*"]
     }
   },
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["build", "dist", "node_modules"],
+  "include": [".plasmo/index.d.ts", "./**/*.ts", "./**/*.tsx"]
 }
