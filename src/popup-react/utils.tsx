@@ -1,10 +1,8 @@
-import Fuse from "fuse.js";
 import { type ReactNode } from "react";
 import { Info, Search, Settings } from "lucide-react";
-import { FUSE_OPTIONS, PAGES, SEARCH_ITEM_TYPE, SEARCH_TARGET_REGEX, THEME } from "~/constants";
-import type { AppSettings } from "~/core/storage";
+import { PAGES, THEME } from "~/constants";
 import { t } from "~/i18n";
-import type { ActionItem, SearchCollections } from "~/popup-react/types";
+import type { SearchCollections } from "~/popup-react/types";
 
 export const EMPTY_COLLECTIONS: SearchCollections = {
   bookmarks: [],
@@ -20,25 +18,6 @@ export function reportError(error: unknown) {
   );
 }
 
-function toSearchResult(item: SearchItem): SearchResult {
-  return {
-    ...item,
-    isFavorite: false,
-    matchedWord: "",
-    score: 0,
-  };
-}
-
-function toFavoriteResult(item: AppSettings["favoriteItems"][number]): SearchResult {
-  return {
-    ...item,
-    isFavorite: true,
-    matchedWord: "",
-    score: 0,
-    searchTerm: `${item.title} ${item.url} ${item.folderName ?? ""}`.trim(),
-  };
-}
-
 export function getResultKey(item: Pick<SearchResult, "title" | "url" | "type">) {
   return `${item.type}:${item.title}:${item.url}`;
 }
@@ -49,65 +28,6 @@ export function getResolvedTheme(theme: ValueOf<typeof THEME>) {
   }
 
   return theme;
-}
-
-export function createFuseIndex(items: SearchItem[]) {
-  return new Fuse(items, FUSE_OPTIONS);
-}
-
-export function filterActionItems(items: ActionItem[], query: string) {
-  const normalizedQuery = query.trim().toLowerCase();
-
-  if (!normalizedQuery) {
-    return items;
-  }
-
-  return items.filter((item) =>
-    `${item.title} ${item.description} ${item.keywords}`.toLowerCase().includes(normalizedQuery),
-  );
-}
-
-export function getExtractedSearchWord(searchWord: string) {
-  if (SEARCH_TARGET_REGEX.EITHER.test(searchWord)) {
-    return searchWord.match(SEARCH_TARGET_REGEX.EITHER)?.[1] ?? "";
-  }
-
-  return searchWord;
-}
-
-export function getInitialResults(
-  searchWord: string,
-  collections: SearchCollections,
-  settings: AppSettings,
-) {
-  const favoriteItems = settings.favoriteItems.map(toFavoriteResult);
-
-  if (SEARCH_TARGET_REGEX.HISTORY.test(searchWord)) {
-    return collections.histories.slice(0, 50).map(toSearchResult);
-  }
-
-  if (SEARCH_TARGET_REGEX.BOOKMARK.test(searchWord)) {
-    const bookmarkFavorites = favoriteItems.filter(
-      (item) => item.type === SEARCH_ITEM_TYPE.BOOKMARK,
-    );
-    const bookmarkResults = collections.bookmarks
-      .slice(0, 50)
-      .map(toSearchResult)
-      .filter(
-        (item) =>
-          !bookmarkFavorites.some(
-            (favorite) => favorite.url === item.url && favorite.title === item.title,
-          ),
-      );
-
-    return [...bookmarkFavorites, ...bookmarkResults];
-  }
-
-  if (SEARCH_TARGET_REGEX.TAB.test(searchWord)) {
-    return collections.tabs.slice(0, 50).map(toSearchResult);
-  }
-
-  return favoriteItems;
 }
 
 export function highlightText(text: string, matchedWord: RegExp | string): ReactNode {
@@ -175,8 +95,4 @@ export function getThemeLabel(theme: ValueOf<typeof THEME>) {
   }
 
   return t("themeDark");
-}
-
-export function getActionKey(item: ActionItem) {
-  return `action:${item.id}`;
 }

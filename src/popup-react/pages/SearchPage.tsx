@@ -1,10 +1,9 @@
 import { sendToBackground } from "@plasmohq/messaging";
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import browser, { type Search } from "webextension-polyfill";
 import {
   type AppSettings,
-  DEFAULT_SETTINGS,
   type OpenStatsRecord,
   getOpenStats,
   recordOpenedUrl,
@@ -13,7 +12,6 @@ import {
   SEARCH_ICON_DATA_URL_DARK,
   SEARCH_ICON_DATA_URL_LIGHT,
   SEARCH_ITEM_TYPE,
-  SEARCH_RESULT_LIMIT,
   SEARCH_TARGET_REGEX,
   THEME,
 } from "~/constants";
@@ -26,22 +24,16 @@ import {
 import { SearchFooter } from "~/popup-react/components/search-page/SearchFooter";
 import { SearchInputBar } from "~/popup-react/components/search-page/SearchInputBar";
 import { SearchResultsPanel } from "~/popup-react/components/search-page/SearchResultsPanel";
+import { buildCommandItems, executeCommand } from "~/popup-react/command-items";
 import { useActionItems } from "~/popup-react/hooks/use-action-items";
 import { useFeedbackBadge } from "~/popup-react/hooks/use-feedback-badge";
-import type { ActionItem } from "~/popup-react/types";
 import {
   EMPTY_COLLECTIONS,
-  createFuseIndex,
-  filterActionItems,
-  getActionKey,
-  getExtractedSearchWord,
-  getInitialResults,
   getResolvedTheme,
   getResultKey,
   reportError,
 } from "~/popup-react/utils";
 import { getSearchItems } from "~/popup/utils/getSearchItems";
-import { sortAndFormatSearchResult } from "~/popup/utils/sortAndFormatSearchResult";
 
 type SearchCollections = Awaited<ReturnType<typeof getSearchItems>>;
 type SearchEngineState = {
@@ -74,7 +66,6 @@ export function SearchPage({
   const [activeTab, setActiveTab] = useState<browser.Tabs.Tab | null>(null);
   const [collections, setCollections] = useState<SearchCollections>(EMPTY_COLLECTIONS);
   const [favoriteItems, setFavoriteItems] = useState(settings.favoriteItems);
-  const [loadingCollections, setLoadingCollections] = useState(true);
   const [openStats, setOpenStats] = useState<OpenStatsRecord[]>([]);
   const [searchWord, setSearchWord] = useState(settings.defaultSearchPrefix);
   const [selectedNumber, setSelectedNumber] = useState(0);
@@ -106,30 +97,7 @@ export function SearchPage({
       ).chikamichiMockActiveTab ?? null
     );
   }, []);
-  const deferredSearchWord = useDeferredValue(searchWord);
-  const inputActionMode = useMemo(() => SEARCH_TARGET_REGEX.ACTION.test(searchWord), [searchWord]);
-  const inputActionQuery = useMemo(() => {
-    if (!inputActionMode) {
-      return "";
-    }
-
-    return searchWord.match(SEARCH_TARGET_REGEX.ACTION)?.[1] ?? "";
-  }, [inputActionMode, searchWord]);
-  const actionMode = useMemo(
-    () => SEARCH_TARGET_REGEX.ACTION.test(deferredSearchWord),
-    [deferredSearchWord],
-  );
-  const actionQuery = useMemo(() => {
-    if (!actionMode) {
-      return "";
-    }
-
-    return deferredSearchWord.match(SEARCH_TARGET_REGEX.ACTION)?.[1] ?? "";
-  }, [actionMode, deferredSearchWord]);
-  const extractedSearchWord = useMemo(
-    () => getExtractedSearchWord(deferredSearchWord),
-    [deferredSearchWord],
-  );
+  const actionMode = useMemo(() => SEARCH_TARGET_REGEX.ACTION.test(searchWord), [searchWord]);
   const favoriteLookup = useMemo(
     () => new Set(favoriteItems.map((item) => `${item.url}::${item.title}`)),
     [favoriteItems],
@@ -170,17 +138,6 @@ export function SearchPage({
       recentHostnames,
     };
   }, [activeTab?.url, collections.histories, collections.tabs]);
-  const fuseIndexes = useMemo(() => {
-    const allItems = [...collections.histories, ...collections.bookmarks, ...collections.tabs];
-
-    return {
-      all: createFuseIndex(allItems),
-      bookmarks: createFuseIndex(collections.bookmarks),
-      histories: createFuseIndex(collections.histories),
-      tabs: createFuseIndex(collections.tabs),
-    };
-  }, [collections]);
-
   useEffect(() => {
     setFavoriteItems(settings.favoriteItems);
   }, [settings.favoriteItems]);
@@ -214,12 +171,7 @@ export function SearchPage({
   useEffect(() => {
     loadActiveTab().catch(reportError);
 
-    getSearchItems()
-      .then(setCollections)
-      .catch(reportError)
-      .finally(() => {
-        setLoadingCollections(false);
-      });
+    getSearchItems().then(setCollections).catch(reportError);
 
     getOpenStats().then(setOpenStats).catch(reportError);
 
@@ -266,7 +218,7 @@ export function SearchPage({
     setSelectedNumber(0);
     setSelectedKey("");
     resultsWrapperRef.current?.scrollTo(0, 0);
-  }, [collections, deferredSearchWord]);
+  }, [collections, searchWord]);
 
   const refreshActiveTab = () => loadActiveTab();
 
@@ -320,79 +272,33 @@ export function SearchPage({
     window.close();
   };
 
-  const searchResult = useMemo(() => {
-    if (actionMode) {
-      return [];
-    }
-
-    if (
-      collections.bookmarks.length === 0 &&
-      collections.histories.length === 0 &&
-      collections.tabs.length === 0
-    ) {
-      return [];
-    }
-
-    if (!deferredSearchWord || !extractedSearchWord) {
-      return getInitialResults(deferredSearchWord, collections, {
-        ...DEFAULT_SETTINGS,
+  const commandItems = useMemo(
+    () =>
+      buildCommandItems({
+        actionItems,
+        collections,
         favoriteItems,
-      });
-    }
-
-    let targetFuse = fuseIndexes.all;
-    if (SEARCH_TARGET_REGEX.HISTORY.test(deferredSearchWord)) {
-      targetFuse = fuseIndexes.histories;
-    } else if (SEARCH_TARGET_REGEX.BOOKMARK.test(deferredSearchWord)) {
-      targetFuse = fuseIndexes.bookmarks;
-    } else if (SEARCH_TARGET_REGEX.TAB.test(deferredSearchWord)) {
-      targetFuse = fuseIndexes.tabs;
-    }
-
-    return sortAndFormatSearchResult(
-      targetFuse.search(extractedSearchWord, {
-        limit: SEARCH_RESULT_LIMIT,
-      }),
-      {
         favoriteLookup,
         openStatsLookup,
+        query: searchWord,
         recentContext,
-      },
-    );
-  }, [
-    activeTab,
-    collections,
-    deferredSearchWord,
-    extractedSearchWord,
-    favoriteItems,
-    favoriteLookup,
-    fuseIndexes,
-    openStatsLookup,
-    recentContext,
-  ]);
-
-  const actionResults = useMemo(() => {
-    if (!actionMode) {
-      return [];
-    }
-
-    return filterActionItems(actionItems, actionQuery);
-  }, [actionItems, actionMode, actionQuery]);
-
-  const immediateActionResults = useMemo(
-    () => filterActionItems(actionItems, inputActionQuery),
-    [actionItems, inputActionQuery],
+        searchEngine,
+      }),
+    [
+      actionItems,
+      collections,
+      favoriteItems,
+      favoriteLookup,
+      openStatsLookup,
+      recentContext,
+      searchEngine,
+      searchWord,
+    ],
   );
 
   const favoriteReorderEnabled = searchWord === "" && !actionMode && favoriteItems.length > 1;
 
-  const currentResultKeys = useMemo(
-    () =>
-      actionMode
-        ? actionResults.map((item) => getActionKey(item))
-        : searchResult.map((item) => getResultKey(item)),
-    [actionMode, actionResults, searchResult],
-  );
+  const currentResultKeys = useMemo(() => commandItems.map((item) => item.id), [commandItems]);
 
   useEffect(() => {
     if (currentResultKeys.length === 0) {
@@ -464,20 +370,13 @@ export function SearchPage({
     (index: number) => {
       selectedNumberRef.current = index;
       setSelectedNumber(index);
-      if (actionMode) {
-        const actionItem = actionResults[index];
-        if (actionItem) {
-          setSelectedKey(getActionKey(actionItem));
-        }
-      } else {
-        const item = searchResult[index];
-        if (item) {
-          setSelectedKey(getResultKey(item));
-        }
+      const item = commandItems[index];
+      if (item) {
+        setSelectedKey(item.id);
       }
       clearBadge();
     },
-    [actionMode, actionResults, clearBadge, searchResult],
+    [clearBadge, commandItems],
   );
 
   const changeSelectedItemByKeyboard = useCallback(
@@ -575,24 +474,34 @@ export function SearchPage({
   );
 
   const toggleFavorite = useCallback(
-    async (item = searchResult[selectedNumber]) => {
-      if (!item) {
+    async (item?: SearchResult) => {
+      let targetItem = item;
+
+      if (!targetItem) {
+        const commandItem = commandItems[selectedNumber];
+        if (!commandItem || commandItem.kind !== "page") {
+          return;
+        }
+        targetItem = commandItem.searchResult;
+      }
+
+      if (!targetItem) {
         return;
       }
 
       const isFavorite = favoriteItems.some(
-        (favorite) => favorite.url === item.url && favorite.title === item.title,
+        (favorite) => favorite.url === targetItem.url && favorite.title === targetItem.title,
       );
-      const nextFavoriteItems = toggleFavoriteItems(favoriteItems, item);
+      const nextFavoriteItems = toggleFavoriteItems(favoriteItems, targetItem);
 
       setFavoriteItems(nextFavoriteItems);
-      setSelectedKey(getResultKey(item));
+      setSelectedKey(`page:${getResultKey(targetItem)}`);
       await onUpdateSettings({
         favoriteItems: nextFavoriteItems,
       });
       await showBadge(isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite"));
     },
-    [favoriteItems, onUpdateSettings, searchResult, selectedNumber],
+    [commandItems, favoriteItems, onUpdateSettings, selectedNumber],
   );
 
   const moveFavorite = async (direction: "up" | "down") => {
@@ -671,17 +580,30 @@ export function SearchPage({
     [reorderFavorite],
   );
 
-  const runActionItem = useCallback((item: ActionItem) => {
-    item.run().catch(reportError);
-  }, []);
+  const runCommandItem = useCallback(
+    (item: (typeof commandItems)[number]) => {
+      executeCommand(item, {
+        browserSearch,
+        inNewTab: false,
+        openResult,
+      })
+        .then(() => {
+          if (item.kind === "page" || item.kind === "browser-search") {
+            closePopup();
+          }
+        })
+        .catch(reportError);
+    },
+    [browserSearch, openResult],
+  );
 
   const copyCurrentUrl = async () => {
-    const item = searchResult[selectedNumber];
-    if (!item) {
+    const item = commandItems[selectedNumber];
+    if (!item || item.kind !== "page") {
       return;
     }
 
-    await navigator.clipboard.writeText(item.url);
+    await navigator.clipboard.writeText(item.searchResult.url);
     await showBadge(t("badgeCopied"));
   };
 
@@ -705,12 +627,13 @@ export function SearchPage({
 
   const deleteSelectedResult = async () => {
     const selectedIndex = selectedNumberRef.current;
-    const item = searchResult[selectedIndex];
-    if (!item || actionMode) {
+    const commandItem = commandItems[selectedIndex];
+    if (!commandItem || commandItem.kind !== "page" || actionMode) {
       return;
     }
 
-    const deletedResultKey = getResultKey(item);
+    const item = commandItem.searchResult;
+    const deletedResultKey = commandItem.id;
 
     if (item.type === SEARCH_ITEM_TYPE.HISTORY) {
       await browser.history.deleteUrl({
@@ -751,31 +674,26 @@ export function SearchPage({
   const handleEnterKey = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     event.preventDefault();
 
-    if (inputActionMode) {
-      const actionItem =
-        immediateActionResults[selectedNumber] ??
-        immediateActionResults.find((item) => getActionKey(item) === selectedKey) ??
-        immediateActionResults[0];
-      if (actionItem) {
-        await actionItem.run();
+    const item =
+      commandItems[selectedNumber] ??
+      commandItems.find((commandItem) => commandItem.id === selectedKey) ??
+      commandItems[0];
+
+    if (item) {
+      await executeCommand(item, {
+        browserSearch,
+        inNewTab: event.ctrlKey || event.metaKey,
+        openResult,
+      });
+
+      if (item.kind === "page" || item.kind === "browser-search") {
+        closePopup();
       }
-      return;
-    }
-
-    if (searchResult.length > 0) {
-      await openResult(searchResult[selectedNumber], event.ctrlKey || event.metaKey);
-      closePopup();
-      return;
-    }
-
-    if (extractedSearchWord) {
-      await browserSearch(extractedSearchWord, event.ctrlKey || event.metaKey);
-      closePopup();
     }
   };
 
   const handleMoveKey = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const resultCount = inputActionMode ? immediateActionResults.length : searchResult.length;
+    const resultCount = commandItems.length;
 
     if (resultCount === 0) {
       return false;
@@ -870,21 +788,16 @@ export function SearchPage({
         <div ref={resultsWrapperRef}>
           <SearchResultsPanel
             actionMode={actionMode}
-            actionResults={actionResults}
-            browserSearch={browserSearch}
+            commandItems={commandItems}
             draggedFavoriteIndex={draggedFavoriteIndex}
             dragOverFavoriteIndex={dragOverFavoriteIndex}
-            extractedSearchWord={extractedSearchWord}
             favoriteReorderEnabled={favoriteReorderEnabled}
             handleFavoriteDragStateChange={handleFavoriteDragStateChange}
             handlePointerSelection={handlePointerSelection}
-            loadingCollections={loadingCollections}
             openSearchResultItem={openSearchResultItem}
             reorderFavoriteItem={reorderFavoriteItem}
             resultRefs={resultRefs}
-            runActionItem={runActionItem}
-            searchEngine={searchEngine}
-            searchResult={searchResult}
+            runCommandItem={runCommandItem}
             selectedNumber={selectedNumber}
             toggleFavoriteItem={toggleFavoriteItem}
           />

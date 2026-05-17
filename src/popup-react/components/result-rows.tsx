@@ -5,9 +5,10 @@ import { cn } from "~/lib/utils";
 import { t } from "~/i18n";
 import { highlightText } from "~/popup-react/utils";
 import type { ActionItem } from "~/popup-react/types";
+import type { CommandItem } from "~/popup-react/command-items";
 
 // oxlint-disable-next-line prefer-arrow-callback
-export const SearchResultRow = memo(function SearchResultRow({
+const SearchResultRow = memo(function SearchResultRow({
   dragOverFavoriteIndex,
   draggedFavoriteIndex,
   favoriteReorderEnabled,
@@ -148,7 +149,7 @@ export const SearchResultRow = memo(function SearchResultRow({
 });
 
 // oxlint-disable-next-line prefer-arrow-callback
-export const ActionResultRow = memo(function ActionResultRow({
+const ActionResultRow = memo(function ActionResultRow({
   description,
   icon: Icon,
   id,
@@ -200,6 +201,110 @@ export const ActionResultRow = memo(function ActionResultRow({
         </div>
       </div>
       <ArrowUpRight className="size-4 text-muted-foreground" />
+    </button>
+  );
+});
+
+// oxlint-disable-next-line prefer-arrow-callback
+export const CommandResultRow = memo(function CommandResultRow({
+  commandItem,
+  dragOverFavoriteIndex,
+  draggedFavoriteIndex,
+  favoriteReorderEnabled,
+  handlePointerSelection,
+  index,
+  onDragStateChange,
+  onOpen,
+  onReorder,
+  onRunCommand,
+  onToggleFavorite,
+  rowRef,
+  selected,
+}: {
+  commandItem: CommandItem;
+  dragOverFavoriteIndex: number | null;
+  draggedFavoriteIndex: number | null;
+  favoriteReorderEnabled: boolean;
+  handlePointerSelection: (index: number, clientX: number, clientY: number) => void;
+  index: number;
+  onDragStateChange: (draggedIndex: number | null, dragOverIndex: number | null) => void;
+  onOpen: (item: SearchResult) => void;
+  onReorder: (fromIndex: number, toIndex: number) => void;
+  onRunCommand: (item: CommandItem) => void;
+  onToggleFavorite: (item: SearchResult) => void;
+  rowRef?: (element: HTMLElement | null) => void;
+  selected: boolean;
+}) {
+  if (commandItem.kind === "page") {
+    return (
+      <SearchResultRow
+        dragOverFavoriteIndex={dragOverFavoriteIndex}
+        draggedFavoriteIndex={draggedFavoriteIndex}
+        favoriteReorderEnabled={favoriteReorderEnabled}
+        handlePointerSelection={handlePointerSelection}
+        index={index}
+        item={commandItem.searchResult}
+        onDragStateChange={onDragStateChange}
+        onOpen={onOpen}
+        onReorder={onReorder}
+        onToggleFavorite={onToggleFavorite}
+        rowRef={rowRef}
+        selected={selected}
+      />
+    );
+  }
+
+  if (commandItem.kind === "action") {
+    return (
+      <ActionResultRow
+        description={commandItem.subtitle}
+        icon={commandItem.icon}
+        id={commandItem.id}
+        index={index}
+        item={commandItem.action}
+        onPointerSelection={handlePointerSelection}
+        onRunItem={() => {
+          onRunCommand(commandItem);
+        }}
+        rowRef={rowRef}
+        selected={selected}
+        title={commandItem.title}
+      />
+    );
+  }
+
+  return (
+    <button
+      aria-selected={selected}
+      className={cn(
+        "grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-row px-3 py-2 text-left",
+        selected ? "interactive-row-selected" : "interactive-row",
+      )}
+      data-cy="browser-search-btn"
+      data-selected={selected}
+      ref={rowRef}
+      type="button"
+      onClick={() => {
+        onRunCommand(commandItem);
+      }}
+      onMouseMove={(event) => {
+        handlePointerSelection(index, event.clientX, event.clientY);
+      }}
+    >
+      <img
+        alt=""
+        className="size-[18px] rounded-sm"
+        height="18"
+        src={commandItem.faviconUrl}
+        width="18"
+      />
+      <div className="min-w-0">
+        <div className="text-body truncate font-medium text-foreground">{commandItem.title}</div>
+        <div className="text-caption truncate text-foreground/[0.56] dark:text-muted-foreground">
+          {commandItem.subtitle}
+        </div>
+      </div>
+      <Badge variant="secondary">{commandItem.badge}</Badge>
     </button>
   );
 });

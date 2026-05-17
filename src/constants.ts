@@ -35,6 +35,35 @@ export const SEARCH_RANKING_CONFIG = {
   scoreRoundingFactor: 100,
 } as const;
 
+export const COMMAND_RANKING_CONFIG = {
+  // Score assigned when a page result already matches the query well.
+  browserSearchStrongMatchScore: 0.65,
+  // Score assigned when the browser search fallback should be easy to reach.
+  browserSearchWeakMatchScore: 0.18,
+  // Intent adjustments keep navigation and action results useful in one list.
+  intentBoost: {
+    actionForAction: -0.16,
+    actionForNavigation: 0.12,
+    pageForAction: 0.1,
+    pageForNavigation: -0.06,
+  },
+  // Strong page matches keep browser search below navigation results.
+  strongPageMatchThreshold: 0.25,
+} as const;
+
+export const ACTION_INTENT_TOKENS = [
+  "capture",
+  "copy",
+  "duplicate",
+  "favorite",
+  "markdown",
+  "md",
+  "mute",
+  "pin",
+  "screenshot",
+  "shot",
+] as const;
+
 export const SEARCH_TARGET_REGEX = {
   ACTION: /^>\s?(.*)/u,
   BOOKMARK: /^\/b\s(.*)/u,

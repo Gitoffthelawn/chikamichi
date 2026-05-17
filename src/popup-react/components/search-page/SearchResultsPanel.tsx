@@ -1,81 +1,68 @@
-import { ExternalLink, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import type { MutableRefObject } from "react";
-import { Badge } from "~/components/ui/badge";
 import { t } from "~/i18n";
-import { cn } from "~/lib/utils";
-import { ActionResultRow, SearchResultRow } from "~/popup-react/components/result-rows";
-import type { ActionItem } from "~/popup-react/types";
-import { reportError } from "~/popup-react/utils";
+import { CommandResultRow } from "~/popup-react/components/result-rows";
+import type { CommandItem } from "~/popup-react/command-items";
 
 type SearchResultsPanelProps = {
   actionMode: boolean;
-  actionResults: ActionItem[];
+  commandItems: CommandItem[];
   draggedFavoriteIndex: number | null;
   dragOverFavoriteIndex: number | null;
-  extractedSearchWord: string;
   favoriteReorderEnabled: boolean;
   handleFavoriteDragStateChange: (
     draggedIndex: number | null,
     dragOverIndex: number | null,
   ) => void;
   handlePointerSelection: (index: number, clientX: number, clientY: number) => void;
-  loadingCollections: boolean;
   openSearchResultItem: (item: SearchResult) => void;
   reorderFavoriteItem: (fromIndex: number, toIndex: number) => void;
   resultRefs: MutableRefObject<Array<HTMLElement | null>>;
-  runActionItem: (item: ActionItem) => void;
-  searchEngine: {
-    favIconUrl: string;
-    name: string;
-  };
-  searchResult: SearchResult[];
+  runCommandItem: (item: CommandItem) => void;
   selectedNumber: number;
   toggleFavoriteItem: (item: SearchResult) => void;
-  browserSearch: (query: string, inNewTab?: boolean) => Promise<void>;
 };
 
 export function SearchResultsPanel({
   actionMode,
-  actionResults,
+  commandItems,
   draggedFavoriteIndex,
   dragOverFavoriteIndex,
-  extractedSearchWord,
   favoriteReorderEnabled,
   handleFavoriteDragStateChange,
   handlePointerSelection,
-  loadingCollections,
   openSearchResultItem,
   reorderFavoriteItem,
   resultRefs,
-  runActionItem,
-  searchEngine,
-  searchResult,
+  runCommandItem,
   selectedNumber,
   toggleFavoriteItem,
-  browserSearch,
 }: SearchResultsPanelProps) {
   const renderResults = () => {
-    if (actionMode) {
-      if (actionResults.length > 0) {
-        return actionResults.map((item, index) => (
-          <ActionResultRow
-            description={item.description}
-            icon={item.icon}
-            id={item.id}
-            index={index}
-            item={item}
-            key={item.id}
-            onPointerSelection={handlePointerSelection}
-            onRunItem={runActionItem}
-            rowRef={(element) => {
-              resultRefs.current[index] = element;
-            }}
-            selected={index === selectedNumber}
-            title={item.title}
-          />
-        ));
-      }
+    if (commandItems.length > 0) {
+      return commandItems.map((item, index) => (
+        <CommandResultRow
+          commandItem={item}
+          dragOverFavoriteIndex={dragOverFavoriteIndex}
+          draggedFavoriteIndex={draggedFavoriteIndex}
+          favoriteReorderEnabled={favoriteReorderEnabled}
+          handlePointerSelection={handlePointerSelection}
+          index={index}
+          key={item.id}
+          onDragStateChange={handleFavoriteDragStateChange}
+          onOpen={openSearchResultItem}
+          onReorder={reorderFavoriteItem}
+          onRunCommand={runCommandItem}
+          onToggleFavorite={toggleFavoriteItem}
+          rowRef={(element) => {
+            resultRefs.current[index] = element;
+          }}
+          selected={index === selectedNumber}
+        />
+      ));
+    }
 
+    if (actionMode) {
       return (
         <div
           className="flex min-h-[180px] items-center justify-center rounded-panel border border-dashed border-search-border/[0.1] bg-background/[0.16] px-5 text-center dark:border-search-border/[0.2]"
@@ -86,67 +73,6 @@ export function SearchResultsPanel({
             <p className="text-body-sm text-muted-foreground">{t("actionModeEmpty")}</p>
           </div>
         </div>
-      );
-    }
-
-    if (searchResult.length > 0) {
-      return searchResult.map((item, index) => (
-        <SearchResultRow
-          dragOverFavoriteIndex={dragOverFavoriteIndex}
-          draggedFavoriteIndex={draggedFavoriteIndex}
-          favoriteReorderEnabled={favoriteReorderEnabled}
-          handlePointerSelection={handlePointerSelection}
-          index={index}
-          item={item}
-          key={`${item.url}-${item.title}-${index}`}
-          onDragStateChange={handleFavoriteDragStateChange}
-          onOpen={openSearchResultItem}
-          onReorder={reorderFavoriteItem}
-          onToggleFavorite={toggleFavoriteItem}
-          rowRef={(element) => {
-            resultRefs.current[index] = element;
-          }}
-          selected={index === selectedNumber}
-        />
-      ));
-    }
-
-    if (extractedSearchWord && !loadingCollections) {
-      const browserSearchSelected = selectedNumber === 0;
-
-      return (
-        <button
-          aria-selected={browserSearchSelected}
-          className={cn(
-            "grid w-full grid-cols-[18px_minmax(0,1fr)_auto_auto] items-center gap-2.5 rounded-row px-3 py-2 text-left",
-            browserSearchSelected ? "interactive-row-selected" : "interactive-row",
-          )}
-          data-cy="browser-search-btn"
-          type="button"
-          onClick={() => {
-            browserSearch(extractedSearchWord).catch(reportError);
-          }}
-        >
-          <img
-            alt=""
-            className="size-[18px] rounded-sm"
-            height="18"
-            src={searchEngine.favIconUrl}
-            width="18"
-          />
-          <div className="min-w-0">
-            <div className="text-body truncate font-medium text-foreground">
-              {t("browserSearch", extractedSearchWord)}
-            </div>
-            <div className="text-caption truncate text-foreground/[0.56] dark:text-muted-foreground">
-              {searchEngine.name || t("browserSearchEngine")}
-            </div>
-          </div>
-          <Badge variant="secondary">{t("browserSearchEngine")}</Badge>
-          <div className="inline-flex size-7 items-center justify-center rounded-lg border border-transparent bg-control-surface/[0.88] text-foreground/[0.52] dark:bg-control-surface/[0.52] dark:text-muted-foreground">
-            <ExternalLink className="size-3.5" />
-          </div>
-        </button>
       );
     }
 

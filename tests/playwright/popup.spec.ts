@@ -75,7 +75,14 @@ test.describe("popup", () => {
           type: "folder",
         }),
       ],
-      histories,
+      histories: [
+        ...histories,
+        generateHistory({
+          lastVisitTime: 100,
+          title: "Pinboard",
+          url: "https://pinboard.in",
+        }),
+      ],
       tabs,
     });
 
@@ -133,6 +140,44 @@ test.describe("popup", () => {
         getLastMockCall<{ disposition: number; text: string }[]>(page, "chromeSearchQuery"),
       )
       .toEqual([{ disposition: 1, text: "unknown-item" }]);
+  });
+
+  test("keeps page results above actions for navigation-like queries", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("bookmark-item-0");
+
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
+    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveText("bookmark");
+  });
+
+  test("shows actions above pages for action-like queries in the unified list", async ({
+    page,
+  }) => {
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("copy");
+
+    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Copy Markdown Link");
+    await expect(page.locator("[data-cy=action-result-0]")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+    await input.press("Enter");
+
+    await expect
+      .poll(() => getLastMockCall<string[]>(page, "copy"))
+      .toEqual(["[tab-item-0](https://tab-item.com/0)"]);
+    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Copied Markdown");
+  });
+
+  test("does not boost action-looking substrings above page results", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("pinboard");
+
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("Pinboard");
+    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
   });
 
   test("moves selection and opens pages through background messaging", async ({ page }) => {
