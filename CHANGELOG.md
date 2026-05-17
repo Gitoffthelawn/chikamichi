@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.1.0
+
+### feature
+
+- Unify search and action command results
+
+### chore
+
+- Fix design issues
+- Update dependencies
+
 ## 4.0.0
 
 ### feature
