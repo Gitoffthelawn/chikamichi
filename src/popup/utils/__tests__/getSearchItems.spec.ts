@@ -219,6 +219,26 @@ describe("convertToSearchItemsFromBookmarks", () => {
 });
 
 describe("convertToSearchItemsFromTabs", () => {
+  it("removes Chrome new tab pages", () => {
+    const tabs = [
+      generateTab({ id: 1, title: "New Tab", url: "chrome://newtab/" }),
+      generateTab({ id: 2, title: "docs", url: "https://docs.example.com" }),
+    ];
+
+    expect(convertToSearchItemsFromTabs(tabs)).toEqual([
+      {
+        faviconUrl: faviconUrl("https://docs.example.com"),
+        folderName: "",
+        lastVisitTime: tabs[1].lastAccessed,
+        searchTerm: "docs https://docs.example.com",
+        tabId: 2,
+        title: "docs",
+        type: SEARCH_ITEM_TYPE.TAB,
+        url: "https://docs.example.com",
+      },
+    ]);
+  });
+
   it("sorts tabs by last accessed order", () => {
     const tabs = [
       generateTab({ id: 1, lastAccessed: 100, title: "older", url: "https://older.com" }),

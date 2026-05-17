@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.1.1
+
+### bugfix
+
+- Improve popup opening feedback and prevent loading from lingering
+- Exclude Chrome new tab pages from tab search results
+
 ## 4.1.0
 
 ### feature

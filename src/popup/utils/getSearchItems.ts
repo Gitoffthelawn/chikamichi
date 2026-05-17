@@ -81,6 +81,7 @@ export function convertToSearchItemsFromBookmarks(
 
 export function convertToSearchItemsFromTabs(tabs: Tabs.Tab[]): SearchItem[] {
   return tabs
+    .filter((tab) => tab.url !== "chrome://newtab/")
     .map((tab) => ({
       faviconUrl: faviconUrl(tab.url!),
       folderName: "",
