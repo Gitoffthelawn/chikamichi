@@ -5,6 +5,8 @@ import {
   Link2,
   Pin,
   PinOff,
+  Star,
+  StarOff,
   SquareStack,
   Type,
   Volume2,
@@ -246,12 +248,43 @@ async function captureFullPage(tab: browser.Tabs.Tab) {
 
 type UseActionItemsParams = {
   activeTab: browser.Tabs.Tab | null;
+  currentPageIsFavorite: boolean;
+  onToggleCurrentPageFavorite: () => Promise<void>;
   refreshActiveTab: () => Promise<browser.Tabs.Tab | null>;
   showBadge: (text: string, duration?: number) => Promise<void>;
 };
 
+function getCurrentPageFavoriteAction({
+  currentPageIsFavorite,
+  onToggleCurrentPageFavorite,
+}: Pick<UseActionItemsParams, "currentPageIsFavorite" | "onToggleCurrentPageFavorite">) {
+  if (currentPageIsFavorite) {
+    return {
+      description: t("actionDescriptionUnpinCurrentPage"),
+      icon: StarOff,
+      id: "unpin-current-page",
+      keywords: "favorite pin unpin current page chikamichi pinned",
+      priority: 55,
+      run: onToggleCurrentPageFavorite,
+      title: t("actionUnpinCurrentPage"),
+    } satisfies RankedActionItem;
+  }
+
+  return {
+    description: t("actionDescriptionPinCurrentPage"),
+    icon: Star,
+    id: "pin-current-page",
+    keywords: "favorite pin unpin current page chikamichi pinned",
+    priority: 55,
+    run: onToggleCurrentPageFavorite,
+    title: t("actionPinCurrentPage"),
+  } satisfies RankedActionItem;
+}
+
 export function useActionItems({
   activeTab,
+  currentPageIsFavorite,
+  onToggleCurrentPageFavorite,
   refreshActiveTab,
   showBadge,
 }: UseActionItemsParams): ActionItem[] {
@@ -301,6 +334,12 @@ export function useActionItems({
           await showBadge(t("badgeCopiedTitle"));
         },
         title: t("actionCopyTitle"),
+      },
+      {
+        ...getCurrentPageFavoriteAction({
+          currentPageIsFavorite,
+          onToggleCurrentPageFavorite,
+        }),
       },
       {
         description: currentTab.mutedInfo?.muted
@@ -436,5 +475,5 @@ export function useActionItems({
     return rankedItems
       .sort((left, right) => left.priority - right.priority)
       .map(({ priority: _priority, ...item }) => item);
-  }, [activeTab, refreshActiveTab, showBadge]);
+  }, [activeTab, currentPageIsFavorite, onToggleCurrentPageFavorite, refreshActiveTab, showBadge]);
 }

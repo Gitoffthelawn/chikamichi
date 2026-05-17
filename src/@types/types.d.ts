@@ -5,6 +5,7 @@ interface SearchItem {
   url: string;
   faviconUrl: string;
   type: "history" | "bookmark" | "tab";
+  bookmarkId?: string;
   tabId?: number;
   folderName?: string;
   searchTerm: string;

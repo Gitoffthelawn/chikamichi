@@ -12,6 +12,7 @@ import {
 import {
   SEARCH_ICON_DATA_URL_DARK,
   SEARCH_ICON_DATA_URL_LIGHT,
+  SEARCH_ITEM_TYPE,
   SEARCH_RESULT_LIMIT,
   SEARCH_TARGET_REGEX,
   THEME,
@@ -87,6 +88,8 @@ export function SearchPage({
   const inputRef = useRef<HTMLInputElement>(null);
   const resultRefs = useRef<Array<HTMLElement | null>>([]);
   const resultsWrapperRef = useRef<HTMLDivElement>(null);
+  const preserveSelectionOnCollectionsChangeRef = useRef(false);
+  const selectedNumberRef = useRef(0);
   const suppressHoverSelectionRef = useRef(false);
   const lastPointerPositionRef = useRef<{ x: number; y: number } | null>(null);
   const { badgeText, badgeVisible, clearBadge, showBadge } = useFeedbackBadge();
@@ -254,6 +257,12 @@ export function SearchPage({
   }, [settings.theme]);
 
   useEffect(() => {
+    if (preserveSelectionOnCollectionsChangeRef.current) {
+      preserveSelectionOnCollectionsChangeRef.current = false;
+      return;
+    }
+
+    selectedNumberRef.current = 0;
     setSelectedNumber(0);
     setSelectedKey("");
     resultsWrapperRef.current?.scrollTo(0, 0);
@@ -261,8 +270,48 @@ export function SearchPage({
 
   const refreshActiveTab = () => loadActiveTab();
 
+  const currentPageIsFavorite = useMemo(() => {
+    if (!activeTab?.url) {
+      return false;
+    }
+
+    const currentTitle = activeTab.title ?? activeTab.url;
+
+    return favoriteItems.some(
+      (favorite) => favorite.url === activeTab.url && favorite.title === currentTitle,
+    );
+  }, [activeTab, favoriteItems]);
+
+  const toggleCurrentPageFavorite = useCallback(async () => {
+    if (!activeTab?.url) {
+      return;
+    }
+
+    const currentTitle = activeTab.title ?? activeTab.url;
+    const currentPage: SearchResult = {
+      faviconUrl: activeTab.favIconUrl ?? "",
+      isFavorite: currentPageIsFavorite,
+      matchedWord: "",
+      score: undefined,
+      searchTerm: `${currentTitle} ${activeTab.url}`,
+      tabId: activeTab.id,
+      title: currentTitle,
+      type: SEARCH_ITEM_TYPE.TAB,
+      url: activeTab.url,
+    };
+    const nextFavoriteItems = toggleFavoriteItems(favoriteItems, currentPage);
+
+    setFavoriteItems(nextFavoriteItems);
+    await onUpdateSettings({
+      favoriteItems: nextFavoriteItems,
+    });
+    await showBadge(currentPageIsFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite"));
+  }, [activeTab, currentPageIsFavorite, favoriteItems, onUpdateSettings, showBadge]);
+
   const actionItems = useActionItems({
     activeTab,
+    currentPageIsFavorite,
+    onToggleCurrentPageFavorite: toggleCurrentPageFavorite,
     refreshActiveTab,
     showBadge,
   });
@@ -348,6 +397,7 @@ export function SearchPage({
   useEffect(() => {
     if (currentResultKeys.length === 0) {
       if (selectedNumber !== 0) {
+        selectedNumberRef.current = 0;
         setSelectedNumber(0);
       }
       return;
@@ -357,6 +407,7 @@ export function SearchPage({
       const [firstKey] = currentResultKeys;
 
       if (selectedNumber !== 0) {
+        selectedNumberRef.current = 0;
         setSelectedNumber(0);
       }
 
@@ -371,6 +422,7 @@ export function SearchPage({
 
     if (nextIndex >= 0) {
       if (nextIndex !== selectedNumber) {
+        selectedNumberRef.current = nextIndex;
         setSelectedNumber(nextIndex);
       }
       return;
@@ -380,6 +432,7 @@ export function SearchPage({
     const fallbackKey = currentResultKeys[fallbackIndex];
 
     if (fallbackIndex !== selectedNumber) {
+      selectedNumberRef.current = fallbackIndex;
       setSelectedNumber(fallbackIndex);
     }
 
@@ -409,6 +462,7 @@ export function SearchPage({
 
   const changeSelectedItem = useCallback(
     (index: number) => {
+      selectedNumberRef.current = index;
       setSelectedNumber(index);
       if (actionMode) {
         const actionItem = actionResults[index];
@@ -631,6 +685,69 @@ export function SearchPage({
     await showBadge(t("badgeCopied"));
   };
 
+  const applyDeletedResult = (
+    deletedResultKey: string,
+    deletedIndex: number,
+    updateCollections: (currentCollections: SearchCollections) => SearchCollections,
+  ) => {
+    const remainingKeys = currentResultKeys.filter((key) => key !== deletedResultKey);
+    const nextIndex = Math.min(deletedIndex, remainingKeys.length - 1);
+    const nextKey = remainingKeys[nextIndex] ?? "";
+
+    flushSync(() => {
+      preserveSelectionOnCollectionsChangeRef.current = true;
+      setCollections(updateCollections);
+      selectedNumberRef.current = Math.max(nextIndex, 0);
+      setSelectedNumber(Math.max(nextIndex, 0));
+      setSelectedKey(nextKey);
+    });
+  };
+
+  const deleteSelectedResult = async () => {
+    const selectedIndex = selectedNumberRef.current;
+    const item = searchResult[selectedIndex];
+    if (!item || actionMode) {
+      return;
+    }
+
+    const deletedResultKey = getResultKey(item);
+
+    if (item.type === SEARCH_ITEM_TYPE.HISTORY) {
+      await browser.history.deleteUrl({
+        url: item.url,
+      });
+      applyDeletedResult(deletedResultKey, selectedIndex, (currentCollections) => ({
+        ...currentCollections,
+        histories: currentCollections.histories.filter((history) => history.url !== item.url),
+      }));
+      await showBadge(t("badgeDeletedHistory"));
+      return;
+    }
+
+    if (item.type === SEARCH_ITEM_TYPE.BOOKMARK && item.bookmarkId) {
+      await browser.bookmarks.remove(item.bookmarkId);
+      applyDeletedResult(deletedResultKey, selectedIndex, (currentCollections) => ({
+        ...currentCollections,
+        bookmarks: currentCollections.bookmarks.filter((bookmark) =>
+          bookmark.bookmarkId
+            ? bookmark.bookmarkId !== item.bookmarkId
+            : !(bookmark.url === item.url && bookmark.title === item.title),
+        ),
+      }));
+      await showBadge(t("badgeRemovedBookmark"));
+      return;
+    }
+
+    if (item.type === SEARCH_ITEM_TYPE.TAB && item.tabId !== undefined) {
+      await browser.tabs.remove(item.tabId);
+      applyDeletedResult(deletedResultKey, selectedIndex, (currentCollections) => ({
+        ...currentCollections,
+        tabs: currentCollections.tabs.filter((tab) => tab.tabId !== item.tabId),
+      }));
+      await showBadge(t("badgeClosedTab"));
+    }
+  };
+
   const handleEnterKey = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     event.preventDefault();
 
@@ -705,6 +822,12 @@ export function SearchPage({
     if (event.ctrlKey && event.key.toLowerCase() === "c") {
       event.preventDefault();
       await copyCurrentUrl();
+      return true;
+    }
+
+    if (event.ctrlKey && event.key.toLowerCase() === "d") {
+      event.preventDefault();
+      await deleteSelectedResult();
       return true;
     }
 

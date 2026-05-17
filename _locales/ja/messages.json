@@ -10,6 +10,9 @@
   "actionDescriptionCopyUrl": { "message": "現在のページ URL をコピーします。" },
   "actionDescriptionDuplicateTab": { "message": "現在のタブを複製します。" },
   "actionDescriptionMuteTab": { "message": "現在のタブをミュートします。" },
+  "actionDescriptionPinCurrentPage": {
+    "message": "現在のページを Chikamichi にピン留めします。"
+  },
   "actionDescriptionPinTab": { "message": "現在のタブをピン留めします。" },
   "actionDescriptionScreenshotFullPageClipboard": {
     "message": "ページ全体のスクリーンショットをクリップボードにコピーします。"
@@ -23,6 +26,9 @@
   "actionDescriptionScreenshotVisibleArea": {
     "message": "表示中の範囲を Downloads に保存します。"
   },
+  "actionDescriptionUnpinCurrentPage": {
+    "message": "現在のページを Chikamichi のピン留めから外します。"
+  },
   "actionDescriptionUnmuteTab": { "message": "現在のタブのミュートを解除します。" },
   "actionDescriptionUnpinTab": { "message": "現在のタブのピン留めを外します。" },
   "actionDuplicateTab": { "message": "Duplicate Tab" },
@@ -35,19 +41,24 @@
   "actionModeShortcutTitle": { "message": "Action Mode" },
   "actionModeTitle": { "message": "Current page actions" },
   "actionMuteTab": { "message": "Mute Tab" },
+  "actionPinCurrentPage": { "message": "Pin Current Page" },
   "actionPinTab": { "message": "Pin Tab" },
   "actionScreenshotFullPageClipboard": { "message": "Copy Full Page to Clipboard" },
   "actionScreenshotFullPage": { "message": "Capture Full Page" },
   "actionScreenshotVisibleAreaClipboard": { "message": "Copy Visible Area to Clipboard" },
   "actionScreenshotVisibleArea": { "message": "Capture Visible Area" },
+  "actionUnpinCurrentPage": { "message": "Unpin Current Page" },
   "actionUnmuteTab": { "message": "Unmute Tab" },
   "actionUnpinTab": { "message": "Unpin Tab" },
   "badgeAddFavorite": { "message": "ピン留めしました" },
   "badgeCopied": { "message": "URL をコピーしました" },
   "badgeCopiedMarkdown": { "message": "Markdown リンクをコピーしました" },
   "badgeCopiedTitle": { "message": "タイトルをコピーしました" },
+  "badgeClosedTab": { "message": "タブを閉じました" },
+  "badgeDeletedHistory": { "message": "履歴を削除しました" },
   "badgeMutedTab": { "message": "タブをミュートしました" },
   "badgePinnedTab": { "message": "タブをピン留めしました" },
+  "badgeRemovedBookmark": { "message": "ブックマークを解除しました" },
   "badgeRemoveFavorite": { "message": "ピン留めを外しました" },
   "badgeSavedScreenshot": { "message": "スクリーンショットを保存しました" },
   "badgeUnmutedTab": { "message": "タブのミュートを解除しました" },

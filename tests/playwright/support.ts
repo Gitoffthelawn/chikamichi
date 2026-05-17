@@ -2,11 +2,13 @@ import type { Page } from "@playwright/test";
 import type { Bookmarks, History, Tabs } from "webextension-polyfill";
 
 type MockCallKey =
+  | "bookmarksRemove"
   | "chromeSearchQuery"
   | "close"
   | "copy"
   | "copyImage"
   | "downloadsDownload"
+  | "historyDeleteUrl"
   | "runtimeSendMessage"
   | "scriptingExecuteScript"
   | "tabsCaptureVisibleTab"
@@ -43,8 +45,10 @@ type MockWindow = Window &
     browser?: {
       bookmarks: {
         getTree: () => Promise<Bookmarks.BookmarkTreeNode[]>;
+        remove: (id: string) => Promise<void>;
       };
       history: {
+        deleteUrl: (details: unknown) => Promise<void>;
         search: () => Promise<History.HistoryItem[]>;
       };
       search: {
@@ -72,6 +76,7 @@ type MockWindow = Window &
       };
       tabs: {
         query: (queryInfo?: { active?: boolean }) => Promise<Partial<Tabs.Tab>[]>;
+        remove: (tabIds: unknown) => Promise<void>;
       };
     };
   };
@@ -106,11 +111,13 @@ export async function setupExtensionEnvironment(
       const generateSearchTerm = (...args: Array<string | undefined>) =>
         args.filter((arg): arg is string => Boolean(arg)).join(" ");
       const mockCalls: MockCallMap = {
+        bookmarksRemove: [] as MockCallArgs[],
         chromeSearchQuery: [] as MockCallArgs[],
         close: [] as MockCallArgs[],
         copy: [] as MockCallArgs[],
         copyImage: [] as MockCallArgs[],
         downloadsDownload: [] as MockCallArgs[],
+        historyDeleteUrl: [] as MockCallArgs[],
         runtimeSendMessage: [] as MockCallArgs[],
         scriptingExecuteScript: [] as MockCallArgs[],
         tabsCaptureVisibleTab: [] as MockCallArgs[],
@@ -146,6 +153,7 @@ export async function setupExtensionEnvironment(
           const folderName =
             node.parentId === "1" ? "" : folderNames.filter((name) => name).join("/");
           bookmarkItems.push({
+            bookmarkId: node.id,
             faviconUrl: faviconUrl(node.url),
             folderName,
             searchTerm: generateSearchTerm(node.title, node.url, folderName),
@@ -209,6 +217,10 @@ export async function setupExtensionEnvironment(
           getTree: (callback: (nodes: Bookmarks.BookmarkTreeNode[]) => void) => {
             callback(initialBookmarks);
           },
+          remove: (id: unknown, callback?: () => void) => {
+            mockCalls.bookmarksRemove.push([id]);
+            callback?.();
+          },
         },
         downloads: {
           download: (options: unknown, callback?: () => void) => {
@@ -217,6 +229,10 @@ export async function setupExtensionEnvironment(
           },
         },
         history: {
+          deleteUrl: (details: unknown, callback?: () => void) => {
+            mockCalls.historyDeleteUrl.push([details]);
+            callback?.();
+          },
           search: (_queryInfo: unknown, callback: (items: History.HistoryItem[]) => void) => {
             callback(initialHistories);
           },
@@ -372,8 +388,16 @@ export async function setupExtensionEnvironment(
         value: {
           bookmarks: {
             getTree: () => Promise.resolve(initialBookmarks),
+            remove: (id: string) => {
+              mockCalls.bookmarksRemove.push([id]);
+              return Promise.resolve(undefined);
+            },
           },
           history: {
+            deleteUrl: (details: unknown) => {
+              mockCalls.historyDeleteUrl.push([details]);
+              return Promise.resolve(undefined);
+            },
             search: () => Promise.resolve(initialHistories),
           },
           search: {
@@ -400,6 +424,10 @@ export async function setupExtensionEnvironment(
           tabs: {
             query: (queryInfo?: { active?: boolean }) =>
               Promise.resolve(queryInfo?.active ? initialTabs.slice(0, 1) : initialTabs),
+            remove: (tabIds: unknown) => {
+              mockCalls.tabsRemove.push([tabIds]);
+              return Promise.resolve(undefined);
+            },
           },
         },
         writable: true,

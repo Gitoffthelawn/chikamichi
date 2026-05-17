@@ -78,6 +78,7 @@ describe("convertToSearchItemsFromBookmarks", () => {
     expect(searchItems.length).toBe(4);
     expect(searchItems).toEqual([
       {
+        bookmarkId: bookmark1.id,
         faviconUrl: faviconUrl(bookmark1.url!),
         folderName: "",
         searchTerm: `${bookmark1.title} ${bookmark1.url}`,
@@ -86,6 +87,7 @@ describe("convertToSearchItemsFromBookmarks", () => {
         url: bookmark1.url,
       },
       {
+        bookmarkId: bookmark2.id,
         faviconUrl: faviconUrl(bookmark2.url!),
         folderName: folder.title,
         searchTerm: `${bookmark2.title} ${bookmark2.url} ${folder.title}`,
@@ -94,6 +96,7 @@ describe("convertToSearchItemsFromBookmarks", () => {
         url: bookmark2.url,
       },
       {
+        bookmarkId: bookmark3.id,
         faviconUrl: faviconUrl(bookmark3.url!),
         folderName: `${folder.title}/${nestedFolder.title}`,
         searchTerm: `${bookmark3.title} ${bookmark3.url} ${folder.title}/${nestedFolder.title}`,
@@ -102,6 +105,7 @@ describe("convertToSearchItemsFromBookmarks", () => {
         url: bookmark3.url,
       },
       {
+        bookmarkId: bookmark4.id,
         faviconUrl: faviconUrl(bookmark4.url!),
         folderName: "",
         searchTerm: `${bookmark4.url}`,

@@ -305,6 +305,67 @@ test.describe("popup", () => {
     await expect(page.locator("[data-cy=action-feedback]")).toContainText("Unpinned");
   });
 
+  test("deletes the selected history with the keyboard shortcut", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("/h history-item");
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-15");
+
+    await input.press("Control+d");
+    await expect
+      .poll(() => getLastMockCall(page, "historyDeleteUrl"))
+      .toEqual([{ url: "https://history-item.com/15" }]);
+    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Deleted history");
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-14");
+    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+  });
+
+  test("selects the previous result when deleting the last history", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("/h history-item");
+    await pressMany(input, "Control+n", 15);
+    await expect(page.locator("[data-cy=search-result-15]")).toContainText("history-item-0");
+
+    await input.press("Control+d");
+    await expect(page.locator("[data-cy=search-result-14]")).toContainText("history-item-1");
+    await expect(page.locator("[data-cy=search-result-14]")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+  });
+
+  test("removes the selected bookmark with the keyboard shortcut", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("bookmark-item");
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
+
+    await input.press("Control+d");
+    await expect.poll(() => getLastMockCall(page, "bookmarksRemove")).toEqual([expect.any(String)]);
+    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Removed bookmark");
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-1");
+    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+  });
+
+  test("closes the selected tab with the keyboard shortcut", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("/t tab-item");
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("tab-item-15");
+
+    await input.press("Control+d");
+    await expect.poll(() => getLastMockCall(page, "tabsRemove")).toEqual([16]);
+    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Closed tab");
+    await expect(page.locator("[data-cy=search-result-0]")).toContainText("tab-item-14");
+    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+  });
+
   test("keeps the selected item anchored when toggling favorite", async ({ page }) => {
     const input = page.locator("[data-cy=search-input]");
     await input.fill("bookmark-item");
@@ -494,6 +555,36 @@ test.describe("popup", () => {
     await expect.poll(() => getLastMockCall<number[]>(page, "tabsDuplicate")).toEqual([1]);
     await expect.poll(() => getMockCalls(page, "close").then((calls) => calls.length)).toBe(0);
     await expect(input).toBeVisible();
+  });
+
+  test("pins the current page from action mode", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+
+    await input.fill("> pin current");
+    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Pin Current Page");
+    await input.press("Enter");
+    await expect
+      .poll(async () =>
+        JSON.parse((await getMockStorageValue(page, "chikamichi-favorite-items")) ?? "[]"),
+      )
+      .toEqual([
+        {
+          faviconUrl: "",
+          title: "tab-item-0",
+          type: "history",
+          url: "https://tab-item.com/0",
+        },
+      ]);
+    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Pinned");
+
+    await input.fill("> unpin current");
+    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Unpin Current Page");
+    await input.press("Enter");
+    await expect
+      .poll(async () =>
+        JSON.parse((await getMockStorageValue(page, "chikamichi-favorite-items")) ?? "[]"),
+      )
+      .toEqual([]);
   });
 
   test("captures screenshots from action mode", async ({ page }) => {

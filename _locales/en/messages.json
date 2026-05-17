@@ -10,6 +10,9 @@
   "actionDescriptionCopyUrl": { "message": "Copy the current page URL." },
   "actionDescriptionDuplicateTab": { "message": "Open a duplicate of the current tab." },
   "actionDescriptionMuteTab": { "message": "Mute audio for the current tab." },
+  "actionDescriptionPinCurrentPage": {
+    "message": "Pin the current page to Chikamichi."
+  },
   "actionDescriptionPinTab": { "message": "Pin the current tab." },
   "actionDescriptionScreenshotFullPageClipboard": {
     "message": "Copy a full-page screenshot to the clipboard."
@@ -23,6 +26,9 @@
   "actionDescriptionScreenshotVisibleArea": {
     "message": "Save the visible area to Downloads."
   },
+  "actionDescriptionUnpinCurrentPage": {
+    "message": "Remove the current page from Chikamichi pinned items."
+  },
   "actionDescriptionUnmuteTab": { "message": "Unmute audio for the current tab." },
   "actionDescriptionUnpinTab": { "message": "Unpin the current tab." },
   "actionDuplicateTab": { "message": "Duplicate Tab" },
@@ -35,19 +41,24 @@
   "actionModeShortcutTitle": { "message": "Action mode" },
   "actionModeTitle": { "message": "Current page actions" },
   "actionMuteTab": { "message": "Mute Tab" },
+  "actionPinCurrentPage": { "message": "Pin Current Page" },
   "actionPinTab": { "message": "Pin Tab" },
   "actionScreenshotFullPageClipboard": { "message": "Copy Full Page to Clipboard" },
   "actionScreenshotFullPage": { "message": "Capture Full Page" },
   "actionScreenshotVisibleAreaClipboard": { "message": "Copy Visible Area to Clipboard" },
   "actionScreenshotVisibleArea": { "message": "Capture Visible Area" },
+  "actionUnpinCurrentPage": { "message": "Unpin Current Page" },
   "actionUnmuteTab": { "message": "Unmute Tab" },
   "actionUnpinTab": { "message": "Unpin Tab" },
   "badgeAddFavorite": { "message": "Pinned" },
   "badgeCopied": { "message": "Copied to clipboard" },
   "badgeCopiedMarkdown": { "message": "Copied Markdown link" },
   "badgeCopiedTitle": { "message": "Copied title" },
+  "badgeClosedTab": { "message": "Closed tab" },
+  "badgeDeletedHistory": { "message": "Deleted history" },
   "badgeMutedTab": { "message": "Muted tab" },
   "badgePinnedTab": { "message": "Pinned tab" },
+  "badgeRemovedBookmark": { "message": "Removed bookmark" },
   "badgeSavedScreenshot": { "message": "Saved screenshot" },
   "badgeRemoveFavorite": { "message": "Unpinned" },
   "badgeUnmutedTab": { "message": "Unmuted tab" },

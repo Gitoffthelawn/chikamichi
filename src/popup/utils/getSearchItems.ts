@@ -65,6 +65,7 @@ export function convertToSearchItemsFromBookmarks(
       // Exclude the top level folder name.
       const folderName = node.parentId === "1" ? "" : folderNames.filter((name) => name).join("/");
       result.push({
+        bookmarkId: node.id,
         faviconUrl: faviconUrl(node.url),
         folderName,
         searchTerm: generateSearchTerm(node.title, node.url, folderName),
