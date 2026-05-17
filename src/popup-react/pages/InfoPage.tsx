@@ -27,17 +27,9 @@ function ShortcutRow({
   );
 }
 
-function ReferenceSection({
-  children,
-  description,
-  title,
-}: {
-  children: ReactNode;
-  description: string;
-  title: string;
-}) {
+function ReferenceSection({ children, title }: { children: ReactNode; title: string }) {
   return (
-    <FlatSection description={description} title={title}>
+    <FlatSection title={title}>
       <div className="panel-surface px-3.5 py-1">{children}</div>
     </FlatSection>
   );
@@ -51,12 +43,9 @@ export function InfoPage({
   openLinkInCurrentTab: boolean;
 }) {
   return (
-    <PageShell dataCy="page-info" description={t("infoDescription")} title={t("infoTitle")}>
+    <PageShell dataCy="page-info" title={t("infoTitle")}>
       <div className="space-y-4">
-        <ReferenceSection
-          description={t("searchSectionDescription")}
-          title={t("searchSectionTitle")}
-        >
+        <ReferenceSection title={t("searchSectionTitle")}>
           <ShortcutRow
             keys={
               <>
@@ -72,10 +61,7 @@ export function InfoPage({
           </ShortcutRow>
         </ReferenceSection>
 
-        <ReferenceSection
-          description={t("navigationSectionDescription")}
-          title={t("navigationSectionTitle")}
-        >
+        <ReferenceSection title={t("navigationSectionTitle")}>
           <ShortcutRow
             keys={
               <>
@@ -96,10 +82,7 @@ export function InfoPage({
           </ShortcutRow>
         </ReferenceSection>
 
-        <ReferenceSection
-          description={t("actionsSectionDescription")}
-          title={t("actionsSectionTitle")}
-        >
+        <ReferenceSection title={t("actionsSectionTitle")}>
           <ShortcutRow keys={<Kbd>Ctrl F</Kbd>} label={t("labelPinSelected")}>
             {t("shortcutPinSelected")}
           </ShortcutRow>
@@ -113,11 +96,7 @@ export function InfoPage({
           </ShortcutRow>
         </ReferenceSection>
 
-        <FlatSection
-          className="space-y-3"
-          description={t("feedbackDescription")}
-          title={t("feedbackTitle")}
-        >
+        <FlatSection className="space-y-3" title={t("feedbackTitle")}>
           <div className="flex items-center justify-between gap-4 rounded-panel border border-border-subtle/[0.1] bg-background/10 px-3.5 py-3 dark:border-border-subtle/[0.18]">
             <div className="text-meta leading-5 text-foreground/[0.6] dark:text-muted-foreground">
               {t("feedbackBody")}

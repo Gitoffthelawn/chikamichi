@@ -18,17 +18,10 @@ export function SettingPage({
   settings: AppSettings;
 }) {
   return (
-    <PageShell
-      dataCy="page-setting"
-      description={t("settingDescription")}
-      title={t("settingTitle")}
-    >
+    <PageShell dataCy="page-setting" title={t("settingTitle")}>
       <div className="space-y-0 rounded-panel bg-card/[0.1]">
-        <div className="px-0.5 py-0.5 text-meta font-medium tracking-wide text-muted-foreground">
-          {t("generalSectionTitle")}
-        </div>
         <div className="panel-surface space-y-0 px-3.5 py-3">
-          <SettingRow description={t("prefixDescription")} title={t("prefixTitle")}>
+          <SettingRow title={t("prefixTitle")}>
             <div className="relative">
               <select
                 className="flex h-9 w-full appearance-none rounded-control border border-border-control/[0.5] bg-control-surface/[0.92] px-3 pr-10 text-body-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border-control/[0.28] dark:bg-control-surface/[0.8]"
@@ -51,7 +44,7 @@ export function SettingPage({
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             </div>
           </SettingRow>
-          <SettingRow description={t("themeDescription")} title={t("themeTitle")}>
+          <SettingRow title={t("themeTitle")}>
             <div className="segmented-control grid grid-cols-3 gap-2">
               {[THEME.AUTO, THEME.LIGHT, THEME.DARK].map((option) => (
                 <SettingToggleButton
@@ -69,7 +62,7 @@ export function SettingPage({
               ))}
             </div>
           </SettingRow>
-          <SettingRow description={t("languageDescription")} title={t("languageTitle")}>
+          <SettingRow title={t("languageTitle")}>
             <div className="segmented-control grid grid-cols-3 gap-2">
               {[LANGUAGE.AUTO, LANGUAGE.EN, LANGUAGE.JA].map((option) => (
                 <SettingToggleButton
@@ -88,7 +81,7 @@ export function SettingPage({
               ))}
             </div>
           </SettingRow>
-          <SettingRow description={t("openLinkActionDescription")} title={t("openLinkActionTitle")}>
+          <SettingRow title={t("openLinkActionTitle")}>
             <div className="segmented-control grid grid-cols-2 gap-2">
               <SettingToggleButton
                 active={settings.openLinkInCurrentTab}

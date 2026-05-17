@@ -40,9 +40,6 @@
   },
   "actionModeShortcutTitle": { "message": "Action mode" },
   "actionModeTitle": { "message": "Current page actions" },
-  "actionsSectionDescription": {
-    "message": "Operate on the selected result without leaving the keyboard."
-  },
   "actionsSectionTitle": { "message": "Actions" },
   "actionMuteTab": { "message": "Mute Tab" },
   "actionPinCurrentPage": { "message": "Pin Current Page" },
@@ -71,9 +68,6 @@
   "browserSearchEngine": { "message": "Browser" },
   "buttonOpenIssue": { "message": "Open Issue" },
   "feedbackBody": { "message": "Bug reports and improvements can be sent to GitHub issues." },
-  "feedbackDescription": {
-    "message": "You can collect usability problems and improvement ideas into an issue."
-  },
   "feedbackTitle": { "message": "Feedback" },
   "favoriteDragHandle": { "message": "Drag to reorder pinned item" },
   "footerClose": { "message": "Close" },
@@ -81,10 +75,6 @@
   "footerOpenNewTab": { "message": "New tab" },
   "footerOpen": { "message": "Open" },
   "footerSelect": { "message": "Move" },
-  "generalSectionTitle": { "message": "General" },
-  "infoDescription": {
-    "message": "Command-style reference for search, navigation, and actions."
-  },
   "infoTitle": { "message": "Help" },
   "labelActionMode": { "message": "Action mode" },
   "labelAlternativeOpen": { "message": "Ctrl+Enter: $1" },
@@ -101,36 +91,25 @@
   "labelSearchTargets": { "message": "Search targets" },
   "labelUtilities": { "message": "Utilities" },
   "languageAuto": { "message": "auto" },
-  "languageDescription": { "message": "Choose the popup display language." },
   "languageEnglish": { "message": "English" },
   "languageJapanese": { "message": "Japanese" },
   "languageTitle": { "message": "Display Language" },
-  "navigationSectionDescription": {
-    "message": "Move through results and choose how to open them."
-  },
   "navigationSectionTitle": { "message": "Navigation" },
   "manifestDescription": {
     "message": "Command palette for the browser. Enables fuzzy search for histories, tabs and bookmarks."
   },
   "manifestName": { "message": "Chikamichi - Quickly find a page -" },
-  "openLinkActionDescription": {
-    "message": "Switch how Enter and Ctrl+Enter open links."
-  },
   "openLinkActionTitle": { "message": "Open Link Action" },
   "openLinkCurrentTab": { "message": "Open link in current tab" },
   "openLinkNewTab": { "message": "Open link in new tab" },
   "openingPage": { "message": "Opening..." },
-  "pageInfoSummary": { "message": "Command reference" },
   "pageInfoTitle": { "message": "Help" },
   "panelLabelCandidates": { "message": "Results" },
   "panelLabelRecentSearches": { "message": "Recent" },
-  "pageSearchSummary": { "message": "Find and act" },
   "pageSearchTitle": { "message": "Search" },
-  "pageSettingsSummary": { "message": "Behavior" },
   "pageSettingsTitle": { "message": "Settings" },
   "placeholderSearch": { "message": "Search for..." },
   "prefixBookmark": { "message": "/b : search bookmarks" },
-  "prefixDescription": { "message": "Choose the default target when typing starts." },
   "prefixHistory": { "message": "/h : search history" },
   "prefixNone": { "message": "none" },
   "prefixTab": { "message": "/t : search tabs" },
@@ -141,11 +120,7 @@
   "searchTargetBookmarks": { "message": "/b Bookmarks" },
   "searchTargetHistory": { "message": "/h History" },
   "searchTargetTabs": { "message": "/t Tabs" },
-  "searchSectionDescription": {
-    "message": "Narrow results by source, or switch into current page actions."
-  },
   "searchSectionTitle": { "message": "Search" },
-  "settingDescription": { "message": "Adjust startup target, theme, and open behavior." },
   "settingTitle": { "message": "Settings" },
   "shortcutCopyUrl": { "message": "Copy URL" },
   "shortcutOpenPopup": { "message": "`Alt+K`" },
@@ -155,7 +130,6 @@
   "shortcutsMoveSelection": { "message": "Arrow keys or `Ctrl+N` / `Ctrl+P`" },
   "themeAuto": { "message": "auto" },
   "themeDark": { "message": "dark" },
-  "themeDescription": { "message": "Choose the popup color mode." },
   "themeLight": { "message": "light" },
   "themeTitle": { "message": "Theme" }
 }

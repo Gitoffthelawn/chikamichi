@@ -40,9 +40,6 @@
   },
   "actionModeShortcutTitle": { "message": "Action Mode" },
   "actionModeTitle": { "message": "Current page actions" },
-  "actionsSectionDescription": {
-    "message": "選択中の結果に対する操作をキーボードだけで実行できます。"
-  },
   "actionsSectionTitle": { "message": "Actions" },
   "actionMuteTab": { "message": "Mute Tab" },
   "actionPinCurrentPage": { "message": "Pin Current Page" },
@@ -71,9 +68,6 @@
   "browserSearchEngine": { "message": "Browser" },
   "buttonOpenIssue": { "message": "Issue を開く" },
   "feedbackBody": { "message": "不具合や改善提案を GitHub issue に送れます。" },
-  "feedbackDescription": {
-    "message": "使いにくい挙動や改善したい点を直接 Issue にまとめられます。"
-  },
   "feedbackTitle": { "message": "Feedback" },
   "favoriteDragHandle": { "message": "ピン留め項目の順番をドラッグで入れ替える" },
   "footerClose": { "message": "閉じる" },
@@ -81,10 +75,6 @@
   "footerOpenNewTab": { "message": "新規タブ" },
   "footerOpen": { "message": "開く" },
   "footerSelect": { "message": "移動" },
-  "generalSectionTitle": { "message": "General" },
-  "infoDescription": {
-    "message": "検索、移動、操作のためのコマンドリファレンスです。"
-  },
   "infoTitle": { "message": "Help" },
   "labelActionMode": { "message": "Action Mode" },
   "labelAlternativeOpen": { "message": "Ctrl+Enter: $1" },
@@ -101,36 +91,25 @@
   "labelSearchTargets": { "message": "検索対象" },
   "labelUtilities": { "message": "ユーティリティ" },
   "languageAuto": { "message": "auto" },
-  "languageDescription": { "message": "ポップアップの表示言語を選びます。" },
   "languageEnglish": { "message": "English" },
   "languageJapanese": { "message": "日本語" },
   "languageTitle": { "message": "Display Language" },
-  "navigationSectionDescription": {
-    "message": "候補を移動し、開き方を選びます。"
-  },
   "navigationSectionTitle": { "message": "Navigation" },
   "manifestDescription": {
     "message": "履歴、タブ、ブックマークをあいまい検索できるブラウザ用コマンドパレット。"
   },
   "manifestName": { "message": "Chikamichi - Quickly find a page -" },
-  "openLinkActionDescription": {
-    "message": "Enter と Ctrl+Enter の動作を切り替えます。"
-  },
   "openLinkActionTitle": { "message": "Open Link Action" },
   "openLinkCurrentTab": { "message": "現在タブで開く" },
   "openLinkNewTab": { "message": "新規タブで開く" },
   "openingPage": { "message": "開いています..." },
-  "pageInfoSummary": { "message": "コマンドリファレンス" },
   "pageInfoTitle": { "message": "Help" },
-  "pageSearchSummary": { "message": "検索と操作" },
   "pageSearchTitle": { "message": "Search" },
-  "pageSettingsSummary": { "message": "挙動と表示" },
   "pageSettingsTitle": { "message": "Settings" },
   "panelLabelCandidates": { "message": "候補" },
   "panelLabelRecentSearches": { "message": "最近の検索" },
   "placeholderSearch": { "message": "検索する..." },
   "prefixBookmark": { "message": "/b : ブックマーク検索" },
-  "prefixDescription": { "message": "入力開始時の検索対象を決めます。" },
   "prefixHistory": { "message": "/h : 履歴検索" },
   "prefixNone": { "message": "none" },
   "prefixTab": { "message": "/t : タブ検索" },
@@ -141,11 +120,7 @@
   "searchTargetBookmarks": { "message": "/b ブックマーク" },
   "searchTargetHistory": { "message": "/h 履歴" },
   "searchTargetTabs": { "message": "/t タブ" },
-  "searchSectionDescription": {
-    "message": "検索対象を絞り込むか、現在ページの操作に切り替えます。"
-  },
   "searchSectionTitle": { "message": "Search" },
-  "settingDescription": { "message": "起動時の対象、配色、リンクの開き方を調整します。" },
   "settingTitle": { "message": "Settings" },
   "shortcutCopyUrl": { "message": "URL コピー" },
   "shortcutOpenPopup": { "message": "`Alt+K`" },
@@ -157,7 +132,6 @@
   "shortcutsMoveSelection": { "message": "矢印キー または `Ctrl+N` / `Ctrl+P`" },
   "themeAuto": { "message": "auto" },
   "themeDark": { "message": "dark" },
-  "themeDescription": { "message": "popup の配色モードです。" },
   "themeLight": { "message": "light" },
   "themeTitle": { "message": "Theme" }
 }

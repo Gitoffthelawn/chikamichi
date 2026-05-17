@@ -77,11 +77,11 @@ export function highlightText(text: string, matchedWord: RegExp | string): React
 export function getPageMeta(page: ValueOf<typeof PAGES>) {
   switch (page) {
     case PAGES.INFO:
-      return { icon: Info, label: t("pageInfoTitle"), summary: t("pageInfoSummary") };
+      return { icon: Info, label: t("pageInfoTitle") };
     case PAGES.SETTING:
-      return { icon: Settings, label: t("pageSettingsTitle"), summary: t("pageSettingsSummary") };
+      return { icon: Settings, label: t("pageSettingsTitle") };
     default:
-      return { icon: Search, label: t("pageSearchTitle"), summary: t("pageSearchSummary") };
+      return { icon: Search, label: t("pageSearchTitle") };
   }
 }
 

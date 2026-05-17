@@ -5,15 +5,17 @@ import { PAGES } from "~/constants";
 import { cn } from "~/lib/utils";
 import { getPageMeta } from "~/popup-react/utils";
 
-function SectionHeading({ description, title }: { description: string; title: string }) {
+function SectionHeading({ description, title }: { description?: string; title: string }) {
   return (
     <div className="space-y-1">
       <h2 className="text-section-title font-semibold tracking-tight text-foreground/[0.96]">
         {title}
       </h2>
-      <p className="text-meta leading-5 text-foreground/[0.58] dark:text-muted-foreground/[0.88]">
-        {description}
-      </p>
+      {description ? (
+        <p className="text-meta leading-5 text-foreground/[0.58] dark:text-muted-foreground/[0.88]">
+          {description}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -96,7 +98,7 @@ export function PageShell({
 }: {
   children: ReactNode;
   dataCy: string;
-  description: string;
+  description?: string;
   title: string;
 }) {
   return (
