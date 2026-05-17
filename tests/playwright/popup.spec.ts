@@ -248,9 +248,14 @@ test.describe("popup", () => {
   test("renders info and settings pages", async ({ page }) => {
     await page.locator("[data-cy=info-tab-btn]").click();
     await expect(page.locator("[data-cy=page-info]")).toBeVisible();
-    await expect(page.getByText("Quick Reference")).toBeVisible();
-    await expect(page.getByText("Search targets")).toBeVisible();
-    await expect(page.getByText("Move selection")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Help" })).toBeVisible();
+    await expect(page.getByText("Search", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Navigation" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Actions" })).toBeVisible();
+    await expect(page.getByText("Ctrl D")).toBeVisible();
+    await expect(page.getByText("history: delete history")).toBeVisible();
+    await expect(page.getByText("bookmark: remove bookmark")).toBeVisible();
+    await expect(page.getByText("tab: close tab")).toBeVisible();
     await expect(page.getByText("Open Issue")).toBeVisible();
 
     await page.locator("[data-cy=setting-tab-btn]").click();

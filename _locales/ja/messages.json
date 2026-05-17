@@ -40,6 +40,10 @@
   },
   "actionModeShortcutTitle": { "message": "Action Mode" },
   "actionModeTitle": { "message": "Current page actions" },
+  "actionsSectionDescription": {
+    "message": "選択中の結果に対する操作をキーボードだけで実行できます。"
+  },
+  "actionsSectionTitle": { "message": "Actions" },
   "actionMuteTab": { "message": "Mute Tab" },
   "actionPinCurrentPage": { "message": "Pin Current Page" },
   "actionPinTab": { "message": "Pin Tab" },
@@ -78,15 +82,28 @@
   "footerOpen": { "message": "開く" },
   "footerSelect": { "message": "移動" },
   "generalSectionTitle": { "message": "General" },
-  "infoDescription": { "message": "主要操作を一画面で確認できます。" },
-  "infoTitle": { "message": "Info" },
+  "infoDescription": {
+    "message": "検索、移動、操作のためのコマンドリファレンスです。"
+  },
+  "infoTitle": { "message": "Help" },
+  "labelActionMode": { "message": "Action Mode" },
   "labelAlternativeOpen": { "message": "Ctrl+Enter: $1" },
   "labelCurrentTab": { "message": "現在タブで開く" },
+  "labelDeleteBookmark": { "message": "bookmark: ブックマーク解除" },
+  "labelDeleteHistory": { "message": "history: 履歴削除" },
+  "labelDeleteSelected": { "message": "選択中を削除" },
+  "labelDeleteTab": { "message": "tab: タブを閉じる" },
   "labelMoveSelection": { "message": "選択移動" },
   "labelNewTab": { "message": "新規タブで開く" },
   "labelOpenPopup": { "message": "ポップアップを開く" },
+  "labelOpenSelected": { "message": "選択中を開く" },
+  "labelPinSelected": { "message": "選択中をピン留め" },
   "labelSearchTargets": { "message": "検索対象" },
   "labelUtilities": { "message": "ユーティリティ" },
+  "navigationSectionDescription": {
+    "message": "候補を移動し、開き方を選びます。"
+  },
+  "navigationSectionTitle": { "message": "Navigation" },
   "manifestDescription": {
     "message": "履歴、タブ、ブックマークをあいまい検索できるブラウザ用コマンドパレット。"
   },
@@ -97,8 +114,8 @@
   "openLinkActionTitle": { "message": "Open Link Action" },
   "openLinkCurrentTab": { "message": "現在タブで開く" },
   "openLinkNewTab": { "message": "新規タブで開く" },
-  "pageInfoSummary": { "message": "ショートカットとヘルプ" },
-  "pageInfoTitle": { "message": "Info" },
+  "pageInfoSummary": { "message": "コマンドリファレンス" },
+  "pageInfoTitle": { "message": "Help" },
   "pageSearchSummary": { "message": "検索と操作" },
   "pageSearchTitle": { "message": "Search" },
   "pageSettingsSummary": { "message": "挙動と表示" },
@@ -118,10 +135,19 @@
   "searchTargetBookmarks": { "message": "/b ブックマーク" },
   "searchTargetHistory": { "message": "/h 履歴" },
   "searchTargetTabs": { "message": "/t タブ" },
+  "searchSectionDescription": {
+    "message": "検索対象を絞り込むか、現在ページの操作に切り替えます。"
+  },
+  "searchSectionTitle": { "message": "Search" },
   "settingDescription": { "message": "起動時の対象、配色、リンクの開き方を調整します。" },
   "settingTitle": { "message": "Settings" },
+  "shortcutCopyUrl": { "message": "URL コピー" },
   "shortcutOpenPopup": { "message": "`Alt+K`" },
-  "shortcutUtilities": { "message": "`Ctrl+F` ピン留め, `Ctrl+C` URL コピー" },
+  "shortcutOpenSelected": { "message": "設定済みの開き方で開く" },
+  "shortcutPinSelected": { "message": "Chikamichi にピン留め / 解除" },
+  "shortcutUtilities": {
+    "message": "`Ctrl+F` ピン留め, `Ctrl+C` URL コピー, `Ctrl+D` 削除または閉じる"
+  },
   "shortcutsMoveSelection": { "message": "矢印キー または `Ctrl+N` / `Ctrl+P`" },
   "themeAuto": { "message": "auto" },
   "themeDark": { "message": "dark" },

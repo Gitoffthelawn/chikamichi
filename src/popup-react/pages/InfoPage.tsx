@@ -1,8 +1,47 @@
 import { ArrowUpRight } from "lucide-react";
+import type { ReactNode } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { t } from "~/i18n";
 import { FlatSection, Kbd, PageShell } from "~/popup-react/components/common";
+
+function ShortcutRow({
+  children,
+  keys,
+  label,
+}: {
+  children?: ReactNode;
+  keys: ReactNode;
+  label: string;
+}) {
+  return (
+    <div className="grid grid-cols-[112px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 last:border-b-0 dark:border-border-divider/[0.18]">
+      <div className="flex flex-wrap gap-1.5">{keys}</div>
+      <div className="min-w-0 space-y-1">
+        <div className="text-body-sm leading-6 text-foreground">{label}</div>
+        {children ? (
+          <div className="text-meta leading-5 text-muted-foreground">{children}</div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function ReferenceSection({
+  children,
+  description,
+  title,
+}: {
+  children: ReactNode;
+  description: string;
+  title: string;
+}) {
+  return (
+    <FlatSection description={description} title={title}>
+      <div className="panel-surface px-3.5 py-1">{children}</div>
+    </FlatSection>
+  );
+}
 
 export function InfoPage({
   onOpenIssue,
@@ -14,58 +53,66 @@ export function InfoPage({
   return (
     <PageShell dataCy="page-info" description={t("infoDescription")} title={t("infoTitle")}>
       <div className="space-y-4">
-        <FlatSection title={t("quickReferenceTitle")}>
-          <div className="panel-surface space-y-0 px-3.5 py-2.5">
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 first:pt-0 dark:border-border-divider/[0.18]">
-              <div className="text-meta text-muted-foreground">{t("labelSearchTargets")}</div>
-              <div className="flex flex-wrap gap-1.5">
+        <ReferenceSection
+          description={t("searchSectionDescription")}
+          title={t("searchSectionTitle")}
+        >
+          <ShortcutRow
+            keys={
+              <>
                 <Badge variant="secondary">{t("searchTargetTabs")}</Badge>
                 <Badge variant="secondary">{t("searchTargetBookmarks")}</Badge>
                 <Badge variant="secondary">{t("searchTargetHistory")}</Badge>
-              </div>
-            </div>
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 dark:border-border-divider/[0.18]">
-              <div className="text-meta text-muted-foreground">{t("labelMoveSelection")}</div>
-              <div className="text-body-sm flex flex-wrap items-center gap-2 text-foreground">
+              </>
+            }
+            label={t("labelSearchTargets")}
+          />
+          <ShortcutRow keys={<Kbd>&gt;</Kbd>} label={t("labelActionMode")}>
+            {t("actionModeShortcutBody")}
+          </ShortcutRow>
+        </ReferenceSection>
+
+        <ReferenceSection
+          description={t("navigationSectionDescription")}
+          title={t("navigationSectionTitle")}
+        >
+          <ShortcutRow
+            keys={
+              <>
                 <Kbd>↑ ↓</Kbd>
-                <span>{t("shortcutsMoveSelection")}</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 dark:border-border-divider/[0.18]">
-              <div className="text-meta text-muted-foreground">{t("labelOpenPopup")}</div>
-              <div className="text-body-sm flex flex-wrap items-center gap-2 text-foreground">
-                <Kbd>⌘ K</Kbd>
-                <span>{t("shortcutOpenPopup")}</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 dark:border-border-divider/[0.18]">
-              <div className="text-meta text-muted-foreground">{t("altOpen")}</div>
-              <div className="text-body-sm flex flex-wrap items-center gap-2 text-foreground">
-                <Kbd>⌘ ↵</Kbd>
-                <span>
-                  {t(
-                    "labelAlternativeOpen",
-                    openLinkInCurrentTab ? t("labelCurrentTab") : t("labelNewTab"),
-                  )}
-                </span>
-              </div>
-            </div>
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.1] py-2.5 dark:border-border-divider/[0.18]">
-              <div className="text-meta text-muted-foreground">{t("actionModeShortcutTitle")}</div>
-              <div className="text-body-sm flex flex-wrap items-center gap-2 text-foreground">
-                <Kbd>&gt;</Kbd>
-                <span>{t("actionModeShortcutBody")}</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-[132px_minmax(0,1fr)] items-start gap-3 pt-2.5">
-              <div className="text-meta text-muted-foreground">{t("labelUtilities")}</div>
-              <div className="text-body-sm flex flex-wrap items-center gap-2 text-foreground">
-                <Kbd>⌘ D</Kbd>
-                <span>{t("shortcutUtilities")}</span>
-              </div>
-            </div>
-          </div>
-        </FlatSection>
+                <Kbd>Ctrl N/P</Kbd>
+              </>
+            }
+            label={t("labelMoveSelection")}
+          />
+          <ShortcutRow keys={<Kbd>↵</Kbd>} label={t("labelOpenSelected")}>
+            {t("shortcutOpenSelected")}
+          </ShortcutRow>
+          <ShortcutRow keys={<Kbd>Ctrl ↵</Kbd>} label={t("altOpen")}>
+            {t(
+              "labelAlternativeOpen",
+              openLinkInCurrentTab ? t("labelCurrentTab") : t("labelNewTab"),
+            )}
+          </ShortcutRow>
+        </ReferenceSection>
+
+        <ReferenceSection
+          description={t("actionsSectionDescription")}
+          title={t("actionsSectionTitle")}
+        >
+          <ShortcutRow keys={<Kbd>Ctrl F</Kbd>} label={t("labelPinSelected")}>
+            {t("shortcutPinSelected")}
+          </ShortcutRow>
+          <ShortcutRow keys={<Kbd>Ctrl C</Kbd>} label={t("shortcutCopyUrl")} />
+          <ShortcutRow keys={<Kbd>Ctrl D</Kbd>} label={t("labelDeleteSelected")}>
+            <span className="flex flex-wrap gap-x-3 gap-y-1">
+              <span>{t("labelDeleteHistory")}</span>
+              <span>{t("labelDeleteBookmark")}</span>
+              <span>{t("labelDeleteTab")}</span>
+            </span>
+          </ShortcutRow>
+        </ReferenceSection>
+
         <FlatSection
           className="space-y-3"
           description={t("feedbackDescription")}
