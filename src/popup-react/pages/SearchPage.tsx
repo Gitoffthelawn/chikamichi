@@ -766,7 +766,11 @@ export function SearchPage({
             toggleFavoriteItem={toggleFavoriteItem}
           />
         </div>
-        <SearchFooter badgeText={badgeText} badgeVisible={badgeVisible} />
+        <SearchFooter
+          badgeText={badgeText}
+          badgeVisible={badgeVisible}
+          openLinkInCurrentTab={settings.openLinkInCurrentTab}
+        />
       </div>
     </section>
   );

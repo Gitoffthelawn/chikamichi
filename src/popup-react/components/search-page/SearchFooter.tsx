@@ -6,17 +6,18 @@ import { cn } from "~/lib/utils";
 type SearchFooterProps = {
   badgeText: string;
   badgeVisible: boolean;
+  openLinkInCurrentTab: boolean;
 };
 
-export function SearchFooter({ badgeText, badgeVisible }: SearchFooterProps) {
+export function SearchFooter({ badgeText, badgeVisible, openLinkInCurrentTab }: SearchFooterProps) {
   return (
     <div className="flex h-10 shrink-0 items-center gap-2 px-0 pb-0 text-[11px] text-foreground/56 dark:text-muted-foreground">
       <Kbd>↑ ↓</Kbd>
       <span>{t("footerSelect")}</span>
       <Kbd>↵</Kbd>
       <span>{t("footerOpen")}</span>
-      <Kbd>⌘ K</Kbd>
-      <span>{t("footerFocusSearch")}</span>
+      <Kbd>Ctrl ↵</Kbd>
+      <span>{t(openLinkInCurrentTab ? "footerOpenNewTab" : "footerOpenCurrentTab")}</span>
       <Kbd>esc</Kbd>
       <span>{t("footerClose")}</span>
       <div className="ml-auto flex min-w-0 justify-end">
