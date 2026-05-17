@@ -44,7 +44,7 @@ type BrowserSearchWithDisposition = typeof browser.search & {
   Disposition: Record<"CURRENT_TAB" | "NEW_TAB", Search.Disposition>;
 };
 
-const OPENING_CLOSE_FALLBACK_MS = 300;
+const OPENING_MIN_VISIBLE_MS = 700;
 
 function getHostname(value?: string | null) {
   if (!value) {
@@ -278,15 +278,31 @@ export function SearchPage({
   const runOpeningCommand = useCallback(
     async (command: () => Promise<void>) => {
       setOpening(true);
+      const startedAt = Date.now();
+      let closed = false;
+
+      const closeOnce = () => {
+        if (closed) {
+          return;
+        }
+
+        closed = true;
+        closePopup();
+      };
 
       const closeTimer = window.setTimeout(() => {
-        closePopup();
-      }, OPENING_CLOSE_FALLBACK_MS);
+        closeOnce();
+      }, OPENING_MIN_VISIBLE_MS);
 
       try {
         await command();
         window.clearTimeout(closeTimer);
-        closePopup();
+        window.setTimeout(
+          () => {
+            closeOnce();
+          },
+          Math.max(OPENING_MIN_VISIBLE_MS - (Date.now() - startedAt), 0),
+        );
       } catch (error) {
         window.clearTimeout(closeTimer);
         setOpening(false);
