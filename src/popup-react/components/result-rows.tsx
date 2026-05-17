@@ -38,7 +38,7 @@ export const SearchResultRow = memo(function SearchResultRow({
     <div
       aria-selected={selected}
       className={cn(
-        "group grid cursor-pointer items-center gap-2.5 rounded-[14px] px-3 py-2",
+        "group grid cursor-pointer items-center gap-2.5 rounded-row px-3 py-2",
         favoriteReorderEnabled
           ? "grid-cols-[auto_18px_minmax(0,1fr)_auto_auto]"
           : "grid-cols-[18px_minmax(0,1fr)_auto_auto]",
@@ -109,14 +109,14 @@ export const SearchResultRow = memo(function SearchResultRow({
       ) : null}
       <img alt="" className="size-[18px] rounded-sm" height="18" src={item.faviconUrl} width="18" />
       <div className="min-w-0">
-        <div className="truncate text-[14px] font-medium leading-[1.25]">
+        <div className="text-body truncate font-medium">
           {highlightText(item.title, item.matchedWord)}
         </div>
-        <div className="truncate text-[11px] leading-[1.25] text-foreground/58 dark:text-muted-foreground">
+        <div className="text-caption truncate text-foreground/58 dark:text-muted-foreground">
           {item.url}
         </div>
       </div>
-      <div className="flex min-w-0 flex-col items-end gap-0.5 text-[11px] text-muted-foreground">
+      <div className="text-caption flex min-w-0 flex-col items-end gap-0.5 text-muted-foreground">
         <Badge className="capitalize" data-cy={`search-result-type-${index}`} variant="secondary">
           {item.type}
         </Badge>
@@ -128,7 +128,7 @@ export const SearchResultRow = memo(function SearchResultRow({
           "flex size-7 items-center justify-center rounded-lg border",
           item.isFavorite
             ? "border-primary/18 bg-primary/10 text-primary/82 dark:text-primary/88"
-            : "border-transparent bg-slate-100/88 text-foreground/52 dark:bg-background/52 dark:text-muted-foreground",
+            : "border-transparent bg-control-surface/[0.88] text-foreground/52 dark:bg-control-surface/[0.52] dark:text-muted-foreground",
         )}
         data-cy={`search-result-favorite-${index}`}
         type="button"
@@ -175,7 +175,7 @@ export const ActionResultRow = memo(function ActionResultRow({
     <button
       aria-selected={selected}
       className={cn(
-        "grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-[14px] px-3 py-2 text-left",
+        "grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-row px-3 py-2 text-left",
         selected ? "interactive-row-selected-subtle" : "interactive-row",
       )}
       data-cy={`action-result-${index}`}
@@ -194,8 +194,8 @@ export const ActionResultRow = memo(function ActionResultRow({
         <Icon className="size-4" />
       </div>
       <div className="min-w-0">
-        <div className="truncate text-[14px] font-medium leading-[1.25]">{title}</div>
-        <div className="truncate text-[12px] leading-[1.3] text-foreground/58 dark:text-muted-foreground">
+        <div className="text-body truncate font-medium">{title}</div>
+        <div className="text-meta truncate text-foreground/58 dark:text-muted-foreground">
           {description}
         </div>
       </div>
