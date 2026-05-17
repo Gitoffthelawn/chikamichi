@@ -88,6 +88,7 @@ const FALLBACK_MESSAGES = {
   openLinkActionTitle: "Open Link Action",
   openLinkCurrentTab: "Open link in current tab",
   openLinkNewTab: "Open link in new tab",
+  openingPage: "Opening...",
   pageInfoSummary: "Command reference",
   pageInfoTitle: "Help",
   pageSearchSummary: "Find and act",

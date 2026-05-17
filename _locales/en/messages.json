@@ -114,6 +114,7 @@
   "openLinkActionTitle": { "message": "Open Link Action" },
   "openLinkCurrentTab": { "message": "Open link in current tab" },
   "openLinkNewTab": { "message": "Open link in new tab" },
+  "openingPage": { "message": "Opening..." },
   "pageInfoSummary": { "message": "Command reference" },
   "pageInfoTitle": { "message": "Help" },
   "panelLabelCandidates": { "message": "Results" },

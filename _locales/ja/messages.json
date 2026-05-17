@@ -114,6 +114,7 @@
   "openLinkActionTitle": { "message": "Open Link Action" },
   "openLinkCurrentTab": { "message": "現在タブで開く" },
   "openLinkNewTab": { "message": "新規タブで開く" },
+  "openingPage": { "message": "開いています..." },
   "pageInfoSummary": { "message": "コマンドリファレンス" },
   "pageInfoTitle": { "message": "Help" },
   "pageSearchSummary": { "message": "検索と操作" },

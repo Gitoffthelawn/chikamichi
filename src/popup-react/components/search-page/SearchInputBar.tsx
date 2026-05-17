@@ -7,6 +7,7 @@ import { reportError } from "~/popup-react/utils";
 type SearchInputBarProps = {
   actionMode: boolean;
   inputRef: RefObject<HTMLInputElement | null>;
+  opening: boolean;
   searchWord: string;
   setSearchWord: (value: string) => void;
   onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => Promise<void>;
@@ -15,6 +16,7 @@ type SearchInputBarProps = {
 export function SearchInputBar({
   actionMode,
   inputRef,
+  opening,
   searchWord,
   setSearchWord,
   onKeyDown,
@@ -26,6 +28,7 @@ export function SearchInputBar({
         autoComplete="off"
         className="h-full border-0 bg-transparent px-0 text-base text-foreground/[0.92] shadow-none focus-visible:ring-0 dark:text-white"
         data-cy="search-input"
+        disabled={opening}
         placeholder={actionMode ? t("actionModePlaceholder") : t("placeholderSearch")}
         ref={inputRef}
         type="search"

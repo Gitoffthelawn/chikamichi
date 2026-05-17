@@ -203,6 +203,34 @@ test.describe("popup", () => {
     expect(runtimeSendMessage.length).toBeGreaterThan(0);
   });
 
+  test("shows opening state while selected page is being opened", async ({ page }) => {
+    await page.evaluate(() => {
+      const { runtime } = window.chrome;
+      const mockRuntime = runtime as {
+        sendMessage: (...args: unknown[]) => Promise<unknown> | unknown;
+      };
+      const sendMessage = mockRuntime.sendMessage.bind(runtime);
+      mockRuntime.sendMessage = (...args) =>
+        new Promise((resolve) => {
+          window.setTimeout(() => {
+            resolve(sendMessage(...args));
+          }, 1000);
+        });
+    });
+
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("history-item");
+    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+    await input.press("Enter");
+
+    await expect(page.locator("[data-cy=opening-overlay]")).toBeVisible();
+    await expect(input).toBeDisabled();
+    await expect.poll(() => getMockCalls(page, "close")).toHaveLength(1);
+  });
+
   test("records opened results for learned ranking", async ({ page }) => {
     const input = page.locator("[data-cy=search-input]");
     await input.fill("/h history-item-0");
@@ -271,6 +299,22 @@ test.describe("popup", () => {
     await expect(page.locator("[data-cy=search-result-wrapper]")).not.toHaveJSProperty(
       "scrollTop",
       0,
+    );
+  });
+
+  test("resets result panel scroll when the query changes", async ({ page }) => {
+    const input = page.locator("[data-cy=search-input]");
+    const resultsWrapper = page.locator("[data-cy=search-result-wrapper]");
+
+    await input.fill("/h history-item");
+    await pressMany(input, "Control+n", 15);
+    await expect(resultsWrapper).not.toHaveJSProperty("scrollTop", 0);
+
+    await input.fill("/h history-item-0");
+    await expect(resultsWrapper).toHaveJSProperty("scrollTop", 0);
+    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+      "data-selected",
+      "true",
     );
   });
 

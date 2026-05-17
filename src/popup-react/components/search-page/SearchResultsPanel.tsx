@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { LoaderCircle, Search } from "lucide-react";
 import type { MutableRefObject } from "react";
 import { t } from "~/i18n";
 import { CommandResultRow } from "~/popup-react/components/result-rows";
@@ -16,8 +16,10 @@ type SearchResultsPanelProps = {
   ) => void;
   handlePointerSelection: (index: number, clientX: number, clientY: number) => void;
   openSearchResultItem: (item: SearchResult) => void;
+  opening: boolean;
   reorderFavoriteItem: (fromIndex: number, toIndex: number) => void;
   resultRefs: MutableRefObject<Array<HTMLElement | null>>;
+  resultsWrapperRef: MutableRefObject<HTMLDivElement | null>;
   runCommandItem: (item: CommandItem) => void;
   selectedNumber: number;
   toggleFavoriteItem: (item: SearchResult) => void;
@@ -32,8 +34,10 @@ export function SearchResultsPanel({
   handleFavoriteDragStateChange,
   handlePointerSelection,
   openSearchResultItem,
+  opening,
   reorderFavoriteItem,
   resultRefs,
+  resultsWrapperRef,
   runCommandItem,
   selectedNumber,
   toggleFavoriteItem,
@@ -100,8 +104,20 @@ export function SearchResultsPanel({
     <div
       className="search-surface relative h-[375px] shrink-0 overflow-y-auto overflow-x-hidden p-1.5"
       data-cy="search-result-wrapper"
+      ref={resultsWrapperRef}
     >
-      <div>{renderResults()}</div>
+      <div className={opening ? "pointer-events-none" : undefined}>{renderResults()}</div>
+      {opening ? (
+        <div
+          className="absolute inset-0 z-10 flex items-center justify-center bg-background/70 backdrop-blur-[1px]"
+          data-cy="opening-overlay"
+        >
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/95 px-3 py-2 text-body-sm font-semibold text-foreground shadow-[0_10px_24px_rgba(17,24,39,0.16)] dark:border-primary/35 dark:bg-background/90 dark:shadow-[0_10px_24px_rgba(10,18,35,0.36)]">
+            <LoaderCircle className="size-4 animate-spin text-primary" />
+            <span>{t("openingPage")}</span>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

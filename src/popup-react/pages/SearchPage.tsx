@@ -44,6 +44,8 @@ type BrowserSearchWithDisposition = typeof browser.search & {
   Disposition: Record<"CURRENT_TAB" | "NEW_TAB", Search.Disposition>;
 };
 
+const OPENING_CLOSE_FALLBACK_MS = 300;
+
 function getHostname(value?: string | null) {
   if (!value) {
     return null;
@@ -67,6 +69,7 @@ export function SearchPage({
   const [collections, setCollections] = useState<SearchCollections>(EMPTY_COLLECTIONS);
   const [favoriteItems, setFavoriteItems] = useState(settings.favoriteItems);
   const [openStats, setOpenStats] = useState<OpenStatsRecord[]>([]);
+  const [opening, setOpening] = useState(false);
   const [searchWord, setSearchWord] = useState(settings.defaultSearchPrefix);
   const [selectedNumber, setSelectedNumber] = useState(0);
   const [selectedKey, setSelectedKey] = useState("");
@@ -268,9 +271,30 @@ export function SearchPage({
     showBadge,
   });
 
-  const closePopup = () => {
+  const closePopup = useCallback(() => {
     window.close();
-  };
+  }, []);
+
+  const runOpeningCommand = useCallback(
+    async (command: () => Promise<void>) => {
+      setOpening(true);
+
+      const closeTimer = window.setTimeout(() => {
+        closePopup();
+      }, OPENING_CLOSE_FALLBACK_MS);
+
+      try {
+        await command();
+        window.clearTimeout(closeTimer);
+        closePopup();
+      } catch (error) {
+        window.clearTimeout(closeTimer);
+        setOpening(false);
+        reportError(error);
+      }
+    },
+    [closePopup],
+  );
 
   const commandItems = useMemo(
     () =>
@@ -455,7 +479,7 @@ export function SearchPage({
           },
           name: "change-current-tab",
         });
-        await updateOpenStats(item.url);
+        updateOpenStats(item.url).catch(reportError);
         return;
       }
 
@@ -468,7 +492,7 @@ export function SearchPage({
         },
         name: messageName,
       });
-      await updateOpenStats(item.url);
+      updateOpenStats(item.url).catch(reportError);
     },
     [settings.openLinkInCurrentTab, updateOpenStats],
   );
@@ -560,10 +584,13 @@ export function SearchPage({
 
   const openSearchResultItem = useCallback(
     async (item: SearchResult) => {
-      await openResult(item, false);
-      closePopup();
+      if (opening) {
+        return;
+      }
+
+      await runOpeningCommand(() => openResult(item, false));
     },
-    [openResult],
+    [openResult, opening, runOpeningCommand],
   );
 
   const toggleFavoriteItem = useCallback(
@@ -582,19 +609,29 @@ export function SearchPage({
 
   const runCommandItem = useCallback(
     (item: (typeof commandItems)[number]) => {
+      if (opening) {
+        return;
+      }
+
+      const closesPopup = item.kind === "page" || item.kind === "browser-search";
+      if (closesPopup) {
+        runOpeningCommand(() =>
+          executeCommand(item, {
+            browserSearch,
+            inNewTab: false,
+            openResult,
+          }),
+        ).catch(reportError);
+        return;
+      }
+
       executeCommand(item, {
         browserSearch,
         inNewTab: false,
         openResult,
-      })
-        .then(() => {
-          if (item.kind === "page" || item.kind === "browser-search") {
-            closePopup();
-          }
-        })
-        .catch(reportError);
+      }).catch(reportError);
     },
-    [browserSearch, openResult],
+    [browserSearch, openResult, opening, runOpeningCommand],
   );
 
   const copyCurrentUrl = async () => {
@@ -674,20 +711,36 @@ export function SearchPage({
   const handleEnterKey = async (event: React.KeyboardEvent<HTMLInputElement>) => {
     event.preventDefault();
 
+    if (opening) {
+      return;
+    }
+
     const item =
       commandItems[selectedNumber] ??
       commandItems.find((commandItem) => commandItem.id === selectedKey) ??
       commandItems[0];
 
     if (item) {
-      await executeCommand(item, {
-        browserSearch,
-        inNewTab: event.ctrlKey || event.metaKey,
-        openResult,
-      });
+      const closesPopup = item.kind === "page" || item.kind === "browser-search";
+      if (closesPopup) {
+        await runOpeningCommand(() =>
+          executeCommand(item, {
+            browserSearch,
+            inNewTab: event.ctrlKey || event.metaKey,
+            openResult,
+          }),
+        );
+        return;
+      }
 
-      if (item.kind === "page" || item.kind === "browser-search") {
-        closePopup();
+      try {
+        await executeCommand(item, {
+          browserSearch,
+          inNewTab: event.ctrlKey || event.metaKey,
+          openResult,
+        });
+      } catch (error) {
+        reportError(error);
       }
     }
   };
@@ -759,6 +812,11 @@ export function SearchPage({
   };
 
   const onKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (opening) {
+      event.preventDefault();
+      return;
+    }
+
     if (event.nativeEvent.isComposing || event.keyCode === 229) {
       return;
     }
@@ -781,27 +839,28 @@ export function SearchPage({
         <SearchInputBar
           actionMode={actionMode}
           inputRef={inputRef}
+          opening={opening}
           searchWord={searchWord}
           setSearchWord={setSearchWord}
           onKeyDown={onKeyDown}
         />
-        <div ref={resultsWrapperRef}>
-          <SearchResultsPanel
-            actionMode={actionMode}
-            commandItems={commandItems}
-            draggedFavoriteIndex={draggedFavoriteIndex}
-            dragOverFavoriteIndex={dragOverFavoriteIndex}
-            favoriteReorderEnabled={favoriteReorderEnabled}
-            handleFavoriteDragStateChange={handleFavoriteDragStateChange}
-            handlePointerSelection={handlePointerSelection}
-            openSearchResultItem={openSearchResultItem}
-            reorderFavoriteItem={reorderFavoriteItem}
-            resultRefs={resultRefs}
-            runCommandItem={runCommandItem}
-            selectedNumber={selectedNumber}
-            toggleFavoriteItem={toggleFavoriteItem}
-          />
-        </div>
+        <SearchResultsPanel
+          actionMode={actionMode}
+          commandItems={commandItems}
+          draggedFavoriteIndex={draggedFavoriteIndex}
+          dragOverFavoriteIndex={dragOverFavoriteIndex}
+          favoriteReorderEnabled={favoriteReorderEnabled}
+          handleFavoriteDragStateChange={handleFavoriteDragStateChange}
+          handlePointerSelection={handlePointerSelection}
+          openSearchResultItem={openSearchResultItem}
+          opening={opening}
+          reorderFavoriteItem={reorderFavoriteItem}
+          resultRefs={resultRefs}
+          resultsWrapperRef={resultsWrapperRef}
+          runCommandItem={runCommandItem}
+          selectedNumber={selectedNumber}
+          toggleFavoriteItem={toggleFavoriteItem}
+        />
         <SearchFooter
           badgeText={badgeText}
           badgeVisible={badgeVisible}
