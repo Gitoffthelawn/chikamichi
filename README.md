@@ -36,14 +36,15 @@ Please install from:
 
 ### Shortcuts
 
-| shortcut                              | action                           |
-| ------------------------------------- | -------------------------------- |
-| `Alt + k`                             | Open search dialog               |
-| `↓` or `↑` (`Ctrl + n` or `Ctrl + p`) | Select history                   |
-| `Enter`                               | Open the selected url            |
-| `Ctrl + Enter`                        | Open the selected url in new tab |
-| `Ctrl + f`                            | Add favorite                     |
-| `Ctrl + c`                            | Copy URL to the clipboard        |
+| shortcut                              | action                                                                  |
+| ------------------------------------- | ----------------------------------------------------------------------- |
+| `Alt + k`                             | Open search dialog                                                      |
+| `↓` or `↑` (`Ctrl + n` or `Ctrl + p`) | Move selection                                                          |
+| `Enter`                               | Open the selected URL                                                   |
+| `Ctrl + Enter`                        | Open the selected URL with the alternative open behavior                |
+| `Ctrl + f`                            | Pin or unpin the selected item in Chikamichi                            |
+| `Ctrl + c`                            | Copy the selected URL to the clipboard                                  |
+| `Ctrl + d`                            | Delete the selected history, remove bookmark, or close tab by item type |
 
 ### Search commands
 
@@ -60,6 +61,7 @@ Type `>` in the search input to switch into Action Mode for the current page.
 - `Copy Title`
 - `Copy URL`
 - `Copy Markdown Link`
+- `Pin/Unpin Current Page`
 - `Mute/Unmute Tab`
 - `Pin/Unpin Tab`
 - `Duplicate Tab`
@@ -67,6 +69,10 @@ Type `>` in the search input to switch into Action Mode for the current page.
 - `Copy Visible Area to Clipboard`
 - `Capture Full Page`
 - `Copy Full Page to Clipboard`
+
+### Help
+
+Open Help from the sidebar to see a command-style reference for search, navigation, and actions.
 
 ### Favorite
 
