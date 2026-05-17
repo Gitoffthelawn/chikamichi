@@ -106,7 +106,7 @@ export async function getSearchItems() {
 
   const startTime = new Date().setDate(new Date().getDate() - HISTORY_FETCH_DAYS);
   const [tabs, bookmarks, histories] = await Promise.all([
-    browser.tabs.query({}),
+    browser.tabs.query({ currentWindow: true }),
     browser.bookmarks.getTree(),
     browser.history.search({
       maxResults: HISTORY_FETCH_LIMIT,

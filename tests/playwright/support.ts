@@ -75,7 +75,10 @@ type MockWindow = Window &
         };
       };
       tabs: {
-        query: (queryInfo?: { active?: boolean }) => Promise<Partial<Tabs.Tab>[]>;
+        query: (queryInfo?: {
+          active?: boolean;
+          currentWindow?: boolean;
+        }) => Promise<Partial<Tabs.Tab>[]>;
         remove: (tabIds: unknown) => Promise<void>;
       };
     };
@@ -127,6 +130,17 @@ export async function setupExtensionEnvironment(
         tabsUpdate: [] as MockCallArgs[],
       };
       const mockWindow = window as MockWindow;
+      const queryTabs = (queryInfo?: { active?: boolean; currentWindow?: boolean }) => {
+        if (queryInfo?.active) {
+          return initialTabs.slice(0, 1);
+        }
+
+        if (queryInfo?.currentWindow) {
+          return initialTabs.filter((tab) => tab.windowId === initialTabs[0]?.windowId);
+        }
+
+        return initialTabs;
+      };
 
       const emitStorageChanged = (changes: StorageChangeRecord, areaName: string) => {
         storageListeners.forEach((listener) => {
@@ -350,16 +364,11 @@ export async function setupExtensionEnvironment(
             callback?.();
           },
           query: (
-            queryInfo: { active?: boolean } | undefined,
+            queryInfo: { active?: boolean; currentWindow?: boolean } | undefined,
             callback: (tabs: Partial<Tabs.Tab>[]) => void,
           ) => {
             window.setTimeout(() => {
-              if (queryInfo?.active) {
-                callback(initialTabs.slice(0, 1));
-                return;
-              }
-
-              callback(initialTabs);
+              callback(queryTabs(queryInfo));
             }, 0);
           },
           reload: (tabId: unknown, reloadProperties: unknown, callback?: () => void) => {
@@ -422,8 +431,8 @@ export async function setupExtensionEnvironment(
             onChanged: chromeApi.storage.onChanged,
           },
           tabs: {
-            query: (queryInfo?: { active?: boolean }) =>
-              Promise.resolve(queryInfo?.active ? initialTabs.slice(0, 1) : initialTabs),
+            query: (queryInfo?: { active?: boolean; currentWindow?: boolean }) =>
+              Promise.resolve(queryTabs(queryInfo)),
             remove: (tabIds: unknown) => {
               mockCalls.tabsRemove.push([tabIds]);
               return Promise.resolve(undefined);

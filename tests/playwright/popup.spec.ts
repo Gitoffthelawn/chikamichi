@@ -203,6 +203,56 @@ test.describe("popup", () => {
     expect(runtimeSendMessage.length).toBeGreaterThan(0);
   });
 
+  test("moves selection across duplicated tab titles and only searches current-window tabs", async ({
+    page,
+  }) => {
+    await setupExtensionEnvironment(page, {
+      bookmarks: [],
+      histories: [],
+      tabs: [
+        generateTab({
+          id: 101,
+          lastAccessed: 3000,
+          title: "Hatena Bookmark",
+          url: "https://b.hatena.ne.jp/",
+          windowId: 1,
+        }),
+        generateTab({
+          id: 102,
+          lastAccessed: 2000,
+          title: "Hatena Bookmark",
+          url: "https://b.hatena.ne.jp/",
+          windowId: 1,
+        }),
+        generateTab({
+          id: 201,
+          lastAccessed: 1000,
+          title: "Hatena Bookmark",
+          url: "https://b.hatena.ne.jp/",
+          windowId: 2,
+        }),
+      ],
+    });
+    await page.goto("/popup.html");
+
+    const input = page.locator("[data-cy=search-input]");
+    await input.fill("hatena");
+
+    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveText("tab");
+    await expect(page.locator("[data-cy=search-result-type-1]")).toHaveText("tab");
+    await expect(page.locator("[data-cy=search-result-type-2]")).toHaveCount(0);
+    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+
+    await input.press("Control+n");
+    await expect(page.locator("[data-cy=search-result-1]")).toHaveAttribute(
+      "data-selected",
+      "true",
+    );
+  });
+
   test("shows opening state while selected page is being opened", async ({ page }) => {
     await page.evaluate(() => {
       const { runtime } = window.chrome;

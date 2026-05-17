@@ -186,8 +186,18 @@ function getPageBadge(type: CommandPageSource) {
   return "History";
 }
 
-function getResultKey(item: Pick<SearchResult, "title" | "type" | "url">) {
-  return `${item.type}:${item.title}:${item.url}`;
+function getResultKey(
+  item: Pick<SearchResult, "bookmarkId" | "lastVisitTime" | "tabId" | "title" | "type" | "url">,
+) {
+  if (item.type === SEARCH_ITEM_TYPE.TAB && item.tabId !== undefined) {
+    return `${item.type}:${item.tabId}:${item.title}:${item.url}`;
+  }
+
+  if (item.type === SEARCH_ITEM_TYPE.BOOKMARK && item.bookmarkId) {
+    return `${item.type}:${item.bookmarkId}:${item.title}:${item.url}`;
+  }
+
+  return `${item.type}:${item.lastVisitTime ?? ""}:${item.title}:${item.url}`;
 }
 
 function getActionKey(item: ActionItem) {
