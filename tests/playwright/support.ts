@@ -211,6 +211,7 @@ export async function setupExtensionEnvironment(
           action: {
             default_popup: "popup.html",
           },
+          version: "4.1.1",
         }),
         getURL: () => "popup.html",
         id: "12345",

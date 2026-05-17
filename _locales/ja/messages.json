@@ -133,5 +133,6 @@
   "themeAuto": { "message": "auto" },
   "themeDark": { "message": "dark" },
   "themeLight": { "message": "light" },
-  "themeTitle": { "message": "Theme" }
+  "themeTitle": { "message": "Theme" },
+  "versionLabel": { "message": "Version $1" }
 }

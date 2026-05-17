@@ -35,6 +35,10 @@ function ReferenceSection({ children, title }: { children: ReactNode; title: str
   );
 }
 
+function getAppVersion() {
+  return chrome.runtime?.getManifest?.().version ?? "";
+}
+
 export function InfoPage({
   onOpenIssue,
   openLinkInCurrentTab,
@@ -42,8 +46,20 @@ export function InfoPage({
   onOpenIssue: () => void;
   openLinkInCurrentTab: boolean;
 }) {
+  const appVersion = getAppVersion();
+
   return (
-    <PageShell dataCy="page-info" title={t("infoTitle")}>
+    <PageShell
+      accessory={
+        appVersion ? (
+          <span className="text-meta font-medium leading-5 text-muted-foreground">
+            {t("versionLabel", appVersion)}
+          </span>
+        ) : null
+      }
+      dataCy="page-info"
+      title={t("infoTitle")}
+    >
       <div className="space-y-4">
         <ReferenceSection title={t("searchSectionTitle")}>
           <ShortcutRow

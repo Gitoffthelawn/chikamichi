@@ -398,6 +398,7 @@ test.describe("popup", () => {
     await expect(page.getByText("bookmark: remove bookmark")).toBeVisible();
     await expect(page.getByText("tab: close tab")).toBeVisible();
     await expect(page.getByText("Open Issue")).toBeVisible();
+    await expect(page.getByText("Version 4.1.1")).toBeVisible();
 
     await page.locator("[data-cy=setting-tab-btn]").click();
     await expect(page.locator("[data-cy=page-setting]")).toBeVisible();
@@ -410,12 +411,10 @@ test.describe("popup", () => {
   test("changes the display language in settings", async ({ page }) => {
     await page.locator("[data-cy=setting-tab-btn]").click();
     await page.locator("[data-cy=language-ja]").click();
-    await expect(page.getByText("ポップアップの表示言語を選びます。")).toBeVisible();
     await expect(page.getByText("現在タブで開く")).toBeVisible();
+    await expect(page.locator("[data-cy=select-prefix]")).toContainText("/b : ブックマーク検索");
     await page.locator("[data-cy=info-tab-btn]").click();
-    await expect(
-      page.getByText("検索、移動、操作のためのコマンドリファレンスです。"),
-    ).toBeVisible();
+    await expect(page.getByText("検索対象")).toBeVisible();
     await expect(getMockStorageValue<string>(page, "chikamichi-language")).resolves.toBe(
       JSON.stringify(LANGUAGE.JA),
     );

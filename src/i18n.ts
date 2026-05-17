@@ -120,6 +120,7 @@ const FALLBACK_MESSAGES = {
   themeDark: "dark",
   themeLight: "light",
   themeTitle: "Theme",
+  versionLabel: "Version $1",
 } as const;
 
 export type MessageKey = keyof typeof FALLBACK_MESSAGES;

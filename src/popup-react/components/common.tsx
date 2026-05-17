@@ -5,12 +5,23 @@ import { PAGES } from "~/constants";
 import { cn } from "~/lib/utils";
 import { getPageMeta } from "~/popup-react/utils";
 
-function SectionHeading({ description, title }: { description?: string; title: string }) {
+function SectionHeading({
+  accessory,
+  description,
+  title,
+}: {
+  accessory?: ReactNode;
+  description?: string;
+  title: string;
+}) {
   return (
     <div className="space-y-1">
-      <h2 className="text-section-title font-semibold tracking-tight text-foreground/[0.96]">
-        {title}
-      </h2>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-section-title font-semibold tracking-tight text-foreground/[0.96]">
+          {title}
+        </h2>
+        {accessory ? <div className="shrink-0">{accessory}</div> : null}
+      </div>
       {description ? (
         <p className="text-meta leading-5 text-foreground/[0.58] dark:text-muted-foreground/[0.88]">
           {description}
@@ -91,11 +102,13 @@ export function PageMenuButton({
 }
 
 export function PageShell({
+  accessory,
   children,
   dataCy,
   description,
   title,
 }: {
+  accessory?: ReactNode;
   children: ReactNode;
   dataCy: string;
   description?: string;
@@ -103,7 +116,7 @@ export function PageShell({
 }) {
   return (
     <section className="flex h-full min-h-0 flex-col gap-3.5 overflow-hidden" data-cy={dataCy}>
-      <SectionHeading description={description} title={title} />
+      <SectionHeading accessory={accessory} description={description} title={title} />
       <div className="min-h-0 flex-1 overflow-auto">{children}</div>
     </section>
   );
