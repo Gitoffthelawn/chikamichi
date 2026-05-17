@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.1.2
+
+### feature
+
+- Add a popup display language setting
+- Show the current extension version on the help page
+
+### bugfix
+
+- Fix duplicate tab selection in popup search results
+- Keep opening feedback visible until the popup closes
+
+### chore
+
+- Simplify popup help content
+
 ## 4.1.1
 
 ### bugfix
