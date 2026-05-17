@@ -1,5 +1,5 @@
 import { Storage } from "@plasmohq/storage";
-import { OPEN_STATS_CONFIG, THEME } from "~/constants";
+import { LANGUAGE, OPEN_STATS_CONFIG, THEME } from "~/constants";
 
 export interface FavoriteItemRecord {
   faviconUrl: string;
@@ -12,6 +12,7 @@ export interface FavoriteItemRecord {
 export interface AppSettings {
   defaultSearchPrefix: string;
   favoriteItems: FavoriteItemRecord[];
+  language: ValueOf<typeof LANGUAGE>;
   openLinkInCurrentTab: boolean;
   theme: ValueOf<typeof THEME>;
 }
@@ -25,6 +26,7 @@ export interface OpenStatsRecord {
 const STORAGE_KEYS = {
   defaultSearchPrefix: "chikamichi-default-search-prefix",
   favoriteItems: "chikamichi-favorite-items",
+  language: "chikamichi-language",
   openLinkInCurrentTab: "chikamichi-open-link-in-current-tab",
   theme: "chikamichi-theme",
 } as const;
@@ -36,6 +38,7 @@ const storage = new Storage({
 export const DEFAULT_SETTINGS: AppSettings = {
   defaultSearchPrefix: "",
   favoriteItems: [],
+  language: LANGUAGE.AUTO,
   openLinkInCurrentTab: true,
   theme: THEME.AUTO,
 };
@@ -104,12 +107,14 @@ export async function recordOpenedUrl(url: string, now = Date.now()) {
 }
 
 export async function getSettings(): Promise<AppSettings> {
-  const [defaultSearchPrefix, favoriteItems, openLinkInCurrentTab, theme] = await Promise.all([
-    storage.get<string>(STORAGE_KEYS.defaultSearchPrefix),
-    storage.get<FavoriteItemRecord[] | string>(STORAGE_KEYS.favoriteItems),
-    storage.get<boolean>(STORAGE_KEYS.openLinkInCurrentTab),
-    storage.get<ValueOf<typeof THEME>>(STORAGE_KEYS.theme),
-  ]);
+  const [defaultSearchPrefix, favoriteItems, language, openLinkInCurrentTab, theme] =
+    await Promise.all([
+      storage.get<string>(STORAGE_KEYS.defaultSearchPrefix),
+      storage.get<FavoriteItemRecord[] | string>(STORAGE_KEYS.favoriteItems),
+      storage.get<ValueOf<typeof LANGUAGE>>(STORAGE_KEYS.language),
+      storage.get<boolean>(STORAGE_KEYS.openLinkInCurrentTab),
+      storage.get<ValueOf<typeof THEME>>(STORAGE_KEYS.theme),
+    ]);
 
   return {
     defaultSearchPrefix:
@@ -117,6 +122,8 @@ export async function getSettings(): Promise<AppSettings> {
         ? defaultSearchPrefix
         : DEFAULT_SETTINGS.defaultSearchPrefix,
     favoriteItems: parseFavoriteItems(favoriteItems),
+    language:
+      language === LANGUAGE.EN || language === LANGUAGE.JA ? language : DEFAULT_SETTINGS.language,
     openLinkInCurrentTab:
       typeof openLinkInCurrentTab === "boolean"
         ? openLinkInCurrentTab
@@ -133,6 +140,9 @@ export async function updateSettings(partial: Partial<AppSettings>) {
   }
   if (partial.favoriteItems !== undefined) {
     tasks.push(storage.set(STORAGE_KEYS.favoriteItems, partial.favoriteItems));
+  }
+  if (partial.language !== undefined) {
+    tasks.push(storage.set(STORAGE_KEYS.language, partial.language));
   }
   if (partial.openLinkInCurrentTab !== undefined) {
     tasks.push(storage.set(STORAGE_KEYS.openLinkInCurrentTab, partial.openLinkInCurrentTab));

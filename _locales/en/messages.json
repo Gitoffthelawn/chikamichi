@@ -100,6 +100,11 @@
   "labelPinSelected": { "message": "Pin selected" },
   "labelSearchTargets": { "message": "Search targets" },
   "labelUtilities": { "message": "Utilities" },
+  "languageAuto": { "message": "auto" },
+  "languageDescription": { "message": "Choose the popup display language." },
+  "languageEnglish": { "message": "English" },
+  "languageJapanese": { "message": "Japanese" },
+  "languageTitle": { "message": "Display Language" },
   "navigationSectionDescription": {
     "message": "Move through results and choose how to open them."
   },

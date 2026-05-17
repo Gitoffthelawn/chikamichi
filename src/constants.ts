@@ -118,6 +118,12 @@ export const SEARCH_PREFIX = {
   TAB: "/t ",
 };
 
+export const LANGUAGE = {
+  AUTO: "auto",
+  EN: "en",
+  JA: "ja",
+} as const;
+
 export const THEME = {
   AUTO: "auto",
   DARK: "dark",

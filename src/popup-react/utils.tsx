@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Info, Search, Settings } from "lucide-react";
-import { PAGES, THEME } from "~/constants";
+import { LANGUAGE, PAGES, THEME } from "~/constants";
 import { t } from "~/i18n";
 import type { SearchCollections } from "~/popup-react/types";
 
@@ -95,4 +95,16 @@ export function getThemeLabel(theme: ValueOf<typeof THEME>) {
   }
 
   return t("themeDark");
+}
+
+export function getLanguageLabel(language: ValueOf<typeof LANGUAGE>) {
+  if (language === LANGUAGE.EN) {
+    return t("languageEnglish");
+  }
+
+  if (language === LANGUAGE.JA) {
+    return t("languageJapanese");
+  }
+
+  return t("languageAuto");
 }

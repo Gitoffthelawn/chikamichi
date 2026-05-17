@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { SEARCH_PREFIX } from "~/constants";
+import { LANGUAGE, SEARCH_PREFIX } from "~/constants";
 import { generateBookmark, generateHistory, generateTab } from "./fixtures";
 import {
   getLastMockCall,
@@ -401,7 +401,22 @@ test.describe("popup", () => {
     await expect(page.locator("[data-cy=page-setting]")).toBeVisible();
     await expect(page.getByText("Default Search Prefix")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Theme" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Display Language" })).toBeVisible();
     await expect(page.getByText("Open Link Action")).toBeVisible();
+  });
+
+  test("changes the display language in settings", async ({ page }) => {
+    await page.locator("[data-cy=setting-tab-btn]").click();
+    await page.locator("[data-cy=language-ja]").click();
+    await expect(page.getByText("ポップアップの表示言語を選びます。")).toBeVisible();
+    await expect(page.getByText("現在タブで開く")).toBeVisible();
+    await page.locator("[data-cy=info-tab-btn]").click();
+    await expect(
+      page.getByText("検索、移動、操作のためのコマンドリファレンスです。"),
+    ).toBeVisible();
+    await expect(getMockStorageValue<string>(page, "chikamichi-language")).resolves.toBe(
+      JSON.stringify(LANGUAGE.JA),
+    );
   });
 
   test("updates open link behavior in settings", async ({ page }) => {

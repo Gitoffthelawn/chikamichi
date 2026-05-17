@@ -1,9 +1,14 @@
 import { ChevronDown } from "lucide-react";
-import { SEARCH_PREFIX, THEME } from "~/constants";
+import { LANGUAGE, SEARCH_PREFIX, THEME } from "~/constants";
 import type { AppSettings } from "~/core/storage";
 import { t } from "~/i18n";
 import { PageShell, SettingRow, SettingToggleButton } from "~/popup-react/components/common";
-import { getResolvedTheme, getThemeLabel, reportError } from "~/popup-react/utils";
+import {
+  getLanguageLabel,
+  getResolvedTheme,
+  getThemeLabel,
+  reportError,
+} from "~/popup-react/utils";
 
 export function SettingPage({
   onUpdateSettings,
@@ -60,6 +65,25 @@ export function SettingPage({
                   }}
                 >
                   {getThemeLabel(option)}
+                </SettingToggleButton>
+              ))}
+            </div>
+          </SettingRow>
+          <SettingRow description={t("languageDescription")} title={t("languageTitle")}>
+            <div className="segmented-control grid grid-cols-3 gap-2">
+              {[LANGUAGE.AUTO, LANGUAGE.EN, LANGUAGE.JA].map((option) => (
+                <SettingToggleButton
+                  active={settings.language === option}
+                  data-cy={`language-${option}`}
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    onUpdateSettings({
+                      language: option,
+                    }).catch(reportError);
+                  }}
+                >
+                  {getLanguageLabel(option)}
                 </SettingToggleButton>
               ))}
             </div>

@@ -1,3 +1,7 @@
+import { LANGUAGE } from "~/constants";
+import enMessages from "../_locales/en/messages.json";
+import jaMessages from "../_locales/ja/messages.json";
+
 const FALLBACK_MESSAGES = {
   actionCopyMarkdownLink: "Copy Markdown Link",
   actionCopyTitle: "Copy Title",
@@ -79,6 +83,11 @@ const FALLBACK_MESSAGES = {
   labelPinSelected: "Pin selected",
   labelSearchTargets: "Search targets",
   labelUtilities: "Utilities",
+  languageAuto: "auto",
+  languageDescription: "Choose the popup display language.",
+  languageEnglish: "English",
+  languageJapanese: "Japanese",
+  languageTitle: "Display Language",
   manifestDescription:
     "Command palette for the browser. Enables fuzzy search for histories, tabs and bookmarks.",
   manifestName: "Chikamichi - Quickly find a page -",
@@ -129,7 +138,38 @@ const FALLBACK_MESSAGES = {
 
 export type MessageKey = keyof typeof FALLBACK_MESSAGES;
 
+type LocaleMessages = Record<string, { message?: string }>;
+
+const LOCALE_MESSAGES: Record<typeof LANGUAGE.EN | typeof LANGUAGE.JA, LocaleMessages> = {
+  [LANGUAGE.EN]: enMessages,
+  [LANGUAGE.JA]: jaMessages,
+};
+
+let currentLanguage: ValueOf<typeof LANGUAGE> = LANGUAGE.AUTO;
+
+export function setLanguage(language: ValueOf<typeof LANGUAGE>) {
+  currentLanguage = language;
+}
+
+function applySubstitutions(message: string, substitutions?: string | string[]) {
+  if (substitutions === undefined) {
+    return message;
+  }
+
+  const values = Array.isArray(substitutions) ? substitutions : [substitutions];
+
+  return values.reduce((result, value, index) => result.replace(`$${index + 1}`, value), message);
+}
+
 export const t = (key: MessageKey, substitutions?: string | string[]) => {
+  if (currentLanguage !== LANGUAGE.AUTO) {
+    const localeMessage = LOCALE_MESSAGES[currentLanguage]?.[key]?.message;
+
+    if (localeMessage) {
+      return applySubstitutions(localeMessage, substitutions);
+    }
+  }
+
   const message = chrome.i18n?.getMessage(key, substitutions as string | string[] | undefined);
 
   if (message) {
@@ -138,11 +178,5 @@ export const t = (key: MessageKey, substitutions?: string | string[]) => {
 
   const fallback = FALLBACK_MESSAGES[key];
 
-  if (substitutions === undefined) {
-    return fallback;
-  }
-
-  const values = Array.isArray(substitutions) ? substitutions : [substitutions];
-
-  return values.reduce((result, value, index) => result.replace(`$${index + 1}`, value), fallback);
+  return applySubstitutions(fallback, substitutions);
 };

@@ -8,6 +8,7 @@ import {
   subscribeSettings,
   updateSettings,
 } from "~/core/storage";
+import { setLanguage } from "~/i18n";
 import { AppSidebar } from "~/popup-react/components/app/AppSidebar";
 import { InfoPage } from "~/popup-react/pages/InfoPage";
 import { SearchPage } from "~/popup-react/pages/SearchPage";
@@ -30,6 +31,8 @@ function App() {
     getSettings().then(setSettings).catch(reportError);
     return subscribeSettings(setSettings);
   }, []);
+
+  setLanguage(settings.language);
 
   useEffect(() => {
     const applyTheme = () => {

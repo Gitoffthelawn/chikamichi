@@ -100,6 +100,11 @@
   "labelPinSelected": { "message": "選択中をピン留め" },
   "labelSearchTargets": { "message": "検索対象" },
   "labelUtilities": { "message": "ユーティリティ" },
+  "languageAuto": { "message": "auto" },
+  "languageDescription": { "message": "ポップアップの表示言語を選びます。" },
+  "languageEnglish": { "message": "English" },
+  "languageJapanese": { "message": "日本語" },
+  "languageTitle": { "message": "Display Language" },
   "navigationSectionDescription": {
     "message": "候補を移動し、開き方を選びます。"
   },
