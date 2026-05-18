@@ -22,11 +22,11 @@ export function SearchInputBar({
   onKeyDown,
 }: SearchInputBarProps) {
   return (
-    <div className="search-surface flex h-12 shrink-0 items-center gap-3 px-4">
-      <Search className="size-5 shrink-0 text-primary" />
+    <div className="search-surface flex h-10 shrink-0 items-center gap-2.5 px-3.5">
+      <Search className="size-4 shrink-0 text-primary" />
       <Input
         autoComplete="off"
-        className="h-full border-0 bg-transparent px-0 text-base text-foreground/[0.92] shadow-none focus-visible:ring-0 dark:text-white"
+        className="h-full border-0 bg-transparent px-0 text-[13px] leading-none text-foreground/[0.92] shadow-none focus-visible:ring-0 dark:text-white"
         data-cy="search-input"
         disabled={opening}
         placeholder={actionMode ? t("actionModePlaceholder") : t("placeholderSearch")}

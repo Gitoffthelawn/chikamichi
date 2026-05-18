@@ -53,7 +53,7 @@ function SideMenuButton({
   return (
     <Button
       className={cn(
-        "size-10 rounded-panel border p-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.015)] transition-colors",
+        "size-[30px] rounded-panel border p-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.015)] transition-colors",
         "border-border-control/[0.45] bg-control-surface/[0.72] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] dark:border-border-control/[0.26] dark:bg-control-surface/[0.44] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.015)]",
         active
           ? "bg-primary/[0.12] text-foreground dark:bg-primary/[0.1]"
@@ -72,7 +72,7 @@ function SideMenuButton({
             : "bg-transparent text-foreground/[0.72] dark:text-foreground/[0.88]",
         )}
       >
-        <Icon className="size-4" />
+        <Icon className="size-[13px]" />
       </span>
     </Button>
   );
@@ -160,7 +160,7 @@ export function SettingToggleButton({
   return (
     <Button
       className={cn(
-        "h-9 justify-start rounded-control border px-3 text-body-sm transition-colors",
+        "h-7 min-w-0 justify-center gap-0 rounded-control border px-2 text-[11px] font-normal leading-none transition-colors",
         active
           ? "border-primary/[0.25] bg-primary/[0.1] text-foreground"
           : "control-surface text-foreground",
@@ -168,7 +168,7 @@ export function SettingToggleButton({
       variant="ghost"
       {...props}
     >
-      {children}
+      <span className="min-w-0 truncate">{children}</span>
     </Button>
   );
 }
@@ -183,7 +183,7 @@ export function SettingRow({
   title: string;
 }) {
   return (
-    <div className="grid grid-cols-[156px_minmax(0,1fr)] items-start gap-4 border-b border-border-divider/[0.12] py-3 last:border-b-0 last:pb-0 first:pt-0 dark:border-border-divider/[0.2]">
+    <div className="grid grid-cols-[148px_minmax(0,1fr)] items-start gap-3 border-b border-border-divider/[0.12] py-2.5 last:border-b-0 last:pb-0 first:pt-0 dark:border-border-divider/[0.2]">
       <div className="space-y-1">
         <h3 className="text-body-sm font-semibold tracking-tight text-foreground/[0.95]">
           {title}

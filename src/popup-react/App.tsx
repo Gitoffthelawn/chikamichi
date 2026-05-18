@@ -54,8 +54,14 @@ function App() {
   }, [settings.theme]);
 
   return (
-    <main className="popup-window h-[500px] w-[760px] overflow-hidden p-1">
-      <div className="grid h-full grid-cols-[minmax(0,1fr)_62px] gap-0">
+    <main
+      className="popup-window overflow-hidden p-1"
+      style={{
+        height: Number(settings.popupHeight),
+        width: Number(settings.popupWidth),
+      }}
+    >
+      <div className="grid h-full grid-cols-[minmax(0,1fr)_46px] gap-0">
         <div className="popup-content flex h-full min-w-0 flex-col overflow-hidden p-2.5">
           {currentPage === PAGES.SEARCH ? (
             <SearchPage onUpdateSettings={saveSettings} settings={settings} />

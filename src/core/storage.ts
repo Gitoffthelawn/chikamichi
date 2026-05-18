@@ -1,5 +1,5 @@
 import { Storage } from "@plasmohq/storage";
-import { LANGUAGE, OPEN_STATS_CONFIG, THEME } from "~/constants";
+import { LANGUAGE, OPEN_STATS_CONFIG, POPUP_HEIGHT, POPUP_WIDTH, THEME } from "~/constants";
 
 export interface FavoriteItemRecord {
   faviconUrl: string;
@@ -14,6 +14,8 @@ export interface AppSettings {
   favoriteItems: FavoriteItemRecord[];
   language: ValueOf<typeof LANGUAGE>;
   openLinkInCurrentTab: boolean;
+  popupHeight: ValueOf<typeof POPUP_HEIGHT>;
+  popupWidth: ValueOf<typeof POPUP_WIDTH>;
   theme: ValueOf<typeof THEME>;
 }
 
@@ -28,6 +30,8 @@ const STORAGE_KEYS = {
   favoriteItems: "chikamichi-favorite-items",
   language: "chikamichi-language",
   openLinkInCurrentTab: "chikamichi-open-link-in-current-tab",
+  popupHeight: "chikamichi-popup-height",
+  popupWidth: "chikamichi-popup-width",
   theme: "chikamichi-theme",
 } as const;
 
@@ -40,6 +44,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   favoriteItems: [],
   language: LANGUAGE.AUTO,
   openLinkInCurrentTab: true,
+  popupHeight: POPUP_HEIGHT.M,
+  popupWidth: POPUP_WIDTH.M,
   theme: THEME.AUTO,
 };
 
@@ -79,6 +85,20 @@ function parseOpenStats(value: unknown): OpenStatsRecord[] {
   return [];
 }
 
+function parsePopupHeight(value: unknown): ValueOf<typeof POPUP_HEIGHT> {
+  return typeof value === "string" &&
+    Object.values(POPUP_HEIGHT).includes(value as ValueOf<typeof POPUP_HEIGHT>)
+    ? (value as ValueOf<typeof POPUP_HEIGHT>)
+    : DEFAULT_SETTINGS.popupHeight;
+}
+
+function parsePopupWidth(value: unknown): ValueOf<typeof POPUP_WIDTH> {
+  return typeof value === "string" &&
+    Object.values(POPUP_WIDTH).includes(value as ValueOf<typeof POPUP_WIDTH>)
+    ? (value as ValueOf<typeof POPUP_WIDTH>)
+    : DEFAULT_SETTINGS.popupWidth;
+}
+
 export async function getOpenStats(): Promise<OpenStatsRecord[]> {
   return parseOpenStats(
     await storage.get<OpenStatsRecord[] | string>(OPEN_STATS_CONFIG.storageKey),
@@ -107,14 +127,23 @@ export async function recordOpenedUrl(url: string, now = Date.now()) {
 }
 
 export async function getSettings(): Promise<AppSettings> {
-  const [defaultSearchPrefix, favoriteItems, language, openLinkInCurrentTab, theme] =
-    await Promise.all([
-      storage.get<string>(STORAGE_KEYS.defaultSearchPrefix),
-      storage.get<FavoriteItemRecord[] | string>(STORAGE_KEYS.favoriteItems),
-      storage.get<ValueOf<typeof LANGUAGE>>(STORAGE_KEYS.language),
-      storage.get<boolean>(STORAGE_KEYS.openLinkInCurrentTab),
-      storage.get<ValueOf<typeof THEME>>(STORAGE_KEYS.theme),
-    ]);
+  const [
+    defaultSearchPrefix,
+    favoriteItems,
+    language,
+    openLinkInCurrentTab,
+    popupHeight,
+    popupWidth,
+    theme,
+  ] = await Promise.all([
+    storage.get<string>(STORAGE_KEYS.defaultSearchPrefix),
+    storage.get<FavoriteItemRecord[] | string>(STORAGE_KEYS.favoriteItems),
+    storage.get<ValueOf<typeof LANGUAGE>>(STORAGE_KEYS.language),
+    storage.get<boolean>(STORAGE_KEYS.openLinkInCurrentTab),
+    storage.get<ValueOf<typeof POPUP_HEIGHT>>(STORAGE_KEYS.popupHeight),
+    storage.get<ValueOf<typeof POPUP_WIDTH>>(STORAGE_KEYS.popupWidth),
+    storage.get<ValueOf<typeof THEME>>(STORAGE_KEYS.theme),
+  ]);
 
   return {
     defaultSearchPrefix:
@@ -128,6 +157,8 @@ export async function getSettings(): Promise<AppSettings> {
       typeof openLinkInCurrentTab === "boolean"
         ? openLinkInCurrentTab
         : DEFAULT_SETTINGS.openLinkInCurrentTab,
+    popupHeight: parsePopupHeight(popupHeight),
+    popupWidth: parsePopupWidth(popupWidth),
     theme: theme === THEME.DARK || theme === THEME.LIGHT ? theme : DEFAULT_SETTINGS.theme,
   };
 }
@@ -146,6 +177,12 @@ export async function updateSettings(partial: Partial<AppSettings>) {
   }
   if (partial.openLinkInCurrentTab !== undefined) {
     tasks.push(storage.set(STORAGE_KEYS.openLinkInCurrentTab, partial.openLinkInCurrentTab));
+  }
+  if (partial.popupHeight !== undefined) {
+    tasks.push(storage.set(STORAGE_KEYS.popupHeight, partial.popupHeight));
+  }
+  if (partial.popupWidth !== undefined) {
+    tasks.push(storage.set(STORAGE_KEYS.popupWidth, partial.popupWidth));
   }
   if (partial.theme !== undefined) {
     tasks.push(storage.set(STORAGE_KEYS.theme, partial.theme));

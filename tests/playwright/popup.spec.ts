@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { LANGUAGE, SEARCH_PREFIX } from "~/constants";
+import { LANGUAGE, POPUP_HEIGHT, POPUP_WIDTH, SEARCH_PREFIX } from "~/constants";
 import { generateBookmark, generateHistory, generateTab } from "./fixtures";
 import {
   getLastMockCall,
@@ -406,6 +406,67 @@ test.describe("popup", () => {
     await expect(page.getByRole("heading", { name: "Theme" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Display Language" })).toBeVisible();
     await expect(page.getByText("Open Link Action")).toBeVisible();
+    await expect(page.getByText("Popup Size")).toBeVisible();
+  });
+
+  test("changes the popup size in settings", async ({ page }) => {
+    await expect(page.locator("main")).toHaveCSS("width", "600px");
+    await expect(page.locator("main")).toHaveCSS("height", "400px");
+    await expect(page.locator("[data-cy=search-tab-btn]")).toHaveCSS("width", "30px");
+    await expect(page.locator("[data-cy=search-tab-btn]")).toHaveCSS("height", "30px");
+    await page.locator("[data-cy=setting-tab-btn]").click();
+    await page.locator("[data-cy=select-popup-width]").selectOption(POPUP_WIDTH.XL);
+    await page.locator("[data-cy=select-popup-height]").selectOption(POPUP_HEIGHT.XL);
+    await expect(page.locator("main")).toHaveCSS("width", "800px");
+    await expect(page.locator("main")).toHaveCSS("height", "500px");
+    await expect(page.locator("[data-cy=select-popup-width] option")).toHaveText([
+      "500",
+      "600",
+      "700",
+      "800",
+    ]);
+    await expect(page.locator("[data-cy=select-popup-height] option")).toHaveText([
+      "350",
+      "400",
+      "450",
+      "500",
+    ]);
+    await page.locator("[data-cy=select-popup-width]").selectOption(POPUP_WIDTH.MIN);
+    await page.locator("[data-cy=select-popup-height]").selectOption(POPUP_HEIGHT.MIN);
+    await expect(page.locator("main")).toHaveCSS("width", "500px");
+    await expect(page.locator("main")).toHaveCSS("height", "350px");
+    await expect(page.locator("[data-cy=page-setting]")).toBeVisible();
+    await expect(page.locator("[data-cy=select-popup-width]")).toBeVisible();
+    await expect(page.locator("[data-cy=select-popup-height]")).toBeVisible();
+    await expect(page.locator("[data-cy=open-link-in-current-tab]")).toContainText("Current tab");
+    await expect(page.locator("[data-cy=open-link-in-new-tab]")).toContainText("New tab");
+    await expect
+      .poll(() =>
+        page
+          .locator("[data-cy=select-popup-width]")
+          .evaluate((element) => element.scrollWidth <= element.clientWidth),
+      )
+      .toBe(true);
+    await page.locator("[data-cy=search-tab-btn]").click();
+    await expect(page.locator("[data-cy=search-input]")).toBeVisible();
+    await page.locator("[data-cy=search-input]").fill("tab-item");
+    await expect(page.locator("[data-cy=search-result-favorite-0]")).toHaveCSS("width", "24px");
+    await expect(page.locator("[data-cy=search-result-favorite-0]")).toHaveCSS("height", "24px");
+    await page.locator("[data-cy=search-result-favorite-0]").click();
+    await expect(page.locator("[data-cy=action-feedback]")).toBeVisible();
+    await expect(page.locator("[data-cy=action-feedback]")).toHaveCSS("position", "absolute");
+    await expect(page.locator("[data-cy=search-result-wrapper]")).toHaveCSS("overflow-y", "auto");
+    await expect
+      .poll(() =>
+        page.locator("[data-cy=search-result-wrapper]").evaluate((element) => element.clientHeight),
+      )
+      .toBeGreaterThan(0);
+    await expect(getMockStorageValue<string>(page, "chikamichi-popup-width")).resolves.toBe(
+      JSON.stringify(POPUP_WIDTH.MIN),
+    );
+    await expect(getMockStorageValue<string>(page, "chikamichi-popup-height")).resolves.toBe(
+      JSON.stringify(POPUP_HEIGHT.MIN),
+    );
   });
 
   test("changes the display language in settings", async ({ page }) => {

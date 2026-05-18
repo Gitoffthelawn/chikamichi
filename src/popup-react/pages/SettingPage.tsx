@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import { LANGUAGE, SEARCH_PREFIX, THEME } from "~/constants";
+import { LANGUAGE, POPUP_HEIGHT, POPUP_WIDTH, SEARCH_PREFIX, THEME } from "~/constants";
 import type { AppSettings } from "~/core/storage";
 import { t } from "~/i18n";
 import { PageShell, SettingRow, SettingToggleButton } from "~/popup-react/components/common";
@@ -9,6 +9,9 @@ import {
   getThemeLabel,
   reportError,
 } from "~/popup-react/utils";
+
+const POPUP_HEIGHT_OPTIONS = Object.values(POPUP_HEIGHT).sort((a, b) => Number(a) - Number(b));
+const POPUP_WIDTH_OPTIONS = Object.values(POPUP_WIDTH).sort((a, b) => Number(a) - Number(b));
 
 export function SettingPage({
   onUpdateSettings,
@@ -24,7 +27,7 @@ export function SettingPage({
           <SettingRow title={t("prefixTitle")}>
             <div className="relative">
               <select
-                className="flex h-9 w-full appearance-none rounded-control border border-border-control/[0.5] bg-control-surface/[0.92] px-3 pr-10 text-body-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border-control/[0.28] dark:bg-control-surface/[0.8]"
+                className="flex h-7 w-full appearance-none rounded-control border border-border-control/[0.5] bg-control-surface/[0.92] px-2 pr-7 text-[11px] leading-none text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border-control/[0.28] dark:bg-control-surface/[0.8]"
                 data-cy="select-prefix"
                 style={{
                   colorScheme: getResolvedTheme(settings.theme) === THEME.DARK ? "dark" : "light",
@@ -41,7 +44,7 @@ export function SettingPage({
                 <option value={SEARCH_PREFIX.TAB}>{t("prefixTab")}</option>
                 <option value={SEARCH_PREFIX.HISTORY}>{t("prefixHistory")}</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3 -translate-y-1/2 text-muted-foreground" />
             </div>
           </SettingRow>
           <SettingRow title={t("themeTitle")}>
@@ -107,6 +110,60 @@ export function SettingPage({
               >
                 {t("openLinkNewTab")}
               </SettingToggleButton>
+            </div>
+          </SettingRow>
+          <SettingRow title={t("popupSizeTitle")}>
+            <div className="grid grid-cols-1 gap-2">
+              <label className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+                <span className="text-caption font-semibold text-muted-foreground">
+                  {t("popupWidthLabel")}
+                </span>
+                <select
+                  className="flex h-7 w-full appearance-none rounded-control border border-border-control/[0.5] bg-control-surface/[0.92] px-2 text-[11px] leading-none text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border-control/[0.28] dark:bg-control-surface/[0.8]"
+                  data-cy="select-popup-width"
+                  style={{
+                    colorScheme: getResolvedTheme(settings.theme) === THEME.DARK ? "dark" : "light",
+                  }}
+                  value={settings.popupWidth}
+                  onChange={(event) => {
+                    onUpdateSettings({
+                      popupWidth: event.target.value as ValueOf<typeof POPUP_WIDTH>,
+                    }).catch(reportError);
+                  }}
+                >
+                  {POPUP_WIDTH_OPTIONS.map((width) => (
+                    <option key={width} value={width}>
+                      {width}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-caption font-semibold text-muted-foreground">px</span>
+              </label>
+              <label className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
+                <span className="text-caption font-semibold text-muted-foreground">
+                  {t("popupHeightLabel")}
+                </span>
+                <select
+                  className="flex h-7 w-full appearance-none rounded-control border border-border-control/[0.5] bg-control-surface/[0.92] px-2 text-[11px] leading-none text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border-control/[0.28] dark:bg-control-surface/[0.8]"
+                  data-cy="select-popup-height"
+                  style={{
+                    colorScheme: getResolvedTheme(settings.theme) === THEME.DARK ? "dark" : "light",
+                  }}
+                  value={settings.popupHeight}
+                  onChange={(event) => {
+                    onUpdateSettings({
+                      popupHeight: event.target.value as ValueOf<typeof POPUP_HEIGHT>,
+                    }).catch(reportError);
+                  }}
+                >
+                  {POPUP_HEIGHT_OPTIONS.map((height) => (
+                    <option key={height} value={height}>
+                      {height}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-caption font-semibold text-muted-foreground">px</span>
+              </label>
             </div>
           </SettingRow>
         </div>

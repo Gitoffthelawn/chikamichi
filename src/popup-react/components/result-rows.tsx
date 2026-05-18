@@ -71,10 +71,10 @@ const SearchResultRow = memo(function SearchResultRow({
     <div
       aria-selected={selected}
       className={cn(
-        "group grid cursor-pointer items-center gap-2.5 rounded-row px-3 py-2",
+        "group grid cursor-pointer items-center gap-2 rounded-row px-2.5 py-2",
         favoriteReorderEnabled
-          ? "grid-cols-[auto_18px_minmax(0,1fr)_auto_auto]"
-          : "grid-cols-[18px_minmax(0,1fr)_auto_auto]",
+          ? "grid-cols-[auto_18px_minmax(0,1fr)_auto_24px]"
+          : "grid-cols-[18px_minmax(0,1fr)_auto_24px]",
         selected ? "interactive-row-selected" : "interactive-row",
         draggedFavoriteIndex === index ? "opacity-55" : "",
         dragOverFavoriteIndex === index ? "shadow-[inset_0_0_0_1px_rgba(90,145,255,0.26)]" : "",
@@ -142,23 +142,23 @@ const SearchResultRow = memo(function SearchResultRow({
       ) : null}
       <FaviconImage src={item.faviconUrl} />
       <div className="min-w-0">
-        <div className="text-body truncate font-medium">
+        <div className="text-body-sm truncate font-medium">
           {highlightText(item.title, item.matchedWord)}
         </div>
-        <div className="text-caption truncate text-foreground/58 dark:text-muted-foreground">
+        <div className="text-[10px] leading-tight truncate text-foreground/58 dark:text-muted-foreground">
           {item.url}
         </div>
       </div>
-      <div className="text-caption flex min-w-0 flex-col items-end gap-0.5 text-muted-foreground">
+      <div className="flex min-w-0 flex-col items-end gap-0.5 text-[10px] leading-none text-muted-foreground">
         <Badge className="capitalize" data-cy={`search-result-type-${index}`} variant="secondary">
           {item.type}
         </Badge>
-        {item.folderName ? <span className="max-w-28 truncate">{item.folderName}</span> : null}
+        {item.folderName ? <span className="max-w-20 truncate">{item.folderName}</span> : null}
       </div>
       <button
         aria-label={item.isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite")}
         className={cn(
-          "flex size-7 items-center justify-center rounded-lg border",
+          "flex size-6 items-center justify-center rounded-md border",
           item.isFavorite
             ? "border-primary/18 bg-primary/10 text-primary/82 dark:text-primary/88"
             : "border-transparent bg-control-surface/[0.88] text-foreground/52 dark:bg-control-surface/[0.52] dark:text-muted-foreground",
@@ -170,11 +170,7 @@ const SearchResultRow = memo(function SearchResultRow({
           onToggleFavorite(item);
         }}
       >
-        {item.isFavorite ? (
-          <Pin className="size-3.5 fill-current" />
-        ) : (
-          <PinOff className="size-3.5" />
-        )}
+        {item.isFavorite ? <Pin className="size-3 fill-current" /> : <PinOff className="size-3" />}
       </button>
     </div>
   );
@@ -227,8 +223,8 @@ const ActionResultRow = memo(function ActionResultRow({
         <Icon className="size-4" />
       </div>
       <div className="min-w-0">
-        <div className="text-body truncate font-medium">{title}</div>
-        <div className="text-meta truncate text-foreground/58 dark:text-muted-foreground">
+        <div className="text-body-sm truncate font-medium">{title}</div>
+        <div className="text-[10px] leading-tight truncate text-foreground/58 dark:text-muted-foreground">
           {description}
         </div>
       </div>
@@ -325,8 +321,8 @@ export const CommandResultRow = memo(function CommandResultRow({
     >
       <FaviconImage src={commandItem.faviconUrl} />
       <div className="min-w-0">
-        <div className="text-body truncate font-medium text-foreground">{commandItem.title}</div>
-        <div className="text-caption truncate text-foreground/[0.56] dark:text-muted-foreground">
+        <div className="text-body-sm truncate font-medium text-foreground">{commandItem.title}</div>
+        <div className="text-[10px] leading-tight truncate text-foreground/[0.56] dark:text-muted-foreground">
           {commandItem.subtitle}
         </div>
       </div>

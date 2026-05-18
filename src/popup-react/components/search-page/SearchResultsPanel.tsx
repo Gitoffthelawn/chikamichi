@@ -69,7 +69,7 @@ export function SearchResultsPanel({
     if (actionMode) {
       return (
         <div
-          className="flex min-h-[180px] items-center justify-center rounded-panel border border-dashed border-search-border/[0.1] bg-background/[0.16] px-5 text-center dark:border-search-border/[0.2]"
+          className="flex h-full min-h-[140px] items-center justify-center rounded-panel border border-dashed border-search-border/[0.1] bg-background/[0.16] px-5 text-center dark:border-search-border/[0.2]"
           data-cy="action-result-empty"
         >
           <div className="space-y-1">
@@ -82,7 +82,7 @@ export function SearchResultsPanel({
 
     return (
       <div
-        className="flex min-h-[180px] items-center justify-center rounded-panel border border-dashed border-search-border/[0.1] bg-background/[0.16] px-5 text-center dark:border-search-border/[0.2]"
+        className="flex h-full min-h-[140px] items-center justify-center rounded-panel border border-dashed border-search-border/[0.1] bg-background/[0.16] px-5 text-center dark:border-search-border/[0.2]"
         data-cy="search-result-empty"
       >
         <div className="space-y-2">
@@ -102,7 +102,7 @@ export function SearchResultsPanel({
 
   return (
     <div
-      className="search-surface relative h-[375px] shrink-0 overflow-y-auto overflow-x-hidden p-1.5"
+      className="search-surface relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-1.5"
       data-cy="search-result-wrapper"
       ref={resultsWrapperRef}
     >
