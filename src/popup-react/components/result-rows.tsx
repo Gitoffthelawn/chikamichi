@@ -112,10 +112,10 @@ const SearchResultRow = memo(function SearchResultRow({
     <div
       aria-selected={selected}
       className={cn(
-        "group grid cursor-pointer items-center gap-2 rounded-row px-2.5 py-2",
+        "group grid cursor-pointer items-center rounded-row px-2.5 py-2",
         favoriteReorderEnabled
-          ? "grid-cols-[18px_18px_minmax(0,1fr)_auto]"
-          : "grid-cols-[18px_minmax(0,1fr)_auto]",
+          ? "grid-cols-[14px_18px_minmax(0,1fr)_auto] gap-1.5"
+          : "grid-cols-[18px_minmax(0,1fr)_auto] gap-2",
         selected ? "interactive-row-selected" : "interactive-row",
         draggedFavoriteIndex === index ? "opacity-55" : "",
         dragOverFavoriteIndex === index ? "shadow-[inset_0_0_0_1px_rgba(90,145,255,0.26)]" : "",
@@ -160,7 +160,7 @@ const SearchResultRow = memo(function SearchResultRow({
         <button
           aria-label={t("favoriteDragHandle")}
           className={cn(
-            "flex size-[18px] cursor-grab items-center justify-center rounded-md text-foreground/34 opacity-0 transition-opacity group-hover:opacity-100",
+            "flex size-3.5 cursor-grab items-center justify-center rounded-md text-foreground/34 opacity-0 transition-opacity group-hover:opacity-100",
             selected ? "opacity-100 text-primary/70" : "",
           )}
           data-cy={`favorite-drag-handle-${index}`}
@@ -266,10 +266,10 @@ const ActionResultRow = memo(function ActionResultRow({
     <div
       aria-selected={selected}
       className={cn(
-        "group grid w-full cursor-pointer items-center gap-2.5 rounded-row px-3 py-2 text-left",
+        "group grid w-full cursor-pointer items-center rounded-row px-3 py-2 text-left",
         reorderEnabled
-          ? "grid-cols-[18px_18px_minmax(0,1fr)_auto]"
-          : "grid-cols-[18px_minmax(0,1fr)_auto]",
+          ? "grid-cols-[14px_18px_minmax(0,1fr)_auto] gap-1.5"
+          : "grid-cols-[18px_minmax(0,1fr)_auto] gap-2.5",
         selected ? "interactive-row-selected-subtle" : "interactive-row",
         draggedFavoriteIndex === index ? "opacity-55" : "",
         dragOverFavoriteIndex === index ? "shadow-[inset_0_0_0_1px_rgba(90,145,255,0.26)]" : "",
@@ -314,7 +314,7 @@ const ActionResultRow = memo(function ActionResultRow({
         <button
           aria-label={t("favoriteDragHandle")}
           className={cn(
-            "flex size-[18px] cursor-grab items-center justify-center rounded-md text-foreground/34 opacity-0 transition-opacity group-hover:opacity-100",
+            "flex size-3.5 cursor-grab items-center justify-center rounded-md text-foreground/34 opacity-0 transition-opacity group-hover:opacity-100",
             selected ? "opacity-100 text-primary/70" : "",
           )}
           data-cy={`favorite-drag-handle-${index}`}
