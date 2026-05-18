@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.1.7
+
+### bugfix
+
+- Use tab or history titles when bookmark names are empty
+
 ## 4.1.6
 
 ### performance

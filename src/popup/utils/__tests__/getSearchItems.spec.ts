@@ -116,6 +116,39 @@ describe("convertToSearchItemsFromBookmarks", () => {
     ]);
   });
 
+  it("uses fallback title when bookmark title is empty", () => {
+    const bookmark = generateBookmark({
+      title: "",
+    });
+    const fallbackTitleByUrl = new Map([[bookmark.url!, "Fallback Page Title"]]);
+
+    const searchItems = convertToSearchItemsFromBookmarks([bookmark], fallbackTitleByUrl);
+
+    expect(searchItems).toEqual([
+      {
+        bookmarkId: bookmark.id,
+        faviconUrl: faviconUrl(bookmark.url!),
+        folderName: "",
+        searchTerm: `Fallback Page Title ${bookmark.url}`,
+        title: "Fallback Page Title",
+        type: SEARCH_ITEM_TYPE.BOOKMARK,
+        url: bookmark.url,
+      },
+    ]);
+  });
+
+  it("keeps bookmark title when fallback title exists", () => {
+    const bookmark = generateBookmark({
+      title: "Bookmark Title",
+    });
+    const fallbackTitleByUrl = new Map([[bookmark.url!, "Fallback Page Title"]]);
+
+    const searchItems = convertToSearchItemsFromBookmarks([bookmark], fallbackTitleByUrl);
+
+    expect(searchItems[0]?.title).toBe("Bookmark Title");
+    expect(searchItems[0]?.searchTerm).toBe(`Bookmark Title ${bookmark.url}`);
+  });
+
   describe("convertToSearchItemsFromHistories", () => {
     it("get search items from histories", () => {
       const histories = [

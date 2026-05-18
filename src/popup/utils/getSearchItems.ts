@@ -79,6 +79,7 @@ export function convertToSearchItemsFromHistories(histories: History.HistoryItem
 
 export function convertToSearchItemsFromBookmarks(
   bookmarkTreeNodes: Bookmarks.BookmarkTreeNode[],
+  fallbackTitleByUrl = new Map<string, string>(),
 ): SearchItem[] {
   // This keeps the current traversal behavior until the bookmark conversion is refactored.
   const result: SearchItem[] = [];
@@ -96,12 +97,18 @@ export function convertToSearchItemsFromBookmarks(
 
       // Exclude the top level folder name.
       const folderName = node.parentId === "1" ? "" : folderNames.filter((name) => name).join("/");
+      const title = node.title || fallbackTitleByUrl.get(node.url) || node.url;
+      const searchTerm =
+        title === node.url
+          ? generateSearchTerm(node.url, folderName)
+          : generateSearchTerm(title, node.url, folderName);
+
       result.push({
         bookmarkId: node.id,
         faviconUrl: faviconUrl(node.url),
         folderName,
-        searchTerm: generateSearchTerm(node.title, node.url, folderName),
-        title: node.title || node.url,
+        searchTerm,
+        title,
         type: SEARCH_ITEM_TYPE.BOOKMARK,
         url: node.url,
       });
@@ -127,6 +134,18 @@ export function convertToSearchItemsFromTabs(tabs: Tabs.Tab[]): SearchItem[] {
     .sort((a, b) => (b.lastVisitTime ?? 0) - (a.lastVisitTime ?? 0));
 }
 
+function createFallbackTitleByUrl(searchItems: SearchItem[]) {
+  const fallbackTitleByUrl = new Map<string, string>();
+
+  searchItems.forEach((searchItem) => {
+    if (searchItem.title && searchItem.title !== searchItem.url) {
+      fallbackTitleByUrl.set(searchItem.url, searchItem.title);
+    }
+  });
+
+  return fallbackTitleByUrl;
+}
+
 export async function getSearchItems({
   historyLimit = HISTORY_FETCH_LIMIT,
   includeBookmarks = true,
@@ -150,9 +169,13 @@ export async function getSearchItems({
     }),
   ]);
 
+  const tabSearchItems = convertToSearchItemsFromTabs(tabs);
+  const historySearchItems = convertToSearchItemsFromHistories(histories);
+  const fallbackTitleByUrl = createFallbackTitleByUrl([...historySearchItems, ...tabSearchItems]);
+
   return {
-    bookmarks: convertToSearchItemsFromBookmarks(bookmarks),
-    histories: convertToSearchItemsFromHistories(histories),
-    tabs: convertToSearchItemsFromTabs(tabs),
+    bookmarks: convertToSearchItemsFromBookmarks(bookmarks, fallbackTitleByUrl),
+    histories: historySearchItems,
+    tabs: tabSearchItems,
   };
 }
