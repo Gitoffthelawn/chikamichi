@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.1.6
+
+### performance
+
+- Reuse popup search indexes while typing
+- Load a lightweight search dataset before the full history and bookmarks dataset
+- Shorten opening feedback from 700ms to 400ms
+
+## 4.1.5
+
+### design
+
+- Polish popup result badges, favorites, drag handles, and scrollbars
+
+### test
+
+- Stabilize popup Playwright tests with test ids
+
 ## 4.1.4
 
 ### feature

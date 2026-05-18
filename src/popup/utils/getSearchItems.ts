@@ -1,6 +1,11 @@
 import browser, { type Bookmarks, type History, type Tabs } from "webextension-polyfill";
 import { HISTORY_FETCH_DAYS, HISTORY_FETCH_LIMIT, SEARCH_ITEM_TYPE } from "~/constants";
 
+type GetSearchItemsOptions = {
+  historyLimit?: number;
+  includeBookmarks?: boolean;
+};
+
 export function faviconUrl(url: string) {
   const hostname = new URL(url).hostname.replace(/^www\./u, "");
   return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
@@ -122,7 +127,10 @@ export function convertToSearchItemsFromTabs(tabs: Tabs.Tab[]): SearchItem[] {
     .sort((a, b) => (b.lastVisitTime ?? 0) - (a.lastVisitTime ?? 0));
 }
 
-export async function getSearchItems() {
+export async function getSearchItems({
+  historyLimit = HISTORY_FETCH_LIMIT,
+  includeBookmarks = true,
+}: GetSearchItemsOptions = {}) {
   if (typeof window !== "undefined" && (window as any).chikamichiMockSearchItems) {
     return (window as any).chikamichiMockSearchItems as {
       bookmarks: SearchItem[];
@@ -134,9 +142,9 @@ export async function getSearchItems() {
   const startTime = new Date().setDate(new Date().getDate() - HISTORY_FETCH_DAYS);
   const [tabs, bookmarks, histories] = await Promise.all([
     browser.tabs.query({ currentWindow: true }),
-    browser.bookmarks.getTree(),
+    includeBookmarks ? browser.bookmarks.getTree() : Promise.resolve([]),
     browser.history.search({
-      maxResults: HISTORY_FETCH_LIMIT,
+      maxResults: historyLimit,
       startTime,
       text: "",
     }),

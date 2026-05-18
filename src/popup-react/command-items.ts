@@ -103,6 +103,7 @@ type BuildCommandItemsInput = {
   openStatsLookup?: OpenStatsLookup;
   query: string;
   recentContext?: RecentContextBoost;
+  searchIndexes?: CommandSearchIndexes;
   searchEngine: SearchEngineState;
 };
 
@@ -114,6 +115,14 @@ type CommandExecutionContext = {
 
 type ActionSearchDocument = ActionItem & {
   searchTerm: string;
+};
+
+export type CommandSearchIndexes = {
+  actions: Fuse<ActionSearchDocument>;
+  bookmarks: Fuse<SearchItem>;
+  histories: Fuse<SearchItem>;
+  tabs: Fuse<SearchItem>;
+  all: Fuse<SearchItem>;
 };
 
 const ACTION_SEARCH_OPTIONS = {
@@ -259,6 +268,35 @@ function getTargetItems(collections: SearchCollections, target: ParsedCommandQue
   return [...collections.histories, ...collections.bookmarks, ...collections.tabs];
 }
 
+export function createCommandSearchIndexes(
+  collections: SearchCollections,
+  actionItems: ActionItem[],
+): CommandSearchIndexes {
+  return {
+    actions: new Fuse(actionItems.map(toActionSearchDocument), ACTION_SEARCH_OPTIONS),
+    all: createSearchFuseIndex(getTargetItems(collections, "all")),
+    bookmarks: createSearchFuseIndex(collections.bookmarks),
+    histories: createSearchFuseIndex(collections.histories),
+    tabs: createSearchFuseIndex(collections.tabs),
+  };
+}
+
+function getTargetIndex(indexes: CommandSearchIndexes, target: ParsedCommandQuery["target"]) {
+  if (target === "bookmarks") {
+    return indexes.bookmarks;
+  }
+
+  if (target === "histories") {
+    return indexes.histories;
+  }
+
+  if (target === "tabs") {
+    return indexes.tabs;
+  }
+
+  return indexes.all;
+}
+
 function isActionVerbQuery(searchQuery: string) {
   const tokens = tokenize(searchQuery);
   return tokens.some((token) => (ACTION_INTENT_TOKENS as readonly string[]).includes(token));
@@ -331,8 +369,9 @@ function getPageCommandItems(input: BuildCommandItemsInput, parsedQuery: ParsedC
     return getInitialPageCommandItems(input, parsedQuery);
   }
 
-  const targetItems = getTargetItems(input.collections, parsedQuery.target);
-  const fuseIndex = createSearchFuseIndex(targetItems);
+  const indexes =
+    input.searchIndexes ?? createCommandSearchIndexes(input.collections, input.actionItems);
+  const fuseIndex = getTargetIndex(indexes, parsedQuery.target);
   const searchResults = sortAndFormatSearchResult(
     fuseIndex.search(parsedQuery.searchQuery, {
       limit: SEARCH_RESULT_LIMIT,
@@ -372,6 +411,8 @@ function toActionCommandItem(
 }
 
 function getActionCommandItems(input: BuildCommandItemsInput, parsedQuery: ParsedCommandQuery) {
+  const indexes =
+    input.searchIndexes ?? createCommandSearchIndexes(input.collections, input.actionItems);
   const documents = input.actionItems.map(toActionSearchDocument);
 
   if (!parsedQuery.searchQuery) {
@@ -401,7 +442,7 @@ function getActionCommandItems(input: BuildCommandItemsInput, parsedQuery: Parse
     return favoriteActions;
   }
 
-  const fuseIndex = new Fuse(documents, ACTION_SEARCH_OPTIONS);
+  const fuseIndex = indexes.actions;
   const queryTokens = tokenize(parsedQuery.searchQuery);
 
   return fuseIndex
@@ -551,11 +592,18 @@ export function detectQueryIntent(parsedQuery: ParsedCommandQuery): QueryIntent 
 }
 
 export function buildCommandItems(input: BuildCommandItemsInput) {
+  const inputWithIndexes =
+    input.searchIndexes === undefined
+      ? {
+          ...input,
+          searchIndexes: createCommandSearchIndexes(input.collections, input.actionItems),
+        }
+      : input;
   const parsedQuery = parseCommandQuery(input.query);
   const intent = detectQueryIntent(parsedQuery);
-  const pageItems = getPageCommandItems(input, parsedQuery);
-  const actionItems = getActionCommandItems(input, parsedQuery);
-  const browserSearchItem = getBrowserSearchCommandItem(input, parsedQuery, pageItems);
+  const pageItems = getPageCommandItems(inputWithIndexes, parsedQuery);
+  const actionItems = getActionCommandItems(inputWithIndexes, parsedQuery);
+  const browserSearchItem = getBrowserSearchCommandItem(inputWithIndexes, parsedQuery, pageItems);
 
   const items: Array<CommandItem | null> = [...pageItems, ...actionItems, browserSearchItem];
 
@@ -565,7 +613,7 @@ export function buildCommandItems(input: BuildCommandItemsInput) {
     .sort((left, right) => left.ranking.finalScore - right.ranking.finalScore);
 
   if (!parsedQuery.searchQuery && !parsedQuery.actionForced && parsedQuery.target === "all") {
-    const favoriteOrder = input.favoriteOrder ?? [];
+    const favoriteOrder = inputWithIndexes.favoriteOrder ?? [];
     const favoriteOrderIndex = new Map(favoriteOrder.map((id, index) => [id, index]));
 
     sortedItems.sort((left, right) => {

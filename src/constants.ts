@@ -6,6 +6,8 @@ const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 export const HISTORY_FETCH_DAYS = 180;
 // Maximum browser history entries loaded at once.
 export const HISTORY_FETCH_LIMIT = 10000;
+// Smaller history batch used for the first popup render.
+export const HISTORY_INITIAL_FETCH_LIMIT = 200;
 // Maximum rendered search results.
 export const SEARCH_RESULT_LIMIT = 100;
 

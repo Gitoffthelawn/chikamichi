@@ -286,7 +286,7 @@ test.describe("popup", () => {
 
     await expect(page.locator("[data-testid=opening-overlay]")).toBeVisible();
     await expect(input).toBeDisabled();
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(250);
     await expect.poll(() => getMockCalls(page, "close")).toHaveLength(0);
     await expect.poll(() => getMockCalls(page, "close")).toHaveLength(1);
   });

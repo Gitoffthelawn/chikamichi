@@ -9,6 +9,7 @@ import {
   recordOpenedUrl,
 } from "~/core/storage";
 import {
+  HISTORY_INITIAL_FETCH_LIMIT,
   SEARCH_ICON_DATA_URL_DARK,
   SEARCH_ICON_DATA_URL_LIGHT,
   SEARCH_ITEM_TYPE,
@@ -20,7 +21,12 @@ import { toggleFavoriteItems } from "~/popup-react/favorites";
 import { SearchFooter } from "~/popup-react/components/search-page/SearchFooter";
 import { SearchInputBar } from "~/popup-react/components/search-page/SearchInputBar";
 import { SearchResultsPanel } from "~/popup-react/components/search-page/SearchResultsPanel";
-import { buildCommandItems, executeCommand, type CommandItem } from "~/popup-react/command-items";
+import {
+  buildCommandItems,
+  createCommandSearchIndexes,
+  executeCommand,
+  type CommandItem,
+} from "~/popup-react/command-items";
 import { useActionItems } from "~/popup-react/hooks/use-action-items";
 import { useFeedbackBadge } from "~/popup-react/hooks/use-feedback-badge";
 import { EMPTY_COLLECTIONS, getResolvedTheme, reportError } from "~/popup-react/utils";
@@ -35,7 +41,7 @@ type BrowserSearchWithDisposition = typeof browser.search & {
   Disposition: Record<"CURRENT_TAB" | "NEW_TAB", Search.Disposition>;
 };
 
-const OPENING_MIN_VISIBLE_MS = 700;
+const OPENING_MIN_VISIBLE_MS = 400;
 
 function moveArrayItem<T>(items: T[], fromIndex: number, toIndex: number) {
   if (
@@ -85,6 +91,31 @@ function getHostname(value?: string | null) {
   }
 }
 
+function reportPerformanceMeasure(name: string, duration: number) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent("chikamichi:performance", {
+      detail: {
+        duration,
+        name,
+      },
+    }),
+  );
+}
+
+async function measureAsync<T>(name: string, task: () => Promise<T>) {
+  const startedAt = performance.now();
+
+  try {
+    return await task();
+  } finally {
+    reportPerformanceMeasure(name, performance.now() - startedAt);
+  }
+}
+
 export function SearchPage({
   onUpdateSettings,
   settings,
@@ -112,6 +143,7 @@ export function SearchPage({
   const resultRefs = useRef<Array<HTMLElement | null>>([]);
   const resultsWrapperRef = useRef<HTMLDivElement>(null);
   const preserveSelectionOnCollectionsChangeRef = useRef(false);
+  const searchWordRef = useRef(searchWord);
   const selectedNumberRef = useRef(0);
   const suppressHoverSelectionRef = useRef(false);
   const lastPointerPositionRef = useRef<{ x: number; y: number } | null>(null);
@@ -180,6 +212,10 @@ export function SearchPage({
     setSearchWord(settings.defaultSearchPrefix);
   }, [settings.defaultSearchPrefix]);
 
+  useEffect(() => {
+    searchWordRef.current = searchWord;
+  }, [searchWord]);
+
   const loadActiveTab = useCallback(async () => {
     const mockActiveTab = getMockActiveTab();
     if (mockActiveTab) {
@@ -203,13 +239,44 @@ export function SearchPage({
   }, [getMockActiveTab]);
 
   useEffect(() => {
-    loadActiveTab().catch(reportError);
+    let cancelled = false;
 
-    getSearchItems().then(setCollections).catch(reportError);
+    measureAsync("load-active-tab", loadActiveTab).catch(reportError);
 
-    getOpenStats().then(setOpenStats).catch(reportError);
+    measureAsync("load-initial-search-items", () =>
+      getSearchItems({
+        historyLimit: HISTORY_INITIAL_FETCH_LIMIT,
+        includeBookmarks: false,
+      }),
+    )
+      .then((initialCollections) => {
+        if (cancelled) {
+          return;
+        }
+
+        setCollections(initialCollections);
+
+        return measureAsync("load-full-search-items", getSearchItems).then((fullCollections) => {
+          if (cancelled) {
+            return;
+          }
+
+          if (searchWordRef.current) {
+            preserveSelectionOnCollectionsChangeRef.current = true;
+          }
+
+          setCollections(fullCollections);
+        });
+      })
+      .catch(reportError);
+
+    measureAsync("load-open-stats", getOpenStats).then(setOpenStats).catch(reportError);
 
     inputRef.current?.focus();
+
+    return () => {
+      cancelled = true;
+    };
   }, [loadActiveTab]);
 
   useEffect(() => {
@@ -302,6 +369,13 @@ export function SearchPage({
     showBadge,
   });
 
+  const searchIndexes = useMemo(() => {
+    const startedAt = performance.now();
+    const indexes = createCommandSearchIndexes(collections, actionItems);
+    reportPerformanceMeasure("build-search-indexes", performance.now() - startedAt);
+    return indexes;
+  }, [actionItems, collections]);
+
   const closePopup = useCallback(() => {
     window.close();
   }, []);
@@ -356,6 +430,7 @@ export function SearchPage({
         query: searchWord,
         recentContext,
         searchEngine,
+        searchIndexes,
       }),
     [
       actionItems,
@@ -368,6 +443,7 @@ export function SearchPage({
       recentContext,
       searchEngine,
       searchWord,
+      searchIndexes,
     ],
   );
 
