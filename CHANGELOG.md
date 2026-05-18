@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.1.3
+
+### bugfix
+
+- Deduplicate similar history search results while preserving meaningful query parameters
+- Show a fallback globe icon when a favicon is unavailable
+
 ## 4.1.2
 
 ### feature
