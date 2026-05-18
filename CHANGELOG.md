@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.1.4
+
+### feature
+
+- Add configurable popup width and height settings
+- Compact popup controls and result rows for smaller window sizes
+
+### bugfix
+
+- Keep footer notifications from breaking the shortcut footer layout
+
 ## 4.1.3
 
 ### bugfix
