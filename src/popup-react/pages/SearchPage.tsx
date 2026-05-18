@@ -996,7 +996,7 @@ export function SearchPage({
   };
 
   return (
-    <section className="h-full overflow-hidden" data-cy="page-search">
+    <section className="h-full overflow-hidden" data-testid="page-search">
       <div className="flex h-full min-h-0 flex-col gap-2 overflow-hidden">
         <SearchInputBar
           actionMode={actionMode}

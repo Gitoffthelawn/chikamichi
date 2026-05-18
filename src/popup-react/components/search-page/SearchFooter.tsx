@@ -29,7 +29,8 @@ export function SearchFooter({ badgeText, badgeVisible, openLinkInCurrentTab }: 
           "absolute right-0 top-1/2 z-10 inline-flex max-w-[70%] -translate-y-1/2 items-center gap-1 truncate rounded-full border border-primary/20 bg-primary px-2 py-1 text-[10px] font-semibold leading-none text-primary-foreground shadow-[0_8px_18px_rgba(42,91,199,0.2),inset_0_1px_0_rgba(255,255,255,0.18)] transition-all duration-200 ease-out dark:border-primary/35 dark:shadow-[0_10px_24px_rgba(10,18,35,0.36),inset_0_1px_0_rgba(255,255,255,0.28)]",
           badgeVisible ? "opacity-100" : "pointer-events-none translate-y-0 opacity-0",
         )}
-        data-cy="action-feedback"
+        data-testid="action-feedback"
+        data-layout="overlay"
       >
         <Check className="size-3 shrink-0" />
         <span className="min-w-0 truncate">{badgeText}</span>

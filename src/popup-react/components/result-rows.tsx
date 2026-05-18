@@ -62,7 +62,7 @@ function SourceTypeBadge({ index, type }: { index: number; type: SearchResult["t
     <Badge
       aria-label={type}
       className="size-5 justify-center p-0"
-      data-cy={`search-result-type-${index}`}
+      data-testid={`search-result-type-${index}`}
       title={type}
       variant="secondary"
     >
@@ -120,7 +120,7 @@ const SearchResultRow = memo(function SearchResultRow({
         draggedFavoriteIndex === index ? "opacity-55" : "",
         dragOverFavoriteIndex === index ? "shadow-[inset_0_0_0_1px_rgba(90,145,255,0.26)]" : "",
       )}
-      data-cy={`search-result-${index}`}
+      data-testid={`search-result-${index}`}
       data-selected={selected}
       draggable={false}
       ref={rowRef}
@@ -163,7 +163,7 @@ const SearchResultRow = memo(function SearchResultRow({
             "flex size-3.5 cursor-grab items-center justify-center rounded-md text-foreground/34 opacity-0 transition-opacity group-hover:opacity-100",
             selected ? "opacity-100 text-primary/70" : "",
           )}
-          data-cy={`favorite-drag-handle-${index}`}
+          data-testid={`favorite-drag-handle-${index}`}
           draggable
           type="button"
           onClick={(event) => {
@@ -201,7 +201,8 @@ const SearchResultRow = memo(function SearchResultRow({
                 ? "border-transparent bg-secondary text-secondary-foreground"
                 : "border-transparent bg-secondary text-secondary-foreground/72",
             )}
-            data-cy={`search-result-favorite-${index}`}
+            data-testid={`search-result-favorite-${index}`}
+            data-size="compact"
             type="button"
             onClick={(event) => {
               event.stopPropagation();
@@ -274,7 +275,7 @@ const ActionResultRow = memo(function ActionResultRow({
         draggedFavoriteIndex === index ? "opacity-55" : "",
         dragOverFavoriteIndex === index ? "shadow-[inset_0_0_0_1px_rgba(90,145,255,0.26)]" : "",
       )}
-      data-cy={`action-result-${index}`}
+      data-testid={`action-result-${index}`}
       data-selected={selected}
       key={id}
       ref={rowRef}
@@ -317,7 +318,7 @@ const ActionResultRow = memo(function ActionResultRow({
             "flex size-3.5 cursor-grab items-center justify-center rounded-md text-foreground/34 opacity-0 transition-opacity group-hover:opacity-100",
             selected ? "opacity-100 text-primary/70" : "",
           )}
-          data-cy={`favorite-drag-handle-${index}`}
+          data-testid={`favorite-drag-handle-${index}`}
           draggable
           type="button"
           onClick={(event) => {
@@ -352,7 +353,8 @@ const ActionResultRow = memo(function ActionResultRow({
             "flex size-5 items-center justify-center rounded-full border border-transparent bg-secondary",
             isFavorite ? "text-secondary-foreground" : "text-secondary-foreground/72",
           )}
-          data-cy={`action-result-favorite-${index}`}
+          data-testid={`action-result-favorite-${index}`}
+          data-size="compact"
           type="button"
           onClick={(event) => {
             event.stopPropagation();
@@ -453,7 +455,7 @@ export const CommandResultRow = memo(function CommandResultRow({
         "grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-row px-3 py-2 text-left",
         selected ? "interactive-row-selected" : "interactive-row",
       )}
-      data-cy="browser-search-btn"
+      data-testid="browser-search-btn"
       data-selected={selected}
       ref={rowRef}
       type="button"

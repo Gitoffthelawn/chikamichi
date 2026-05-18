@@ -27,7 +27,7 @@ export function SearchInputBar({
       <Input
         autoComplete="off"
         className="h-full border-0 bg-transparent px-0 text-[13px] leading-none text-foreground/[0.92] shadow-none focus-visible:ring-0 dark:text-white"
-        data-cy="search-input"
+        data-testid="search-input"
         disabled={opening}
         placeholder={actionMode ? t("actionModePlaceholder") : t("placeholderSearch")}
         ref={inputRef}

@@ -21,14 +21,14 @@ export function SettingPage({
   settings: AppSettings;
 }) {
   return (
-    <PageShell dataCy="page-setting" title={t("settingTitle")}>
+    <PageShell testId="page-setting" title={t("settingTitle")}>
       <div className="space-y-0 rounded-panel bg-card/[0.1]">
         <div className="panel-surface space-y-0 px-3.5 py-3">
           <SettingRow title={t("prefixTitle")}>
             <div className="relative">
               <select
                 className="flex h-7 w-full appearance-none rounded-control border border-border-control/[0.5] bg-control-surface/[0.92] px-2 pr-7 text-[11px] leading-none text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border-control/[0.28] dark:bg-control-surface/[0.8]"
-                data-cy="select-prefix"
+                data-testid="select-prefix"
                 style={{
                   colorScheme: getResolvedTheme(settings.theme) === THEME.DARK ? "dark" : "light",
                 }}
@@ -70,7 +70,7 @@ export function SettingPage({
               {[LANGUAGE.AUTO, LANGUAGE.EN, LANGUAGE.JA].map((option) => (
                 <SettingToggleButton
                   active={settings.language === option}
-                  data-cy={`language-${option}`}
+                  data-testid={`language-${option}`}
                   key={option}
                   type="button"
                   onClick={() => {
@@ -88,7 +88,7 @@ export function SettingPage({
             <div className="segmented-control grid grid-cols-2 gap-2">
               <SettingToggleButton
                 active={settings.openLinkInCurrentTab}
-                data-cy="open-link-in-current-tab"
+                data-testid="open-link-in-current-tab"
                 type="button"
                 onClick={() => {
                   onUpdateSettings({
@@ -100,7 +100,7 @@ export function SettingPage({
               </SettingToggleButton>
               <SettingToggleButton
                 active={!settings.openLinkInCurrentTab}
-                data-cy="open-link-in-new-tab"
+                data-testid="open-link-in-new-tab"
                 type="button"
                 onClick={() => {
                   onUpdateSettings({
@@ -120,7 +120,7 @@ export function SettingPage({
                 </span>
                 <select
                   className="flex h-7 w-full appearance-none rounded-control border border-border-control/[0.5] bg-control-surface/[0.92] px-2 text-[11px] leading-none text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border-control/[0.28] dark:bg-control-surface/[0.8]"
-                  data-cy="select-popup-width"
+                  data-testid="select-popup-width"
                   style={{
                     colorScheme: getResolvedTheme(settings.theme) === THEME.DARK ? "dark" : "light",
                   }}
@@ -145,7 +145,7 @@ export function SettingPage({
                 </span>
                 <select
                   className="flex h-7 w-full appearance-none rounded-control border border-border-control/[0.5] bg-control-surface/[0.92] px-2 text-[11px] leading-none text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring dark:border-border-control/[0.28] dark:bg-control-surface/[0.8]"
-                  data-cy="select-popup-height"
+                  data-testid="select-popup-height"
                   style={{
                     colorScheme: getResolvedTheme(settings.theme) === THEME.DARK ? "dark" : "light",
                   }}

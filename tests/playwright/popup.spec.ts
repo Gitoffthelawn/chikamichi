@@ -87,51 +87,57 @@ test.describe("popup", () => {
     });
 
     await page.goto("/popup.html");
-    await expect(page.locator("[data-cy=search-input]")).toBeVisible();
+    await expect(page.locator("[data-testid=search-input]")).toBeVisible();
   });
 
   test("searches tabs, bookmarks and histories", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
 
     await input.fill("tab-item-0");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("tab-item-0");
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("tab");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("tab-item-0");
+    await expect(page.locator("[data-testid=search-result-type-0]")).toHaveAccessibleName("tab");
 
     await input.fill("bookmark-item-0");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("bookmark");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("bookmark-item-0");
+    await expect(page.locator("[data-testid=search-result-type-0]")).toHaveAccessibleName(
+      "bookmark",
+    );
 
     await input.fill("history-item-0");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-0");
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("history");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("history-item-0");
+    await expect(page.locator("[data-testid=search-result-type-0]")).toHaveAccessibleName(
+      "history",
+    );
   });
 
   test("shows tabs and histories in most-recent-first order for prefix searches", async ({
     page,
   }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
 
     await input.fill("/t");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("tab-item-15");
-    await expect(page.locator("[data-cy=search-result-1]")).toContainText("tab-item-14");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("tab-item-15");
+    await expect(page.locator("[data-testid=search-result-1]")).toContainText("tab-item-14");
 
     await input.fill("/h");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-15");
-    await expect(page.locator("[data-cy=search-result-1]")).toContainText("history-item-14");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("history-item-15");
+    await expect(page.locator("[data-testid=search-result-1]")).toContainText("history-item-14");
   });
 
   test("shows bookmark folder names", async ({ page }) => {
-    await page.locator("[data-cy=search-input]").fill("folder-item");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("folder-item");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("folder");
-    await expect(page.locator("[data-cy=search-result-1]")).toContainText("nested-folder-item");
-    await expect(page.locator("[data-cy=search-result-1]")).toContainText("folder/nested-folder");
+    await page.locator("[data-testid=search-input]").fill("folder-item");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("folder-item");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("folder");
+    await expect(page.locator("[data-testid=search-result-1]")).toContainText("nested-folder-item");
+    await expect(page.locator("[data-testid=search-result-1]")).toContainText(
+      "folder/nested-folder",
+    );
   });
 
   test("falls back to browser search", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("unknown-item");
-    await expect(page.locator("[data-cy=browser-search-btn]")).toContainText(
+    await expect(page.locator("[data-testid=browser-search-btn]")).toContainText(
       'Search "unknown-item"',
     );
     await input.press("Enter");
@@ -143,21 +149,23 @@ test.describe("popup", () => {
   });
 
   test("keeps page results above actions for navigation-like queries", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("bookmark-item-0");
 
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("bookmark");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("bookmark-item-0");
+    await expect(page.locator("[data-testid=search-result-type-0]")).toHaveAccessibleName(
+      "bookmark",
+    );
   });
 
   test("shows actions above pages for action-like queries in the unified list", async ({
     page,
   }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("copy");
 
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Copy Markdown Link");
-    await expect(page.locator("[data-cy=action-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Copy Markdown Link");
+    await expect(page.locator("[data-testid=action-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
@@ -166,34 +174,34 @@ test.describe("popup", () => {
     await expect
       .poll(() => getLastMockCall<string[]>(page, "copy"))
       .toEqual(["[tab-item-0](https://tab-item.com/0)"]);
-    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Copied Markdown");
+    await expect(page.locator("[data-testid=action-feedback]")).toContainText("Copied Markdown");
   });
 
   test("does not boost action-looking substrings above page results", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("pinboard");
 
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("Pinboard");
-    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("Pinboard");
+    await expect(page.locator("[data-testid=search-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
   });
 
   test("moves selection and opens pages through background messaging", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("history-item");
-    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
     await input.press("Control+n");
-    await expect(page.locator("[data-cy=search-result-1]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-1]")).toHaveAttribute(
       "data-selected",
       "true",
     );
     await input.press("ArrowUp");
-    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
@@ -235,19 +243,19 @@ test.describe("popup", () => {
     });
     await page.goto("/popup.html");
 
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("hatena");
 
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("tab");
-    await expect(page.locator("[data-cy=search-result-type-1]")).toHaveAccessibleName("tab");
-    await expect(page.locator("[data-cy=search-result-type-2]")).toHaveCount(0);
-    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-type-0]")).toHaveAccessibleName("tab");
+    await expect(page.locator("[data-testid=search-result-type-1]")).toHaveAccessibleName("tab");
+    await expect(page.locator("[data-testid=search-result-type-2]")).toHaveCount(0);
+    await expect(page.locator("[data-testid=search-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
 
     await input.press("Control+n");
-    await expect(page.locator("[data-cy=search-result-1]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-1]")).toHaveAttribute(
       "data-selected",
       "true",
     );
@@ -268,15 +276,15 @@ test.describe("popup", () => {
         });
     });
 
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("history-item");
-    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
     await input.press("Enter");
 
-    await expect(page.locator("[data-cy=opening-overlay]")).toBeVisible();
+    await expect(page.locator("[data-testid=opening-overlay]")).toBeVisible();
     await expect(input).toBeDisabled();
     await page.waitForTimeout(600);
     await expect.poll(() => getMockCalls(page, "close")).toHaveLength(0);
@@ -284,9 +292,9 @@ test.describe("popup", () => {
   });
 
   test("records opened results for learned ranking", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("/h history-item-0");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-0");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("history-item-0");
     await input.press("Enter");
 
     await expect
@@ -327,36 +335,39 @@ test.describe("popup", () => {
       tabs: [],
     });
     await page.goto("/popup.html");
-    await expect(page.locator("[data-cy=search-input]")).toBeVisible();
+    await expect(page.locator("[data-testid=search-input]")).toBeVisible();
 
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("/h shared-history");
 
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText(
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText(
       "https://history-item.com/14",
     );
   });
 
   test("keeps keyboard selection stable while scrolling long results", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("/h history-item");
-    await expect(page.locator("[data-cy=search-result-wrapper]")).toHaveJSProperty("scrollTop", 0);
+    await expect(page.locator("[data-testid=search-result-wrapper]")).toHaveJSProperty(
+      "scrollTop",
+      0,
+    );
 
     await pressMany(input, "Control+n", 15);
 
-    await expect(page.locator("[data-cy=search-result-15]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-15]")).toHaveAttribute(
       "data-selected",
       "true",
     );
-    await expect(page.locator("[data-cy=search-result-wrapper]")).not.toHaveJSProperty(
+    await expect(page.locator("[data-testid=search-result-wrapper]")).not.toHaveJSProperty(
       "scrollTop",
       0,
     );
   });
 
   test("resets result panel scroll when the query changes", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
-    const resultsWrapper = page.locator("[data-cy=search-result-wrapper]");
+    const input = page.locator("[data-testid=search-input]");
+    const resultsWrapper = page.locator("[data-testid=search-result-wrapper]");
 
     await input.fill("/h history-item");
     await pressMany(input, "Control+n", 15);
@@ -364,31 +375,31 @@ test.describe("popup", () => {
 
     await input.fill("/h history-item-0");
     await expect(resultsWrapper).toHaveJSProperty("scrollTop", 0);
-    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
   });
 
   test("closes the popup with escape", async ({ page }) => {
-    await page.locator("[data-cy=search-input]").press("Escape");
+    await page.locator("[data-testid=search-input]").press("Escape");
     const closeCalls = await getMockCalls(page, "close");
     expect(closeCalls.length).toBeGreaterThan(0);
   });
 
   test("changes the default prefix in settings", async ({ page }) => {
-    await page.locator("[data-cy=setting-tab-btn]").click();
-    await expect(page.locator("[data-cy=page-setting]")).toBeVisible();
-    await page.locator("[data-cy=select-prefix]").selectOption(SEARCH_PREFIX.BOOKMARK);
-    await page.locator("[data-cy=search-tab-btn]").click();
-    await expect(page.locator("[data-cy=page-search]")).toBeVisible();
-    await expect(page.locator("[data-cy=search-input]")).toHaveValue(SEARCH_PREFIX.BOOKMARK);
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
+    await page.locator("[data-testid=setting-tab-btn]").click();
+    await expect(page.locator("[data-testid=page-setting]")).toBeVisible();
+    await page.locator("[data-testid=select-prefix]").selectOption(SEARCH_PREFIX.BOOKMARK);
+    await page.locator("[data-testid=search-tab-btn]").click();
+    await expect(page.locator("[data-testid=page-search]")).toBeVisible();
+    await expect(page.locator("[data-testid=search-input]")).toHaveValue(SEARCH_PREFIX.BOOKMARK);
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("bookmark-item-0");
   });
 
   test("renders info and settings pages", async ({ page }) => {
-    await page.locator("[data-cy=info-tab-btn]").click();
-    await expect(page.locator("[data-cy=page-info]")).toBeVisible();
+    await page.locator("[data-testid=info-tab-btn]").click();
+    await expect(page.locator("[data-testid=page-info]")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Help" })).toBeVisible();
     await expect(page.getByText("Search", { exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Navigation" })).toBeVisible();
@@ -400,8 +411,8 @@ test.describe("popup", () => {
     await expect(page.getByText("Open Issue")).toBeVisible();
     await expect(page.getByText("Version 4.1.1")).toBeVisible();
 
-    await page.locator("[data-cy=setting-tab-btn]").click();
-    await expect(page.locator("[data-cy=page-setting]")).toBeVisible();
+    await page.locator("[data-testid=setting-tab-btn]").click();
+    await expect(page.locator("[data-testid=page-setting]")).toBeVisible();
     await expect(page.getByText("Default Search Prefix")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Theme" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Display Language" })).toBeVisible();
@@ -412,53 +423,64 @@ test.describe("popup", () => {
   test("changes the popup size in settings", async ({ page }) => {
     await expect(page.locator("main")).toHaveCSS("width", "600px");
     await expect(page.locator("main")).toHaveCSS("height", "400px");
-    await expect(page.locator("[data-cy=search-tab-btn]")).toHaveCSS("width", "30px");
-    await expect(page.locator("[data-cy=search-tab-btn]")).toHaveCSS("height", "30px");
-    await page.locator("[data-cy=setting-tab-btn]").click();
-    await page.locator("[data-cy=select-popup-width]").selectOption(POPUP_WIDTH.XL);
-    await page.locator("[data-cy=select-popup-height]").selectOption(POPUP_HEIGHT.XL);
+    await expect(page.locator("[data-testid=search-tab-btn]")).toHaveAttribute("data-size", "icon");
+    await page.locator("[data-testid=setting-tab-btn]").click();
+    await page.locator("[data-testid=select-popup-width]").selectOption(POPUP_WIDTH.XL);
+    await page.locator("[data-testid=select-popup-height]").selectOption(POPUP_HEIGHT.XL);
     await expect(page.locator("main")).toHaveCSS("width", "800px");
     await expect(page.locator("main")).toHaveCSS("height", "500px");
-    await expect(page.locator("[data-cy=select-popup-width] option")).toHaveText([
+    await expect(page.locator("[data-testid=select-popup-width] option")).toHaveText([
       "500",
       "600",
       "700",
       "800",
     ]);
-    await expect(page.locator("[data-cy=select-popup-height] option")).toHaveText([
+    await expect(page.locator("[data-testid=select-popup-height] option")).toHaveText([
       "350",
       "400",
       "450",
       "500",
     ]);
-    await page.locator("[data-cy=select-popup-width]").selectOption(POPUP_WIDTH.MIN);
-    await page.locator("[data-cy=select-popup-height]").selectOption(POPUP_HEIGHT.MIN);
+    await page.locator("[data-testid=select-popup-width]").selectOption(POPUP_WIDTH.MIN);
+    await page.locator("[data-testid=select-popup-height]").selectOption(POPUP_HEIGHT.MIN);
     await expect(page.locator("main")).toHaveCSS("width", "500px");
     await expect(page.locator("main")).toHaveCSS("height", "350px");
-    await expect(page.locator("[data-cy=page-setting]")).toBeVisible();
-    await expect(page.locator("[data-cy=select-popup-width]")).toBeVisible();
-    await expect(page.locator("[data-cy=select-popup-height]")).toBeVisible();
-    await expect(page.locator("[data-cy=open-link-in-current-tab]")).toContainText("Current tab");
-    await expect(page.locator("[data-cy=open-link-in-new-tab]")).toContainText("New tab");
+    await expect(page.locator("[data-testid=page-setting]")).toBeVisible();
+    await expect(page.locator("[data-testid=select-popup-width]")).toBeVisible();
+    await expect(page.locator("[data-testid=select-popup-height]")).toBeVisible();
+    await expect(page.locator("[data-testid=open-link-in-current-tab]")).toContainText(
+      "Current tab",
+    );
+    await expect(page.locator("[data-testid=open-link-in-new-tab]")).toContainText("New tab");
     await expect
       .poll(() =>
         page
-          .locator("[data-cy=select-popup-width]")
+          .locator("[data-testid=select-popup-width]")
           .evaluate((element) => element.scrollWidth <= element.clientWidth),
       )
       .toBe(true);
-    await page.locator("[data-cy=search-tab-btn]").click();
-    await expect(page.locator("[data-cy=search-input]")).toBeVisible();
-    await page.locator("[data-cy=search-input]").fill("tab-item");
-    await expect(page.locator("[data-cy=search-result-favorite-0]")).toHaveCSS("width", "20px");
-    await expect(page.locator("[data-cy=search-result-favorite-0]")).toHaveCSS("height", "20px");
-    await page.locator("[data-cy=search-result-favorite-0]").click();
-    await expect(page.locator("[data-cy=action-feedback]")).toBeVisible();
-    await expect(page.locator("[data-cy=action-feedback]")).toHaveCSS("position", "absolute");
-    await expect(page.locator("[data-cy=search-result-wrapper]")).toHaveCSS("overflow-y", "auto");
+    await page.locator("[data-testid=search-tab-btn]").click();
+    await expect(page.locator("[data-testid=search-input]")).toBeVisible();
+    await page.locator("[data-testid=search-input]").fill("tab-item");
+    await expect(page.locator("[data-testid=search-result-favorite-0]")).toHaveAttribute(
+      "data-size",
+      "compact",
+    );
+    await page.locator("[data-testid=search-result-favorite-0]").click();
+    await expect(page.locator("[data-testid=action-feedback]")).toBeVisible();
+    await expect(page.locator("[data-testid=action-feedback]")).toHaveAttribute(
+      "data-layout",
+      "overlay",
+    );
+    await expect(page.locator("[data-testid=search-result-wrapper]")).toHaveAttribute(
+      "data-scrollable",
+      "true",
+    );
     await expect
       .poll(() =>
-        page.locator("[data-cy=search-result-wrapper]").evaluate((element) => element.clientHeight),
+        page
+          .locator("[data-testid=search-result-wrapper]")
+          .evaluate((element) => element.clientHeight),
       )
       .toBeGreaterThan(0);
     await expect(getMockStorageValue<string>(page, "chikamichi-popup-width")).resolves.toBe(
@@ -470,11 +492,13 @@ test.describe("popup", () => {
   });
 
   test("changes the display language in settings", async ({ page }) => {
-    await page.locator("[data-cy=setting-tab-btn]").click();
-    await page.locator("[data-cy=language-ja]").click();
+    await page.locator("[data-testid=setting-tab-btn]").click();
+    await page.locator("[data-testid=language-ja]").click();
     await expect(page.getByText("現在タブで開く")).toBeVisible();
-    await expect(page.locator("[data-cy=select-prefix]")).toContainText("/b : ブックマーク検索");
-    await page.locator("[data-cy=info-tab-btn]").click();
+    await expect(page.locator("[data-testid=select-prefix]")).toContainText(
+      "/b : ブックマーク検索",
+    );
+    await page.locator("[data-testid=info-tab-btn]").click();
     await expect(page.getByText("検索対象")).toBeVisible();
     await expect(getMockStorageValue<string>(page, "chikamichi-language")).resolves.toBe(
       JSON.stringify(LANGUAGE.JA),
@@ -482,12 +506,12 @@ test.describe("popup", () => {
   });
 
   test("updates open link behavior in settings", async ({ page }) => {
-    await page.locator("[data-cy=setting-tab-btn]").click();
-    await page.locator("[data-cy=open-link-in-new-tab]").click();
-    await page.locator("[data-cy=search-tab-btn]").click();
-    await page.locator("[data-cy=search-input]").fill("/h history-item-0");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-0");
-    await page.locator("[data-cy=search-input]").press("Enter");
+    await page.locator("[data-testid=setting-tab-btn]").click();
+    await page.locator("[data-testid=open-link-in-new-tab]").click();
+    await page.locator("[data-testid=search-tab-btn]").click();
+    await page.locator("[data-testid=search-input]").fill("/h history-item-0");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("history-item-0");
+    await page.locator("[data-testid=search-input]").press("Enter");
     await expect
       .poll(() => getLastRuntimeMessage(page))
       .toEqual({
@@ -499,14 +523,14 @@ test.describe("popup", () => {
   });
 
   test("toggles favorites and copies current url", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("bookmark-item-0");
-    await page.locator("[data-cy=search-result-favorite-0]").click();
+    await page.locator("[data-testid=search-result-favorite-0]").click();
     await input.fill("");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("bookmark-item-0");
 
     await input.fill("/h history-item-0");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-0");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("history-item-0");
     await input.press("Control+c");
     await expect
       .poll(() => getLastMockCall<string[]>(page, "copy"))
@@ -516,148 +540,148 @@ test.describe("popup", () => {
   test("shows the shared feedback pill when favoriting with the keyboard shortcut", async ({
     page,
   }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("bookmark-item-0");
     await input.press("Control+f");
 
-    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Pinned");
+    await expect(page.locator("[data-testid=action-feedback]")).toContainText("Pinned");
 
     await input.press("Control+f");
-    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Unpinned");
+    await expect(page.locator("[data-testid=action-feedback]")).toContainText("Unpinned");
   });
 
   test("deletes the selected history with the keyboard shortcut", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("/h history-item");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-15");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("history-item-15");
 
     await input.press("Control+d");
     await expect
       .poll(() => getLastMockCall(page, "historyDeleteUrl"))
       .toEqual([{ url: "https://history-item.com/15" }]);
-    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Deleted history");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-14");
-    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=action-feedback]")).toContainText("Deleted history");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("history-item-14");
+    await expect(page.locator("[data-testid=search-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
   });
 
   test("selects the previous result when deleting the last history", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("/h history-item");
     await pressMany(input, "Control+n", 15);
-    await expect(page.locator("[data-cy=search-result-15]")).toContainText("history-item-0");
+    await expect(page.locator("[data-testid=search-result-15]")).toContainText("history-item-0");
 
     await input.press("Control+d");
-    await expect(page.locator("[data-cy=search-result-14]")).toContainText("history-item-1");
-    await expect(page.locator("[data-cy=search-result-14]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=search-result-14]")).toContainText("history-item-1");
+    await expect(page.locator("[data-testid=search-result-14]")).toHaveAttribute(
       "data-selected",
       "true",
     );
   });
 
   test("removes the selected bookmark with the keyboard shortcut", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("bookmark-item");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("bookmark-item-0");
 
     await input.press("Control+d");
     await expect.poll(() => getLastMockCall(page, "bookmarksRemove")).toEqual([expect.any(String)]);
-    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Removed bookmark");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-1");
-    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=action-feedback]")).toContainText("Removed bookmark");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("bookmark-item-1");
+    await expect(page.locator("[data-testid=search-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
   });
 
   test("closes the selected tab with the keyboard shortcut", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("/t tab-item");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("tab-item-15");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("tab-item-15");
 
     await input.press("Control+d");
     await expect.poll(() => getLastMockCall(page, "tabsRemove")).toEqual([16]);
-    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Closed tab");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("tab-item-14");
-    await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=action-feedback]")).toContainText("Closed tab");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("tab-item-14");
+    await expect(page.locator("[data-testid=search-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
   });
 
   test("keeps the selected item anchored when toggling favorite", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("bookmark-item");
     await input.press("Control+n");
     await input.press("Control+n");
     const row = page.getByText("bookmark-item-2").locator("..").locator("..");
     await expect(row).toHaveAttribute("data-selected", "true");
-    await page.locator("[data-cy=search-result-favorite-2]").click();
+    await page.locator("[data-testid=search-result-favorite-2]").click();
     await expect(row).toHaveAttribute("data-selected", "true");
   });
 
   test("does not move a search result when toggling favorite", async ({ page }) => {
-    await page.locator("[data-cy=search-input]").fill("bookmark-item");
-    await expect(page.locator("[data-cy=search-result-1]")).toContainText("bookmark-item-1");
-    await page.locator("[data-cy=search-result-favorite-1]").click();
-    await expect(page.locator("[data-cy=search-result-1]")).toContainText("bookmark-item-1");
+    await page.locator("[data-testid=search-input]").fill("bookmark-item");
+    await expect(page.locator("[data-testid=search-result-1]")).toContainText("bookmark-item-1");
+    await page.locator("[data-testid=search-result-favorite-1]").click();
+    await expect(page.locator("[data-testid=search-result-1]")).toContainText("bookmark-item-1");
   });
 
   test("reorders favorites by drag and drop", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("bookmark-item-0");
-    await page.locator("[data-cy=search-result-favorite-0]").click();
+    await page.locator("[data-testid=search-result-favorite-0]").click();
     await input.fill("bookmark-item-1");
-    await page.locator("[data-cy=search-result-favorite-0]").click();
+    await page.locator("[data-testid=search-result-favorite-0]").click();
     await input.fill("");
 
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
-    await expect(page.locator("[data-cy=search-result-1]")).toContainText("bookmark-item-1");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("bookmark-item-0");
+    await expect(page.locator("[data-testid=search-result-1]")).toContainText("bookmark-item-1");
 
-    await page.locator("[data-cy=search-result-0]").hover();
+    await page.locator("[data-testid=search-result-0]").hover();
     await page
-      .locator("[data-cy=favorite-drag-handle-0]")
-      .dragTo(page.locator("[data-cy=search-result-1]"));
-    await expect(page.locator("[data-cy=search-result-1]")).toContainText("bookmark-item-0");
+      .locator("[data-testid=favorite-drag-handle-0]")
+      .dragTo(page.locator("[data-testid=search-result-1]"));
+    await expect(page.locator("[data-testid=search-result-1]")).toContainText("bookmark-item-0");
   });
 
   test("reorders favorites with keyboard shortcuts", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("bookmark-item-0");
-    await page.locator("[data-cy=search-result-favorite-0]").click();
+    await page.locator("[data-testid=search-result-favorite-0]").click();
     await input.fill("bookmark-item-1");
-    await page.locator("[data-cy=search-result-favorite-0]").click();
+    await page.locator("[data-testid=search-result-favorite-0]").click();
     await input.fill("");
 
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("bookmark-item-0");
     await page.keyboard.down("Control");
     await page.keyboard.down("Shift");
     await page.keyboard.press("N");
     await page.keyboard.up("Shift");
     await page.keyboard.up("Control");
-    await expect(page.locator("[data-cy=search-result-1]")).toContainText("bookmark-item-0");
+    await expect(page.locator("[data-testid=search-result-1]")).toContainText("bookmark-item-0");
   });
 
   test("shows drag handles only in favorite reorder mode", async ({ page }) => {
-    await page.locator("[data-cy=search-input]").fill("bookmark-item");
-    await expect(page.locator("[data-cy=favorite-drag-handle-0]")).toHaveCount(0);
+    await page.locator("[data-testid=search-input]").fill("bookmark-item");
+    await expect(page.locator("[data-testid=favorite-drag-handle-0]")).toHaveCount(0);
 
-    await page.locator("[data-cy=search-input]").fill("bookmark-item-0");
-    await page.locator("[data-cy=search-result-favorite-0]").click();
-    await page.locator("[data-cy=search-input]").fill("bookmark-item-1");
-    await page.locator("[data-cy=search-result-favorite-0]").click();
-    await page.locator("[data-cy=search-input]").fill("");
-    await page.locator("[data-cy=search-result-0]").hover();
+    await page.locator("[data-testid=search-input]").fill("bookmark-item-0");
+    await page.locator("[data-testid=search-result-favorite-0]").click();
+    await page.locator("[data-testid=search-input]").fill("bookmark-item-1");
+    await page.locator("[data-testid=search-result-favorite-0]").click();
+    await page.locator("[data-testid=search-input]").fill("");
+    await page.locator("[data-testid=search-result-0]").hover();
 
-    await expect(page.locator("[data-cy=favorite-drag-handle-0]")).toBeVisible();
+    await expect(page.locator("[data-testid=favorite-drag-handle-0]")).toBeVisible();
   });
 
   test("opens an existing tab by focusing it", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("/t tab-item-0");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("tab-item-0");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("tab-item-0");
     await input.press("Enter");
     await expect
       .poll(() => getLastRuntimeMessage(page))
@@ -670,14 +694,14 @@ test.describe("popup", () => {
   });
 
   test("keeps updated settings after switching pages from the sidebar", async ({ page }) => {
-    await page.locator("[data-cy=setting-tab-btn]").click();
-    await page.locator("[data-cy=open-link-in-new-tab]").click();
-    await page.locator("[data-cy=info-tab-btn]").click();
-    await expect(page.locator("[data-cy=page-info]")).toBeVisible();
-    await page.locator("[data-cy=search-tab-btn]").click();
-    await page.locator("[data-cy=search-input]").fill("/h https://history-item.com/1");
-    await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-1");
-    await page.locator("[data-cy=search-input]").press("Enter");
+    await page.locator("[data-testid=setting-tab-btn]").click();
+    await page.locator("[data-testid=open-link-in-new-tab]").click();
+    await page.locator("[data-testid=info-tab-btn]").click();
+    await expect(page.locator("[data-testid=page-info]")).toBeVisible();
+    await page.locator("[data-testid=search-tab-btn]").click();
+    await page.locator("[data-testid=search-input]").fill("/h https://history-item.com/1");
+    await expect(page.locator("[data-testid=search-result-0]")).toContainText("history-item-1");
+    await page.locator("[data-testid=search-input]").press("Enter");
     await expect
       .poll(() => getLastRuntimeMessage(page))
       .toEqual({
@@ -689,7 +713,7 @@ test.describe("popup", () => {
   });
 
   test("opens GitHub issue from info page", async ({ page }) => {
-    await page.locator("[data-cy=info-tab-btn]").click();
+    await page.locator("[data-testid=info-tab-btn]").click();
     await page.getByText("Open Issue").click();
     await expect
       .poll(() => getLastRuntimeMessage(page))
@@ -702,23 +726,26 @@ test.describe("popup", () => {
   });
 
   test("keeps long result lists reachable inside the result panel", async ({ page }) => {
-    await page.locator("[data-cy=search-input]").fill("/h history-item");
-    await expect(page.locator("[data-cy=search-result-wrapper]")).toHaveCSS("overflow-y", "auto");
-    await expect(page.locator("[data-cy=search-result-15]")).toBeVisible();
-    await expect(page.locator("[data-cy=search-result-15]")).toContainText("history-item");
+    await page.locator("[data-testid=search-input]").fill("/h history-item");
+    await expect(page.locator("[data-testid=search-result-wrapper]")).toHaveAttribute(
+      "data-scrollable",
+      "true",
+    );
+    await expect(page.locator("[data-testid=search-result-15]")).toBeVisible();
+    await expect(page.locator("[data-testid=search-result-15]")).toContainText("history-item");
   });
 
   test("supports keyboard selection and execution in action mode", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("> copy");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Copy Markdown Link");
-    await expect(page.locator("[data-cy=action-result-0]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Copy Markdown Link");
+    await expect(page.locator("[data-testid=action-result-0]")).toHaveAttribute(
       "data-selected",
       "true",
     );
     await input.press("Control+n");
-    await expect(page.locator("[data-cy=action-result-1]")).toContainText("Copy URL");
-    await expect(page.locator("[data-cy=action-result-1]")).toHaveAttribute(
+    await expect(page.locator("[data-testid=action-result-1]")).toContainText("Copy URL");
+    await expect(page.locator("[data-testid=action-result-1]")).toHaveAttribute(
       "data-selected",
       "true",
     );
@@ -726,52 +753,54 @@ test.describe("popup", () => {
     await expect
       .poll(() => getLastMockCall<string[]>(page, "copy"))
       .toEqual(["https://tab-item.com/0"]);
-    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Copied");
+    await expect(page.locator("[data-testid=action-feedback]")).toContainText("Copied");
   });
 
   test("shows frequently used actions first in action mode", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill(">");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Copy Markdown Link");
-    await expect(page.locator("[data-cy=action-result-1]")).toContainText("Copy URL");
-    await expect(page.locator("[data-cy=action-result-2]")).toContainText("Copy Title");
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Copy Markdown Link");
+    await expect(page.locator("[data-testid=action-result-1]")).toContainText("Copy URL");
+    await expect(page.locator("[data-testid=action-result-2]")).toContainText("Copy Title");
   });
 
   test("shows an empty state for unmatched action mode queries", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
     await input.fill("> definitely-no-such-action");
-    await expect(page.locator("[data-cy=action-result-empty]")).toContainText("No actions found.");
-    await expect(page.locator("[data-cy=action-result-empty]")).toContainText(
+    await expect(page.locator("[data-testid=action-result-empty]")).toContainText(
+      "No actions found.",
+    );
+    await expect(page.locator("[data-testid=action-result-empty]")).toContainText(
       "Current page actions",
     );
   });
 
   test("runs current page actions from action mode", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
 
     await input.fill("> markdown");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Copy Markdown Link");
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Copy Markdown Link");
     await input.press("Enter");
     await expect
       .poll(() => getLastMockCall<string[]>(page, "copy"))
       .toEqual(["[tab-item-0](https://tab-item.com/0)"]);
 
     await input.fill("> mute");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Mute Tab");
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Mute Tab");
     await input.press("Enter");
     await expect
       .poll(() => getLastMockCall<any[]>(page, "tabsUpdate"))
       .toEqual([1, { muted: true }]);
 
     await input.fill("> pin");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Pin Tab");
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Pin Tab");
     await input.press("Enter");
     await expect
       .poll(() => getLastMockCall<any[]>(page, "tabsUpdate"))
       .toEqual([1, { pinned: true }]);
 
     await input.fill("> duplicate");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Duplicate Tab");
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Duplicate Tab");
     await input.press("Enter");
     await expect.poll(() => getLastMockCall<number[]>(page, "tabsDuplicate")).toEqual([1]);
     await expect.poll(() => getMockCalls(page, "close").then((calls) => calls.length)).toBe(0);
@@ -779,10 +808,10 @@ test.describe("popup", () => {
   });
 
   test("pins the current page from action mode", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
 
     await input.fill("> pin current");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Pin Current Page");
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Pin Current Page");
     await input.press("Enter");
     await expect
       .poll(async () =>
@@ -796,10 +825,10 @@ test.describe("popup", () => {
           url: "https://tab-item.com/0",
         },
       ]);
-    await expect(page.locator("[data-cy=action-feedback]")).toContainText("Pinned");
+    await expect(page.locator("[data-testid=action-feedback]")).toContainText("Pinned");
 
     await input.fill("> unpin current");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Unpin Current Page");
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Unpin Current Page");
     await input.press("Enter");
     await expect
       .poll(async () =>
@@ -809,10 +838,12 @@ test.describe("popup", () => {
   });
 
   test("captures screenshots from action mode", async ({ page }) => {
-    const input = page.locator("[data-cy=search-input]");
+    const input = page.locator("[data-testid=search-input]");
 
     await input.fill("> visible");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Capture Visible Area");
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText(
+      "Capture Visible Area",
+    );
     await input.press("Enter");
     await expect
       .poll(() => getMockCalls(page, "tabsCaptureVisibleTab").then((calls) => calls.length))
@@ -822,7 +853,7 @@ test.describe("popup", () => {
       .toEqual([expect.objectContaining({ filename: "chikamichi-tab-item-0-visible.png" })]);
 
     await input.fill("> full page");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText("Capture Full Page");
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText("Capture Full Page");
     await input.press("Enter");
     await expect
       .poll(() => getMockCalls(page, "scriptingExecuteScript").then((calls) => calls.length))
@@ -832,7 +863,7 @@ test.describe("popup", () => {
       .toEqual([expect.objectContaining({ filename: "chikamichi-tab-item-0-full-page.png" })]);
 
     await input.fill("> copy visible");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText(
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText(
       "Copy Visible Area to Clipboard",
     );
     await input.press("Enter");
@@ -841,7 +872,7 @@ test.describe("popup", () => {
       .toBeGreaterThan(0);
 
     await input.fill("> copy full");
-    await expect(page.locator("[data-cy=action-result-0]")).toContainText(
+    await expect(page.locator("[data-testid=action-result-0]")).toContainText(
       "Copy Full Page to Clipboard",
     );
     await input.press("Enter");

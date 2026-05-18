@@ -74,7 +74,7 @@ export function SearchResultsPanel({
       return (
         <div
           className="flex h-full min-h-[140px] items-center justify-center rounded-panel border border-dashed border-search-border/[0.1] bg-background/[0.16] px-5 text-center dark:border-search-border/[0.2]"
-          data-cy="action-result-empty"
+          data-testid="action-result-empty"
         >
           <div className="space-y-1">
             <h2 className="text-body font-semibold">{t("actionModeTitle")}</h2>
@@ -87,7 +87,7 @@ export function SearchResultsPanel({
     return (
       <div
         className="flex h-full min-h-[140px] items-center justify-center rounded-panel border border-dashed border-search-border/[0.1] bg-background/[0.16] px-5 text-center dark:border-search-border/[0.2]"
-        data-cy="search-result-empty"
+        data-testid="search-result-empty"
       >
         <div className="space-y-2">
           <div className="mx-auto flex size-9 items-center justify-center rounded-full bg-primary/[0.1] text-primary">
@@ -107,14 +107,15 @@ export function SearchResultsPanel({
   return (
     <div
       className="search-surface relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-1.5"
-      data-cy="search-result-wrapper"
+      data-scrollable="true"
+      data-testid="search-result-wrapper"
       ref={resultsWrapperRef}
     >
       <div className={opening ? "pointer-events-none" : undefined}>{renderResults()}</div>
       {opening ? (
         <div
           className="absolute inset-0 z-10 flex items-center justify-center bg-background/70 backdrop-blur-[1px]"
-          data-cy="opening-overlay"
+          data-testid="opening-overlay"
         >
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/95 px-3 py-2 text-body-sm font-semibold text-foreground shadow-[0_10px_24px_rgba(17,24,39,0.16)] dark:border-primary/35 dark:bg-background/90 dark:shadow-[0_10px_24px_rgba(10,18,35,0.36)]">
             <LoaderCircle className="size-4 animate-spin text-primary" />

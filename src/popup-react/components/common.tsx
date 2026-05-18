@@ -42,11 +42,11 @@ export function Kbd({ children }: { children: ReactNode }) {
 function SideMenuButton({
   icon: Icon,
   active,
-  dataCy,
+  testId,
   onClick,
 }: {
   active?: boolean;
-  dataCy?: string;
+  testId?: string;
   icon: typeof Search;
   onClick: () => void;
 }) {
@@ -59,7 +59,8 @@ function SideMenuButton({
           ? "bg-primary/[0.12] text-foreground dark:bg-primary/[0.1]"
           : "text-foreground hover:bg-slate-200/[0.72] dark:hover:bg-muted/[0.56]",
       )}
-      data-cy={dataCy}
+      data-size="icon"
+      data-testid={testId}
       type="button"
       variant="ghost"
       onClick={onClick}
@@ -92,7 +93,7 @@ export function PageMenuButton({
   return (
     <SideMenuButton
       active={currentPage === page}
-      dataCy={`${page}-tab-btn`}
+      testId={`${page}-tab-btn`}
       icon={Icon}
       onClick={() => {
         setCurrentPage(page);
@@ -104,18 +105,18 @@ export function PageMenuButton({
 export function PageShell({
   accessory,
   children,
-  dataCy,
+  testId,
   description,
   title,
 }: {
   accessory?: ReactNode;
   children: ReactNode;
-  dataCy: string;
+  testId: string;
   description?: string;
   title: string;
 }) {
   return (
-    <section className="flex h-full min-h-0 flex-col gap-3.5 overflow-hidden" data-cy={dataCy}>
+    <section className="flex h-full min-h-0 flex-col gap-3.5 overflow-hidden" data-testid={testId}>
       <SectionHeading accessory={accessory} description={description} title={title} />
       <div className="min-h-0 flex-1 overflow-auto">{children}</div>
     </section>

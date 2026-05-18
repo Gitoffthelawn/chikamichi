@@ -57,7 +57,7 @@ export function InfoPage({
           </span>
         ) : null
       }
-      dataCy="page-info"
+      testId="page-info"
       title={t("infoTitle")}
     >
       <div className="space-y-4">
