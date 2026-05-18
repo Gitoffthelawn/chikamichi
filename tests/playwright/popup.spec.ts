@@ -95,15 +95,15 @@ test.describe("popup", () => {
 
     await input.fill("tab-item-0");
     await expect(page.locator("[data-cy=search-result-0]")).toContainText("tab-item-0");
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveText("tab");
+    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("tab");
 
     await input.fill("bookmark-item-0");
     await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveText("bookmark");
+    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("bookmark");
 
     await input.fill("history-item-0");
     await expect(page.locator("[data-cy=search-result-0]")).toContainText("history-item-0");
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveText("history");
+    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("history");
   });
 
   test("shows tabs and histories in most-recent-first order for prefix searches", async ({
@@ -147,7 +147,7 @@ test.describe("popup", () => {
     await input.fill("bookmark-item-0");
 
     await expect(page.locator("[data-cy=search-result-0]")).toContainText("bookmark-item-0");
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveText("bookmark");
+    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("bookmark");
   });
 
   test("shows actions above pages for action-like queries in the unified list", async ({
@@ -238,8 +238,8 @@ test.describe("popup", () => {
     const input = page.locator("[data-cy=search-input]");
     await input.fill("hatena");
 
-    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveText("tab");
-    await expect(page.locator("[data-cy=search-result-type-1]")).toHaveText("tab");
+    await expect(page.locator("[data-cy=search-result-type-0]")).toHaveAccessibleName("tab");
+    await expect(page.locator("[data-cy=search-result-type-1]")).toHaveAccessibleName("tab");
     await expect(page.locator("[data-cy=search-result-type-2]")).toHaveCount(0);
     await expect(page.locator("[data-cy=search-result-0]")).toHaveAttribute(
       "data-selected",

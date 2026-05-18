@@ -11,7 +11,9 @@ export interface FavoriteItemRecord {
 
 export interface AppSettings {
   defaultSearchPrefix: string;
+  favoriteActionIds: string[];
   favoriteItems: FavoriteItemRecord[];
+  favoriteOrder: string[];
   language: ValueOf<typeof LANGUAGE>;
   openLinkInCurrentTab: boolean;
   popupHeight: ValueOf<typeof POPUP_HEIGHT>;
@@ -27,7 +29,9 @@ export interface OpenStatsRecord {
 
 const STORAGE_KEYS = {
   defaultSearchPrefix: "chikamichi-default-search-prefix",
+  favoriteActionIds: "chikamichi-favorite-action-ids",
   favoriteItems: "chikamichi-favorite-items",
+  favoriteOrder: "chikamichi-favorite-order",
   language: "chikamichi-language",
   openLinkInCurrentTab: "chikamichi-open-link-in-current-tab",
   popupHeight: "chikamichi-popup-height",
@@ -41,7 +45,9 @@ const storage = new Storage({
 
 export const DEFAULT_SETTINGS: AppSettings = {
   defaultSearchPrefix: "",
+  favoriteActionIds: [],
   favoriteItems: [],
+  favoriteOrder: [],
   language: LANGUAGE.AUTO,
   openLinkInCurrentTab: true,
   popupHeight: POPUP_HEIGHT.M,
@@ -57,6 +63,37 @@ function parseFavoriteItems(value: unknown): FavoriteItemRecord[] {
     try {
       const parsed = JSON.parse(value);
       return Array.isArray(parsed) ? (parsed as FavoriteItemRecord[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function parseFavoriteActionIds(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed)
+        ? parsed.filter((item): item is string => typeof item === "string")
+        : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function parseStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+  if (typeof value === "string") {
+    try {
+      return parseStringArray(JSON.parse(value));
     } catch {
       return [];
     }
@@ -129,7 +166,9 @@ export async function recordOpenedUrl(url: string, now = Date.now()) {
 export async function getSettings(): Promise<AppSettings> {
   const [
     defaultSearchPrefix,
+    favoriteActionIds,
     favoriteItems,
+    favoriteOrder,
     language,
     openLinkInCurrentTab,
     popupHeight,
@@ -137,7 +176,9 @@ export async function getSettings(): Promise<AppSettings> {
     theme,
   ] = await Promise.all([
     storage.get<string>(STORAGE_KEYS.defaultSearchPrefix),
+    storage.get<string[] | string>(STORAGE_KEYS.favoriteActionIds),
     storage.get<FavoriteItemRecord[] | string>(STORAGE_KEYS.favoriteItems),
+    storage.get<string[] | string>(STORAGE_KEYS.favoriteOrder),
     storage.get<ValueOf<typeof LANGUAGE>>(STORAGE_KEYS.language),
     storage.get<boolean>(STORAGE_KEYS.openLinkInCurrentTab),
     storage.get<ValueOf<typeof POPUP_HEIGHT>>(STORAGE_KEYS.popupHeight),
@@ -150,7 +191,9 @@ export async function getSettings(): Promise<AppSettings> {
       typeof defaultSearchPrefix === "string"
         ? defaultSearchPrefix
         : DEFAULT_SETTINGS.defaultSearchPrefix,
+    favoriteActionIds: parseFavoriteActionIds(favoriteActionIds),
     favoriteItems: parseFavoriteItems(favoriteItems),
+    favoriteOrder: parseStringArray(favoriteOrder),
     language:
       language === LANGUAGE.EN || language === LANGUAGE.JA ? language : DEFAULT_SETTINGS.language,
     openLinkInCurrentTab:
@@ -169,8 +212,14 @@ export async function updateSettings(partial: Partial<AppSettings>) {
   if (partial.defaultSearchPrefix !== undefined) {
     tasks.push(storage.set(STORAGE_KEYS.defaultSearchPrefix, partial.defaultSearchPrefix));
   }
+  if (partial.favoriteActionIds !== undefined) {
+    tasks.push(storage.set(STORAGE_KEYS.favoriteActionIds, partial.favoriteActionIds));
+  }
   if (partial.favoriteItems !== undefined) {
     tasks.push(storage.set(STORAGE_KEYS.favoriteItems, partial.favoriteItems));
+  }
+  if (partial.favoriteOrder !== undefined) {
+    tasks.push(storage.set(STORAGE_KEYS.favoriteOrder, partial.favoriteOrder));
   }
   if (partial.language !== undefined) {
     tasks.push(storage.set(STORAGE_KEYS.language, partial.language));

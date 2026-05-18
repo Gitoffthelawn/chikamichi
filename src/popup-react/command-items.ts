@@ -54,6 +54,7 @@ type CommandActionItem = {
   badge: "Action";
   icon: LucideIcon;
   id: string;
+  isFavorite: boolean;
   kind: "action";
   ranking: CommandRanking;
   subtitle: string;
@@ -93,6 +94,8 @@ type SearchEngineState = {
 };
 
 type BuildCommandItemsInput = {
+  favoriteActionIds?: string[];
+  favoriteOrder?: string[];
   actionItems: ActionItem[];
   collections: SearchCollections;
   favoriteItems?: FavoriteItemRecord[];
@@ -344,17 +347,24 @@ function getPageCommandItems(input: BuildCommandItemsInput, parsedQuery: ParsedC
   return searchResults.map((item) => toPageCommandItem(item, input.openStatsLookup));
 }
 
-function toActionCommandItem(item: ActionItem, score: number): CommandActionItem {
+function toActionCommandItem(
+  item: ActionItem,
+  score: number,
+  favoriteActionIds: string[] = [],
+): CommandActionItem {
+  const isFavorite = favoriteActionIds.includes(item.id);
+
   return {
     action: item,
     badge: "Action",
     icon: item.icon,
     id: getActionKey(item),
+    isFavorite,
     kind: "action",
     ranking: {
       baseScore: score,
       finalScore: score,
-      reasons: ["current-tab-action"],
+      reasons: isFavorite ? ["current-tab-action", "favorite"] : ["current-tab-action"],
     },
     subtitle: item.description,
     title: item.title,
@@ -365,11 +375,30 @@ function getActionCommandItems(input: BuildCommandItemsInput, parsedQuery: Parse
   const documents = input.actionItems.map(toActionSearchDocument);
 
   if (!parsedQuery.searchQuery) {
+    const favoriteActions = (input.favoriteActionIds ?? [])
+      .map((id, index) => {
+        const item = input.actionItems.find((actionItem) => actionItem.id === id);
+
+        return item ? toActionCommandItem(item, index / 100, input.favoriteActionIds) : null;
+      })
+      .filter((item): item is CommandActionItem => item !== null);
+
     if (parsedQuery.actionForced) {
-      return documents.map((item, index) => toActionCommandItem(item, index / 100));
+      const favoriteActionIds = new Set(favoriteActions.map((item) => item.action.id));
+      const remainingActions = documents
+        .filter((item) => !favoriteActionIds.has(item.id))
+        .map((item, index) =>
+          toActionCommandItem(
+            item,
+            (favoriteActions.length + index) / 100,
+            input.favoriteActionIds,
+          ),
+        );
+
+      return [...favoriteActions, ...remainingActions];
     }
 
-    return [];
+    return favoriteActions;
   }
 
   const fuseIndex = new Fuse(documents, ACTION_SEARCH_OPTIONS);
@@ -391,7 +420,7 @@ function getActionCommandItems(input: BuildCommandItemsInput, parsedQuery: Parse
         ? Math.min(commandScore(result.score), exactScore)
         : result.score;
 
-      return toActionCommandItem(result.item, commandScore(score));
+      return toActionCommandItem(result.item, commandScore(score), input.favoriteActionIds);
     })
     .sort((left, right) => {
       if (left.ranking.baseScore !== right.ranking.baseScore) {
@@ -530,11 +559,28 @@ export function buildCommandItems(input: BuildCommandItemsInput) {
 
   const items: Array<CommandItem | null> = [...pageItems, ...actionItems, browserSearchItem];
 
-  return items
+  const sortedItems = items
     .filter((item): item is CommandItem => item !== null)
     .map((item) => applyIntentRanking(item, intent))
-    .sort((left, right) => left.ranking.finalScore - right.ranking.finalScore)
-    .slice(0, SEARCH_RESULT_LIMIT);
+    .sort((left, right) => left.ranking.finalScore - right.ranking.finalScore);
+
+  if (!parsedQuery.searchQuery && !parsedQuery.actionForced && parsedQuery.target === "all") {
+    const favoriteOrder = input.favoriteOrder ?? [];
+    const favoriteOrderIndex = new Map(favoriteOrder.map((id, index) => [id, index]));
+
+    sortedItems.sort((left, right) => {
+      const leftIndex = favoriteOrderIndex.get(left.id) ?? Number.POSITIVE_INFINITY;
+      const rightIndex = favoriteOrderIndex.get(right.id) ?? Number.POSITIVE_INFINITY;
+
+      if (leftIndex !== rightIndex) {
+        return leftIndex - rightIndex;
+      }
+
+      return left.ranking.finalScore - right.ranking.finalScore;
+    });
+  }
+
+  return sortedItems.slice(0, SEARCH_RESULT_LIMIT);
 }
 
 export async function executeCommand(item: CommandItem, context: CommandExecutionContext) {

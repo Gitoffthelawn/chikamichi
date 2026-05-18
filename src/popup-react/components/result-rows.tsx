@@ -1,11 +1,27 @@
 import { memo, useEffect, useState } from "react";
-import { ArrowUpRight, Globe2, GripVertical, Pin, PinOff } from "lucide-react";
+import {
+  Bookmark,
+  Clock3,
+  CornerDownLeft,
+  Globe2,
+  GripVertical,
+  PanelTop,
+  Pin,
+  PinOff,
+  type LucideIcon,
+} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
 import { t } from "~/i18n";
 import { highlightText } from "~/popup-react/utils";
 import type { ActionItem } from "~/popup-react/types";
 import type { CommandItem } from "~/popup-react/command-items";
+
+const sourceTypeIcons = {
+  bookmark: Bookmark,
+  history: Clock3,
+  tab: PanelTop,
+} satisfies Record<SearchResult["type"], LucideIcon>;
 
 function FaviconImage({ src }: { src: string }) {
   const [failed, setFailed] = useState(false);
@@ -39,6 +55,31 @@ function FaviconImage({ src }: { src: string }) {
   );
 }
 
+function SourceTypeBadge({ index, type }: { index: number; type: SearchResult["type"] }) {
+  const Icon = sourceTypeIcons[type];
+
+  return (
+    <Badge
+      aria-label={type}
+      className="size-5 justify-center p-0"
+      data-cy={`search-result-type-${index}`}
+      title={type}
+      variant="secondary"
+    >
+      <Icon aria-hidden="true" className="size-3" />
+    </Badge>
+  );
+}
+
+function getDraggedIndex(event: React.DragEvent, draggedFavoriteIndex: number | null) {
+  if (draggedFavoriteIndex !== null) {
+    return draggedFavoriteIndex;
+  }
+
+  const draggedIndex = Number(event.dataTransfer.getData("text/plain"));
+  return Number.isInteger(draggedIndex) ? draggedIndex : null;
+}
+
 // oxlint-disable-next-line prefer-arrow-callback
 const SearchResultRow = memo(function SearchResultRow({
   dragOverFavoriteIndex,
@@ -63,7 +104,7 @@ const SearchResultRow = memo(function SearchResultRow({
   onDragStateChange: (draggedIndex: number | null, dragOverIndex: number | null) => void;
   onOpen: (item: SearchResult) => void;
   onReorder: (fromIndex: number, toIndex: number) => void;
-  rowRef?: (element: HTMLDivElement | null) => void;
+  rowRef?: (element: HTMLElement | null) => void;
   onToggleFavorite: (item: SearchResult) => void;
   selected: boolean;
 }) {
@@ -73,8 +114,8 @@ const SearchResultRow = memo(function SearchResultRow({
       className={cn(
         "group grid cursor-pointer items-center gap-2 rounded-row px-2.5 py-2",
         favoriteReorderEnabled
-          ? "grid-cols-[auto_18px_minmax(0,1fr)_auto_24px]"
-          : "grid-cols-[18px_minmax(0,1fr)_auto_24px]",
+          ? "grid-cols-[18px_18px_minmax(0,1fr)_auto]"
+          : "grid-cols-[18px_minmax(0,1fr)_auto]",
         selected ? "interactive-row-selected" : "interactive-row",
         draggedFavoriteIndex === index ? "opacity-55" : "",
         dragOverFavoriteIndex === index ? "shadow-[inset_0_0_0_1px_rgba(90,145,255,0.26)]" : "",
@@ -94,7 +135,7 @@ const SearchResultRow = memo(function SearchResultRow({
         }
       }}
       onDragOver={(event) => {
-        if (!favoriteReorderEnabled || draggedFavoriteIndex === null) {
+        if (!favoriteReorderEnabled) {
           return;
         }
         event.preventDefault();
@@ -103,12 +144,13 @@ const SearchResultRow = memo(function SearchResultRow({
         }
       }}
       onDrop={(event) => {
-        if (!favoriteReorderEnabled || draggedFavoriteIndex === null) {
+        const draggedIndex = getDraggedIndex(event, draggedFavoriteIndex);
+        if (!favoriteReorderEnabled || draggedIndex === null) {
           return;
         }
         event.preventDefault();
         onDragStateChange(null, null);
-        onReorder(draggedFavoriteIndex, index);
+        onReorder(draggedIndex, index);
       }}
       onMouseMove={(event) => {
         handlePointerSelection(index, event.clientX, event.clientY);
@@ -118,7 +160,7 @@ const SearchResultRow = memo(function SearchResultRow({
         <button
           aria-label={t("favoriteDragHandle")}
           className={cn(
-            "flex size-6 cursor-grab items-center justify-center rounded-md text-foreground/34 opacity-0 transition-opacity group-hover:opacity-100",
+            "flex size-[18px] cursor-grab items-center justify-center rounded-md text-foreground/34 opacity-0 transition-opacity group-hover:opacity-100",
             selected ? "opacity-100 text-primary/70" : "",
           )}
           data-cy={`favorite-drag-handle-${index}`}
@@ -137,7 +179,7 @@ const SearchResultRow = memo(function SearchResultRow({
             onDragStateChange(index, index);
           }}
         >
-          <GripVertical className="size-3.5" />
+          <GripVertical className="size-3" />
         </button>
       ) : null}
       <FaviconImage src={item.faviconUrl} />
@@ -149,29 +191,33 @@ const SearchResultRow = memo(function SearchResultRow({
           {item.url}
         </div>
       </div>
-      <div className="flex min-w-0 flex-col items-end gap-0.5 text-[10px] leading-none text-muted-foreground">
-        <Badge className="capitalize" data-cy={`search-result-type-${index}`} variant="secondary">
-          {item.type}
-        </Badge>
+      <div className="flex min-w-0 flex-col items-end gap-1 text-[10px] leading-none text-muted-foreground">
+        <div className="flex items-center gap-1">
+          <button
+            aria-label={item.isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite")}
+            className={cn(
+              "flex size-5 items-center justify-center rounded-full border",
+              item.isFavorite
+                ? "border-transparent bg-secondary text-secondary-foreground"
+                : "border-transparent bg-secondary text-secondary-foreground/72",
+            )}
+            data-cy={`search-result-favorite-${index}`}
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleFavorite(item);
+            }}
+          >
+            {item.isFavorite ? (
+              <Pin className="size-3 fill-current" />
+            ) : (
+              <PinOff className="size-3" />
+            )}
+          </button>
+          <SourceTypeBadge index={index} type={item.type} />
+        </div>
         {item.folderName ? <span className="max-w-20 truncate">{item.folderName}</span> : null}
       </div>
-      <button
-        aria-label={item.isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite")}
-        className={cn(
-          "flex size-6 items-center justify-center rounded-md border",
-          item.isFavorite
-            ? "border-primary/18 bg-primary/10 text-primary/82 dark:text-primary/88"
-            : "border-transparent bg-control-surface/[0.88] text-foreground/52 dark:bg-control-surface/[0.52] dark:text-muted-foreground",
-        )}
-        data-cy={`search-result-favorite-${index}`}
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onToggleFavorite(item);
-        }}
-      >
-        {item.isFavorite ? <Pin className="size-3 fill-current" /> : <PinOff className="size-3" />}
-      </button>
     </div>
   );
 });
@@ -179,46 +225,117 @@ const SearchResultRow = memo(function SearchResultRow({
 // oxlint-disable-next-line prefer-arrow-callback
 const ActionResultRow = memo(function ActionResultRow({
   description,
+  dragOverFavoriteIndex,
+  draggedFavoriteIndex,
+  favoriteReorderEnabled,
   icon: Icon,
   id,
   index,
+  isFavorite,
   item,
+  onDragStateChange,
   onPointerSelection,
+  onReorder,
   onRunItem,
+  onToggleFavorite,
   rowRef,
   selected,
   title,
 }: {
   description: string;
+  dragOverFavoriteIndex: number | null;
+  draggedFavoriteIndex: number | null;
+  favoriteReorderEnabled: boolean;
   icon: ActionItem["icon"];
   id: string;
   index: number;
+  isFavorite: boolean;
   item: ActionItem;
+  onDragStateChange: (draggedIndex: number | null, dragOverIndex: number | null) => void;
   onPointerSelection: (index: number, clientX: number, clientY: number) => void;
+  onReorder: (fromIndex: number, toIndex: number) => void;
   onRunItem: (item: ActionItem) => void;
-  rowRef?: (element: HTMLButtonElement | null) => void;
+  onToggleFavorite: (item: ActionItem) => void;
+  rowRef?: (element: HTMLDivElement | null) => void;
   selected: boolean;
   title: string;
 }) {
+  const reorderEnabled = favoriteReorderEnabled && isFavorite;
+
   return (
-    <button
+    <div
       aria-selected={selected}
       className={cn(
-        "grid w-full cursor-pointer grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2.5 rounded-row px-3 py-2 text-left",
+        "group grid w-full cursor-pointer items-center gap-2.5 rounded-row px-3 py-2 text-left",
+        reorderEnabled
+          ? "grid-cols-[18px_18px_minmax(0,1fr)_auto]"
+          : "grid-cols-[18px_minmax(0,1fr)_auto]",
         selected ? "interactive-row-selected-subtle" : "interactive-row",
+        draggedFavoriteIndex === index ? "opacity-55" : "",
+        dragOverFavoriteIndex === index ? "shadow-[inset_0_0_0_1px_rgba(90,145,255,0.26)]" : "",
       )}
       data-cy={`action-result-${index}`}
       data-selected={selected}
       key={id}
       ref={rowRef}
-      type="button"
+      role="button"
+      tabIndex={0}
       onClick={() => {
         onRunItem(item);
+      }}
+      onDragLeave={() => {
+        if (dragOverFavoriteIndex === index) {
+          onDragStateChange(draggedFavoriteIndex, null);
+        }
+      }}
+      onDragOver={(event) => {
+        if (!reorderEnabled) {
+          return;
+        }
+        event.preventDefault();
+        if (dragOverFavoriteIndex !== index) {
+          onDragStateChange(draggedFavoriteIndex, index);
+        }
+      }}
+      onDrop={(event) => {
+        const draggedIndex = getDraggedIndex(event, draggedFavoriteIndex);
+        if (!reorderEnabled || draggedIndex === null) {
+          return;
+        }
+        event.preventDefault();
+        onDragStateChange(null, null);
+        onReorder(draggedIndex, index);
       }}
       onMouseMove={(event) => {
         onPointerSelection(index, event.clientX, event.clientY);
       }}
     >
+      {reorderEnabled ? (
+        <button
+          aria-label={t("favoriteDragHandle")}
+          className={cn(
+            "flex size-[18px] cursor-grab items-center justify-center rounded-md text-foreground/34 opacity-0 transition-opacity group-hover:opacity-100",
+            selected ? "opacity-100 text-primary/70" : "",
+          )}
+          data-cy={`favorite-drag-handle-${index}`}
+          draggable
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+          onDragEnd={() => {
+            onDragStateChange(null, null);
+          }}
+          onDragStart={(event) => {
+            event.stopPropagation();
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", String(index));
+            onDragStateChange(index, index);
+          }}
+        >
+          <GripVertical className="size-3" />
+        </button>
+      ) : null}
       <div className="flex size-[18px] items-center justify-center text-primary/88">
         <Icon className="size-4" />
       </div>
@@ -228,8 +345,27 @@ const ActionResultRow = memo(function ActionResultRow({
           {description}
         </div>
       </div>
-      <ArrowUpRight className="size-4 text-muted-foreground" />
-    </button>
+      <div className="flex items-center gap-1">
+        <button
+          aria-label={isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite")}
+          className={cn(
+            "flex size-5 items-center justify-center rounded-full border border-transparent bg-secondary",
+            isFavorite ? "text-secondary-foreground" : "text-secondary-foreground/72",
+          )}
+          data-cy={`action-result-favorite-${index}`}
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleFavorite(item);
+          }}
+        >
+          {isFavorite ? <Pin className="size-3 fill-current" /> : <PinOff className="size-3" />}
+        </button>
+        <Badge className="size-5 justify-center p-0" variant="secondary">
+          <CornerDownLeft aria-hidden="true" className="size-3" />
+        </Badge>
+      </div>
+    </div>
   );
 });
 
@@ -245,6 +381,7 @@ export const CommandResultRow = memo(function CommandResultRow({
   onOpen,
   onReorder,
   onRunCommand,
+  onToggleActionFavorite,
   onToggleFavorite,
   rowRef,
   selected,
@@ -259,6 +396,7 @@ export const CommandResultRow = memo(function CommandResultRow({
   onOpen: (item: SearchResult) => void;
   onReorder: (fromIndex: number, toIndex: number) => void;
   onRunCommand: (item: CommandItem) => void;
+  onToggleActionFavorite: (item: ActionItem) => void;
   onToggleFavorite: (item: SearchResult) => void;
   rowRef?: (element: HTMLElement | null) => void;
   selected: boolean;
@@ -286,14 +424,21 @@ export const CommandResultRow = memo(function CommandResultRow({
     return (
       <ActionResultRow
         description={commandItem.subtitle}
+        dragOverFavoriteIndex={dragOverFavoriteIndex}
+        draggedFavoriteIndex={draggedFavoriteIndex}
+        favoriteReorderEnabled={favoriteReorderEnabled}
         icon={commandItem.icon}
         id={commandItem.id}
         index={index}
+        isFavorite={commandItem.isFavorite}
         item={commandItem.action}
+        onDragStateChange={onDragStateChange}
         onPointerSelection={handlePointerSelection}
+        onReorder={onReorder}
         onRunItem={() => {
           onRunCommand(commandItem);
         }}
+        onToggleFavorite={onToggleActionFavorite}
         rowRef={rowRef}
         selected={selected}
         title={commandItem.title}
@@ -326,7 +471,13 @@ export const CommandResultRow = memo(function CommandResultRow({
           {commandItem.subtitle}
         </div>
       </div>
-      <Badge variant="secondary">{commandItem.badge}</Badge>
+      <Badge
+        aria-label={commandItem.badge}
+        className="size-5 justify-center p-0"
+        variant="secondary"
+      >
+        <Globe2 aria-hidden="true" className="size-3" />
+      </Badge>
     </button>
   );
 });

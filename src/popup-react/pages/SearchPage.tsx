@@ -16,23 +16,14 @@ import {
   THEME,
 } from "~/constants";
 import { t } from "~/i18n";
-import {
-  moveFavoriteItem,
-  moveFavoriteItemToIndex,
-  toggleFavoriteItems,
-} from "~/popup-react/favorites";
+import { toggleFavoriteItems } from "~/popup-react/favorites";
 import { SearchFooter } from "~/popup-react/components/search-page/SearchFooter";
 import { SearchInputBar } from "~/popup-react/components/search-page/SearchInputBar";
 import { SearchResultsPanel } from "~/popup-react/components/search-page/SearchResultsPanel";
-import { buildCommandItems, executeCommand } from "~/popup-react/command-items";
+import { buildCommandItems, executeCommand, type CommandItem } from "~/popup-react/command-items";
 import { useActionItems } from "~/popup-react/hooks/use-action-items";
 import { useFeedbackBadge } from "~/popup-react/hooks/use-feedback-badge";
-import {
-  EMPTY_COLLECTIONS,
-  getResolvedTheme,
-  getResultKey,
-  reportError,
-} from "~/popup-react/utils";
+import { EMPTY_COLLECTIONS, getResolvedTheme, reportError } from "~/popup-react/utils";
 import { getSearchItems } from "~/popup/utils/getSearchItems";
 
 type SearchCollections = Awaited<ReturnType<typeof getSearchItems>>;
@@ -45,6 +36,42 @@ type BrowserSearchWithDisposition = typeof browser.search & {
 };
 
 const OPENING_MIN_VISIBLE_MS = 700;
+
+function moveArrayItem<T>(items: T[], fromIndex: number, toIndex: number) {
+  if (
+    items.length < 2 ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= items.length ||
+    toIndex >= items.length ||
+    fromIndex === toIndex
+  ) {
+    return items;
+  }
+
+  const nextItems = items.slice();
+  const [movedItem] = nextItems.splice(fromIndex, 1);
+  nextItems.splice(toIndex, 0, movedItem);
+  return nextItems;
+}
+
+function getFavoritePageCommandId(item: SearchResult) {
+  const type = item.type === SEARCH_ITEM_TYPE.TAB ? SEARCH_ITEM_TYPE.HISTORY : item.type;
+  const lastVisitTime = item.type === SEARCH_ITEM_TYPE.TAB ? "" : (item.lastVisitTime ?? "");
+  return `page:${type}:${lastVisitTime}:${item.title}:${item.url}`;
+}
+
+function getFavoriteCommandId(item: CommandItem) {
+  if (item.kind === "action") {
+    return item.id;
+  }
+
+  if (item.kind === "page") {
+    return item.id;
+  }
+
+  return null;
+}
 
 function getHostname(value?: string | null) {
   if (!value) {
@@ -67,7 +94,9 @@ export function SearchPage({
 }) {
   const [activeTab, setActiveTab] = useState<browser.Tabs.Tab | null>(null);
   const [collections, setCollections] = useState<SearchCollections>(EMPTY_COLLECTIONS);
+  const [favoriteActionIds, setFavoriteActionIds] = useState(settings.favoriteActionIds);
   const [favoriteItems, setFavoriteItems] = useState(settings.favoriteItems);
+  const [favoriteOrder, setFavoriteOrder] = useState(settings.favoriteOrder);
   const [openStats, setOpenStats] = useState<OpenStatsRecord[]>([]);
   const [opening, setOpening] = useState(false);
   const [searchWord, setSearchWord] = useState(settings.defaultSearchPrefix);
@@ -142,8 +171,10 @@ export function SearchPage({
     };
   }, [activeTab?.url, collections.histories, collections.tabs]);
   useEffect(() => {
+    setFavoriteActionIds(settings.favoriteActionIds);
     setFavoriteItems(settings.favoriteItems);
-  }, [settings.favoriteItems]);
+    setFavoriteOrder(settings.favoriteOrder);
+  }, [settings.favoriteActionIds, settings.favoriteItems, settings.favoriteOrder]);
 
   useEffect(() => {
     setSearchWord(settings.defaultSearchPrefix);
@@ -317,8 +348,10 @@ export function SearchPage({
       buildCommandItems({
         actionItems,
         collections,
+        favoriteActionIds,
         favoriteItems,
         favoriteLookup,
+        favoriteOrder,
         openStatsLookup,
         query: searchWord,
         recentContext,
@@ -327,7 +360,9 @@ export function SearchPage({
     [
       actionItems,
       collections,
+      favoriteActionIds,
       favoriteItems,
+      favoriteOrder,
       favoriteLookup,
       openStatsLookup,
       recentContext,
@@ -336,7 +371,8 @@ export function SearchPage({
     ],
   );
 
-  const favoriteReorderEnabled = searchWord === "" && !actionMode && favoriteItems.length > 1;
+  const favoriteReorderEnabled =
+    searchWord === "" && !actionMode && favoriteActionIds.length + favoriteItems.length > 1;
 
   const currentResultKeys = useMemo(() => commandItems.map((item) => item.id), [commandItems]);
 
@@ -533,57 +569,155 @@ export function SearchPage({
         (favorite) => favorite.url === targetItem.url && favorite.title === targetItem.title,
       );
       const nextFavoriteItems = toggleFavoriteItems(favoriteItems, targetItem);
+      const favoriteCommandId = getFavoritePageCommandId(targetItem);
+      const nextFavoriteOrder = isFavorite
+        ? favoriteOrder.filter((id) => id !== favoriteCommandId)
+        : [...favoriteOrder, favoriteCommandId];
 
       setFavoriteItems(nextFavoriteItems);
-      setSelectedKey(`page:${getResultKey(targetItem)}`);
+      setFavoriteOrder(nextFavoriteOrder);
+      setSelectedKey(favoriteCommandId);
       await onUpdateSettings({
         favoriteItems: nextFavoriteItems,
+        favoriteOrder: nextFavoriteOrder,
       });
       await showBadge(isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite"));
     },
-    [commandItems, favoriteItems, onUpdateSettings, selectedNumber],
+    [commandItems, favoriteItems, favoriteOrder, onUpdateSettings, selectedNumber],
+  );
+
+  const toggleActionFavorite = useCallback(
+    async (item?: (typeof actionItems)[number]) => {
+      let targetItem = item;
+
+      if (!targetItem) {
+        const commandItem = commandItems[selectedNumber];
+        if (!commandItem || commandItem.kind !== "action") {
+          return;
+        }
+        targetItem = commandItem.action;
+      }
+
+      if (!targetItem) {
+        return;
+      }
+
+      const isFavorite = favoriteActionIds.includes(targetItem.id);
+      const nextFavoriteActionIds = isFavorite
+        ? favoriteActionIds.filter((id) => id !== targetItem.id)
+        : [...favoriteActionIds, targetItem.id];
+      const favoriteCommandId = `action:${targetItem.id}`;
+      const nextFavoriteOrder = isFavorite
+        ? favoriteOrder.filter((id) => id !== favoriteCommandId)
+        : [...favoriteOrder, favoriteCommandId];
+
+      setFavoriteActionIds(nextFavoriteActionIds);
+      setFavoriteOrder(nextFavoriteOrder);
+      setSelectedKey(favoriteCommandId);
+      await onUpdateSettings({
+        favoriteActionIds: nextFavoriteActionIds,
+        favoriteOrder: nextFavoriteOrder,
+      });
+      await showBadge(isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite"));
+    },
+    [
+      actionItems,
+      commandItems,
+      favoriteActionIds,
+      favoriteOrder,
+      onUpdateSettings,
+      selectedNumber,
+      showBadge,
+    ],
   );
 
   const moveFavorite = async (direction: "up" | "down") => {
-    if (searchWord !== "" || actionMode || favoriteItems.length < 2) {
+    if (searchWord !== "" || actionMode) {
       return;
     }
 
-    const moved = moveFavoriteItem(favoriteItems, selectedNumber, direction);
-    if (moved.selectedIndex === selectedNumber) {
+    const commandItem = commandItems[selectedNumber];
+    if (!commandItem || (commandItem.kind !== "action" && commandItem.kind !== "page")) {
       return;
     }
 
-    setFavoriteItems(moved.items);
+    const targetIndex = direction === "down" ? selectedNumber + 1 : selectedNumber - 1;
+    const targetCommandItem = commandItems[targetIndex];
+    const fromId = getFavoriteCommandId(commandItem);
+    const toId = targetCommandItem ? getFavoriteCommandId(targetCommandItem) : null;
+
+    if (!fromId || !toId) {
+      return;
+    }
+
+    const currentFavoriteOrder =
+      favoriteOrder.length > 0
+        ? favoriteOrder
+        : commandItems.map(getFavoriteCommandId).filter((id): id is string => id !== null);
+    const nextFavoriteOrder = moveArrayItem(
+      currentFavoriteOrder,
+      currentFavoriteOrder.indexOf(fromId),
+      currentFavoriteOrder.indexOf(toId),
+    );
+
+    if (nextFavoriteOrder === currentFavoriteOrder) {
+      return;
+    }
+
+    setFavoriteOrder(nextFavoriteOrder);
     await onUpdateSettings({
-      favoriteItems: moved.items,
+      favoriteOrder: nextFavoriteOrder,
     });
-    changeSelectedItem(moved.selectedIndex);
-    fixScrollPosition(moved.selectedIndex);
+    changeSelectedItem(targetIndex);
+    fixScrollPosition(targetIndex);
   };
 
   const reorderFavorite = useCallback(
     async (fromIndex: number, toIndex: number) => {
-      if (searchWord !== "" || actionMode || favoriteItems.length < 2) {
+      if (searchWord !== "" || actionMode) {
         return;
       }
 
-      const moved = moveFavoriteItemToIndex(favoriteItems, fromIndex, toIndex);
-      if (moved.selectedIndex === fromIndex) {
+      const fromItem = commandItems[fromIndex];
+      const toItem = commandItems[toIndex];
+
+      if (!fromItem || !toItem) {
         return;
       }
 
-      setFavoriteItems(moved.items);
+      const fromId = getFavoriteCommandId(fromItem);
+      const toId = getFavoriteCommandId(toItem);
+
+      if (!fromId || !toId) {
+        return;
+      }
+
+      const currentFavoriteOrder =
+        favoriteOrder.length > 0
+          ? favoriteOrder
+          : commandItems.map(getFavoriteCommandId).filter((id): id is string => id !== null);
+      const nextFavoriteOrder = moveArrayItem(
+        currentFavoriteOrder,
+        currentFavoriteOrder.indexOf(fromId),
+        currentFavoriteOrder.indexOf(toId),
+      );
+
+      if (nextFavoriteOrder === currentFavoriteOrder) {
+        return;
+      }
+
+      setFavoriteOrder(nextFavoriteOrder);
       await onUpdateSettings({
-        favoriteItems: moved.items,
+        favoriteOrder: nextFavoriteOrder,
       });
-      changeSelectedItem(moved.selectedIndex);
-      fixScrollPosition(moved.selectedIndex);
+      changeSelectedItem(toIndex);
+      fixScrollPosition(toIndex);
     },
     [
       actionMode,
       changeSelectedItem,
-      favoriteItems,
+      commandItems,
+      favoriteOrder,
       fixScrollPosition,
       onUpdateSettings,
       searchWord,
@@ -614,6 +748,13 @@ export function SearchPage({
       toggleFavorite(item).catch(reportError);
     },
     [toggleFavorite],
+  );
+
+  const toggleActionFavoriteItem = useCallback(
+    (item: (typeof actionItems)[number]) => {
+      toggleActionFavorite(item).catch(reportError);
+    },
+    [toggleActionFavorite],
   );
 
   const reorderFavoriteItem = useCallback(
@@ -802,7 +943,12 @@ export function SearchPage({
 
     if (event.ctrlKey && event.key.toLowerCase() === "f") {
       event.preventDefault();
-      await toggleFavorite();
+      const commandItem = commandItems[selectedNumber];
+      if (commandItem?.kind === "action") {
+        await toggleActionFavorite(commandItem.action);
+      } else {
+        await toggleFavorite();
+      }
       return true;
     }
 
@@ -875,6 +1021,7 @@ export function SearchPage({
           resultsWrapperRef={resultsWrapperRef}
           runCommandItem={runCommandItem}
           selectedNumber={selectedNumber}
+          toggleActionFavoriteItem={toggleActionFavoriteItem}
           toggleFavoriteItem={toggleFavoriteItem}
         />
         <SearchFooter

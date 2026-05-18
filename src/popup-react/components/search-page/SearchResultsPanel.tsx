@@ -3,6 +3,7 @@ import type { MutableRefObject } from "react";
 import { t } from "~/i18n";
 import { CommandResultRow } from "~/popup-react/components/result-rows";
 import type { CommandItem } from "~/popup-react/command-items";
+import type { ActionItem } from "~/popup-react/types";
 
 type SearchResultsPanelProps = {
   actionMode: boolean;
@@ -22,6 +23,7 @@ type SearchResultsPanelProps = {
   resultsWrapperRef: MutableRefObject<HTMLDivElement | null>;
   runCommandItem: (item: CommandItem) => void;
   selectedNumber: number;
+  toggleActionFavoriteItem: (item: ActionItem) => void;
   toggleFavoriteItem: (item: SearchResult) => void;
 };
 
@@ -40,6 +42,7 @@ export function SearchResultsPanel({
   resultsWrapperRef,
   runCommandItem,
   selectedNumber,
+  toggleActionFavoriteItem,
   toggleFavoriteItem,
 }: SearchResultsPanelProps) {
   const renderResults = () => {
@@ -57,6 +60,7 @@ export function SearchResultsPanel({
           onOpen={openSearchResultItem}
           onReorder={reorderFavoriteItem}
           onRunCommand={runCommandItem}
+          onToggleActionFavorite={toggleActionFavoriteItem}
           onToggleFavorite={toggleFavoriteItem}
           rowRef={(element) => {
             resultRefs.current[index] = element;

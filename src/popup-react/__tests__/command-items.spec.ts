@@ -83,10 +83,11 @@ const actionItems: ActionItem[] = [
   },
 ];
 
-function build(query: string) {
+function build(query: string, favoriteActionIds: string[] = []) {
   return buildCommandItems({
     actionItems,
     collections,
+    favoriteActionIds,
     favoriteLookup: new Set(),
     openStatsLookup: new Map(),
     query,
@@ -158,6 +159,29 @@ describe("buildCommandItems", () => {
     expect(items[0]).toMatchObject({ kind: "action", title: "Pin Tab" });
   });
 
+  it("shows favorite actions in the initial results", () => {
+    const items = build("", ["copy-markdown-link"]);
+    expect(items[0]).toMatchObject({
+      isFavorite: true,
+      kind: "action",
+      title: "Copy Markdown Link",
+    });
+  });
+
+  it("keeps favorite actions above remaining actions in forced action mode", () => {
+    const items = build(">", ["pin-tab"]);
+    expect(items[0]).toMatchObject({
+      isFavorite: true,
+      kind: "action",
+      title: "Pin Tab",
+    });
+    expect(items[1]).toMatchObject({
+      isFavorite: false,
+      kind: "action",
+      title: "Copy URL",
+    });
+  });
+
   it("keeps existing tab prefix filtering", () => {
     const items = build("/t github");
     expect(items.every((item) => item.kind !== "page" || item.source === "tab")).toBe(true);
@@ -194,6 +218,7 @@ describe("executeCommand", () => {
         badge: "Action",
         icon: Search,
         id: "action:search",
+        isFavorite: false,
         kind: "action",
         ranking: {
           baseScore: 0,
