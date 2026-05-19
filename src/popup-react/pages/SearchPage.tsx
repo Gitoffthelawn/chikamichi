@@ -1,5 +1,5 @@
 import { sendToBackground } from "@plasmohq/messaging";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import browser, { type Search } from "webextension-polyfill";
 import {
@@ -144,11 +144,12 @@ export function SearchPage({
   const resultRefs = useRef<Array<HTMLElement | null>>([]);
   const resultsWrapperRef = useRef<HTMLDivElement>(null);
   const preserveSelectionOnCollectionsChangeRef = useRef(false);
+  const currentResultKeysRef = useRef<string[]>([]);
   const searchWordRef = useRef(searchWord);
   const selectedNumberRef = useRef(0);
   const suppressHoverSelectionRef = useRef(false);
   const lastPointerPositionRef = useRef<{ x: number; y: number } | null>(null);
-  const { badgeText, badgeVisible, clearBadge, showBadge } = useFeedbackBadge();
+  const { badgeText, badgeVisible, showBadge } = useFeedbackBadge();
   const getMockActiveTab = useCallback(() => {
     if (typeof window === "undefined") {
       return null;
@@ -163,6 +164,7 @@ export function SearchPage({
     );
   }, []);
   const actionMode = useMemo(() => SEARCH_TARGET_REGEX.ACTION.test(searchWord), [searchWord]);
+  const deferredSearchWord = useDeferredValue(searchWord);
   const favoriteLookup = useMemo(
     () => new Set(favoriteItems.map((item) => `${item.url}::${item.title}`)),
     [favoriteItems],
@@ -322,7 +324,7 @@ export function SearchPage({
     resultsWrapperRef.current?.scrollTo(0, 0);
   }, [collections, searchWord]);
 
-  const refreshActiveTab = () => loadActiveTab();
+  const refreshActiveTab = useCallback(() => loadActiveTab(), [loadActiveTab]);
 
   const currentPageIsFavorite = useMemo(() => {
     if (!activeTab?.url) {
@@ -428,7 +430,7 @@ export function SearchPage({
         favoriteLookup,
         favoriteOrder,
         openStatsLookup,
-        query: searchWord,
+        query: deferredSearchWord,
         recentContext,
         searchEngine,
         searchIndexes,
@@ -443,7 +445,7 @@ export function SearchPage({
       openStatsLookup,
       recentContext,
       searchEngine,
-      searchWord,
+      deferredSearchWord,
       searchIndexes,
     ],
   );
@@ -454,6 +456,14 @@ export function SearchPage({
   const currentResultKeys = useMemo(() => commandItems.map((item) => item.id), [commandItems]);
 
   useEffect(() => {
+    currentResultKeysRef.current = currentResultKeys;
+  }, [currentResultKeys]);
+
+  useEffect(() => {
+    if (searchWord !== deferredSearchWord) {
+      return;
+    }
+
     if (currentResultKeys.length === 0) {
       if (selectedNumber !== 0) {
         selectedNumberRef.current = 0;
@@ -498,7 +508,7 @@ export function SearchPage({
     if (fallbackKey !== selectedKey) {
       setSelectedKey(fallbackKey);
     }
-  }, [currentResultKeys, selectedKey, selectedNumber]);
+  }, [currentResultKeys, deferredSearchWord, searchWord, selectedKey, selectedNumber]);
 
   useEffect(() => {
     if (!favoriteReorderEnabled) {
@@ -523,14 +533,15 @@ export function SearchPage({
     (index: number) => {
       selectedNumberRef.current = index;
       setSelectedNumber(index);
-      const item = commandItems[index];
-      if (item) {
-        setSelectedKey(item.id);
+      const nextKey = currentResultKeysRef.current[index];
+      if (nextKey) {
+        setSelectedKey(nextKey);
       }
-      clearBadge();
     },
-    [clearBadge, commandItems],
+    [],
   );
+
+  const noopReorderFavoriteItem = useCallback((_fromIndex: number, _toIndex: number) => {}, []);
 
   const changeSelectedItemByKeyboard = useCallback(
     (index: number) => {
@@ -566,44 +577,6 @@ export function SearchPage({
     },
     [changeSelectedItem],
   );
-
-  const browserSearch = async (query: string, inNewTab = false) => {
-    const navigationUrl = toNavigableUrl(query);
-
-    if (navigationUrl) {
-      const messageName =
-        settings.openLinkInCurrentTab === inNewTab ? "open-new-tab-page" : "update-current-page";
-
-      await sendToBackground({
-        body: {
-          url: navigationUrl,
-        },
-        name: messageName,
-      });
-      updateOpenStats(navigationUrl).catch(reportError);
-      return;
-    }
-
-    if (browser.search.search) {
-      const [currentTab] = await browser.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-
-      await browser.search.search({
-        query,
-        tabId: inNewTab ? undefined : currentTab?.id,
-      });
-      return;
-    }
-
-    const searchApi = browser.search as BrowserSearchWithDisposition;
-
-    await searchApi.query({
-      disposition: inNewTab ? searchApi.Disposition.NEW_TAB : searchApi.Disposition.CURRENT_TAB,
-      text: query,
-    });
-  };
 
   const updateOpenStats = useCallback(async (url: string) => {
     try {
@@ -641,22 +614,49 @@ export function SearchPage({
     [settings.openLinkInCurrentTab, updateOpenStats],
   );
 
-  const toggleFavorite = useCallback(
-    async (item?: SearchResult) => {
-      let targetItem = item;
+  const browserSearch = useCallback(
+    async (query: string, inNewTab = false) => {
+      const navigationUrl = toNavigableUrl(query);
 
-      if (!targetItem) {
-        const commandItem = commandItems[selectedNumber];
-        if (!commandItem || commandItem.kind !== "page") {
-          return;
-        }
-        targetItem = commandItem.searchResult;
-      }
+      if (navigationUrl) {
+        const messageName =
+          settings.openLinkInCurrentTab === inNewTab ? "open-new-tab-page" : "update-current-page";
 
-      if (!targetItem) {
+        await sendToBackground({
+          body: {
+            url: navigationUrl,
+          },
+          name: messageName,
+        });
+        updateOpenStats(navigationUrl).catch(reportError);
         return;
       }
 
+      if (browser.search.search) {
+        const [currentTab] = await browser.tabs.query({
+          active: true,
+          currentWindow: true,
+        });
+
+        await browser.search.search({
+          query,
+          tabId: inNewTab ? undefined : currentTab?.id,
+        });
+        return;
+      }
+
+      const searchApi = browser.search as BrowserSearchWithDisposition;
+
+      await searchApi.query({
+        disposition: inNewTab ? searchApi.Disposition.NEW_TAB : searchApi.Disposition.CURRENT_TAB,
+        text: query,
+      });
+    },
+    [settings.openLinkInCurrentTab, updateOpenStats],
+  );
+
+  const toggleFavoriteByItem = useCallback(
+    async (targetItem: SearchResult) => {
       const isFavorite = favoriteItems.some(
         (favorite) => favorite.url === targetItem.url && favorite.title === targetItem.title,
       );
@@ -675,25 +675,22 @@ export function SearchPage({
       });
       await showBadge(isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite"));
     },
-    [commandItems, favoriteItems, favoriteOrder, onUpdateSettings, selectedNumber],
+    [favoriteItems, favoriteOrder, onUpdateSettings, showBadge],
   );
 
-  const toggleActionFavorite = useCallback(
-    async (item?: (typeof actionItems)[number]) => {
-      let targetItem = item;
-
-      if (!targetItem) {
-        const commandItem = commandItems[selectedNumber];
-        if (!commandItem || commandItem.kind !== "action") {
-          return;
-        }
-        targetItem = commandItem.action;
-      }
-
-      if (!targetItem) {
+  const toggleFavorite = useCallback(
+    async () => {
+      const commandItem = commandItems[selectedNumber];
+      if (!commandItem || commandItem.kind !== "page") {
         return;
       }
+      await toggleFavoriteByItem(commandItem.searchResult);
+    },
+    [commandItems, selectedNumber, toggleFavoriteByItem],
+  );
 
+  const toggleActionFavoriteByItem = useCallback(
+    async (targetItem: (typeof actionItems)[number]) => {
       const isFavorite = favoriteActionIds.includes(targetItem.id);
       const nextFavoriteActionIds = isFavorite
         ? favoriteActionIds.filter((id) => id !== targetItem.id)
@@ -712,15 +709,7 @@ export function SearchPage({
       });
       await showBadge(isFavorite ? t("badgeRemoveFavorite") : t("badgeAddFavorite"));
     },
-    [
-      actionItems,
-      commandItems,
-      favoriteActionIds,
-      favoriteOrder,
-      onUpdateSettings,
-      selectedNumber,
-      showBadge,
-    ],
+    [favoriteActionIds, favoriteOrder, onUpdateSettings, showBadge],
   );
 
   const moveFavorite = async (direction: "up" | "down") => {
@@ -837,16 +826,16 @@ export function SearchPage({
 
   const toggleFavoriteItem = useCallback(
     (item: SearchResult) => {
-      toggleFavorite(item).catch(reportError);
+      toggleFavoriteByItem(item).catch(reportError);
     },
-    [toggleFavorite],
+    [toggleFavoriteByItem],
   );
 
   const toggleActionFavoriteItem = useCallback(
     (item: (typeof actionItems)[number]) => {
-      toggleActionFavorite(item).catch(reportError);
+      toggleActionFavoriteByItem(item).catch(reportError);
     },
-    [toggleActionFavorite],
+    [toggleActionFavoriteByItem],
   );
 
   const reorderFavoriteItem = useCallback(
@@ -855,6 +844,10 @@ export function SearchPage({
     },
     [reorderFavorite],
   );
+
+  const stableReorderFavoriteItem = favoriteReorderEnabled
+    ? reorderFavoriteItem
+    : noopReorderFavoriteItem;
 
   const runCommandItem = useCallback(
     (item: (typeof commandItems)[number]) => {
@@ -964,10 +957,27 @@ export function SearchPage({
       return;
     }
 
+    const activeCommandItems =
+      searchWord === deferredSearchWord
+        ? commandItems
+        : buildCommandItems({
+            actionItems,
+            collections,
+            favoriteActionIds,
+            favoriteItems,
+            favoriteLookup,
+            favoriteOrder,
+            openStatsLookup,
+            query: searchWord,
+            recentContext,
+            searchEngine,
+            searchIndexes,
+          });
+
     const item =
-      commandItems[selectedNumber] ??
-      commandItems.find((commandItem) => commandItem.id === selectedKey) ??
-      commandItems[0];
+      activeCommandItems[selectedNumber] ??
+      activeCommandItems.find((commandItem) => commandItem.id === selectedKey) ??
+      activeCommandItems[0];
 
     if (item) {
       const closesPopup = item.kind === "page" || item.kind === "browser-search";
@@ -1035,7 +1045,7 @@ export function SearchPage({
       event.preventDefault();
       const commandItem = commandItems[selectedNumber];
       if (commandItem?.kind === "action") {
-        await toggleActionFavorite(commandItem.action);
+        await toggleActionFavoriteByItem(commandItem.action);
       } else {
         await toggleFavorite();
       }
@@ -1106,7 +1116,7 @@ export function SearchPage({
           handlePointerSelection={handlePointerSelection}
           openSearchResultItem={openSearchResultItem}
           opening={opening}
-          reorderFavoriteItem={reorderFavoriteItem}
+          reorderFavoriteItem={stableReorderFavoriteItem}
           resultRefs={resultRefs}
           resultsWrapperRef={resultsWrapperRef}
           runCommandItem={runCommandItem}
