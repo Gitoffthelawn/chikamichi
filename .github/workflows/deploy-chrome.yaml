@@ -1,0 +1,43 @@
+name: Deploy Chrome Extension
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build zip for Chrome Web Store
+        run: pnpm zip:prod
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrome-mv3-prod
+          path: build/chrome-mv3-prod.zip
+          if-no-files-found: error
+
+      - name: Publish to Chrome Web Store
+        uses: PlasmoHQ/bpp@v3
+        with:
+          keys: ${{ secrets.BPP_KEYS }}
+          chrome-file: build/chrome-mv3-prod.zip
