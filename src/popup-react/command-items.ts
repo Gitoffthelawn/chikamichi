@@ -66,6 +66,7 @@ type CommandBrowserSearchItem = {
   faviconUrl: string;
   id: string;
   kind: "browser-search";
+  navigationUrl?: string;
   query: string;
   ranking: CommandRanking;
   subtitle: string;
@@ -302,6 +303,36 @@ function isActionVerbQuery(searchQuery: string) {
   return tokens.some((token) => (ACTION_INTENT_TOKENS as readonly string[]).includes(token));
 }
 
+export function toNavigableUrl(rawQuery: string) {
+  const query = rawQuery.trim();
+
+  if (!query || /\s/u.test(query)) {
+    return null;
+  }
+
+  if (/^[a-z][a-z\d+\-.]*:/iu.test(query)) {
+    try {
+      return new URL(query).toString();
+    } catch {
+      return null;
+    }
+  }
+
+  if (
+    /^(?:localhost|\d{1,3}(?:\.\d{1,3}){3}|\[[\da-f:]+\]|[\w-]+(?:\.[\w-]+)+)(?::\d+)?(?:[/?#].*)?$/iu.test(
+      query,
+    )
+  ) {
+    try {
+      return new URL(`https://${query}`).toString();
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
 function toPageCommandItem(item: SearchResult, openStatsLookup?: OpenStatsLookup): CommandPageItem {
   const reasons: CommandReason[] = [
     item.title ? "title-match" : "url-match",
@@ -489,20 +520,24 @@ function getBrowserSearchCommandItem(
     bestPageScore < COMMAND_RANKING_CONFIG.strongPageMatchThreshold
       ? COMMAND_RANKING_CONFIG.browserSearchStrongMatchScore
       : COMMAND_RANKING_CONFIG.browserSearchWeakMatchScore;
+  const navigationUrl = toNavigableUrl(parsedQuery.searchQuery);
 
   const item: CommandBrowserSearchItem = {
     badge: "Search",
     faviconUrl: input.searchEngine.favIconUrl,
     id: `browser-search:${parsedQuery.searchQuery}`,
     kind: "browser-search",
+    navigationUrl: navigationUrl ?? undefined,
     query: parsedQuery.searchQuery,
     ranking: {
       baseScore,
       finalScore: baseScore,
       reasons: ["browser-search"],
     },
-    subtitle: input.searchEngine.name || "Search",
-    title: `Search "${parsedQuery.searchQuery}"`,
+    subtitle: navigationUrl ? "Address bar" : input.searchEngine.name || "Search",
+    title: navigationUrl
+      ? `Open "${parsedQuery.searchQuery}"`
+      : `Search "${parsedQuery.searchQuery}"`,
   };
 
   return item;
@@ -642,5 +677,5 @@ export async function executeCommand(item: CommandItem, context: CommandExecutio
     return;
   }
 
-  await context.browserSearch(item.query, context.inNewTab);
+  await context.browserSearch(item.navigationUrl ?? item.query, context.inNewTab);
 }

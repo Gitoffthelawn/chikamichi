@@ -26,6 +26,7 @@ import {
   createCommandSearchIndexes,
   executeCommand,
   type CommandItem,
+  toNavigableUrl,
 } from "~/popup-react/command-items";
 import { useActionItems } from "~/popup-react/hooks/use-action-items";
 import { useFeedbackBadge } from "~/popup-react/hooks/use-feedback-badge";
@@ -568,6 +569,22 @@ export function SearchPage({
   );
 
   const browserSearch = async (query: string, inNewTab = false) => {
+    const navigationUrl = toNavigableUrl(query);
+
+    if (navigationUrl) {
+      const messageName =
+        settings.openLinkInCurrentTab === inNewTab ? "open-new-tab-page" : "update-current-page";
+
+      await sendToBackground({
+        body: {
+          url: navigationUrl,
+        },
+        name: messageName,
+      });
+      updateOpenStats(navigationUrl).catch(reportError);
+      return;
+    }
+
     if (browser.search.search) {
       const [currentTab] = await browser.tabs.query({
         active: true,

@@ -64,6 +64,8 @@
   "badgeRemoveFavorite": { "message": "Unpinned" },
   "badgeUnmutedTab": { "message": "Unmuted tab" },
   "badgeUnpinnedTab": { "message": "Unpinned tab" },
+  "browserNavigate": { "message": "Open \"$1\"" },
+  "browserNavigateEngine": { "message": "Address bar" },
   "browserSearch": { "message": "Search \"$1\"" },
   "browserSearchEngine": { "message": "Browser" },
   "buttonOpenIssue": { "message": "Open Issue" },

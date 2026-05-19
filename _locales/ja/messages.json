@@ -64,6 +64,8 @@
   "badgeSavedScreenshot": { "message": "スクリーンショットを保存しました" },
   "badgeUnmutedTab": { "message": "タブのミュートを解除しました" },
   "badgeUnpinnedTab": { "message": "タブのピン留めを外しました" },
+  "browserNavigate": { "message": "\"$1\" を開く" },
+  "browserNavigateEngine": { "message": "アドレスバー" },
   "browserSearch": { "message": "\"$1\" を検索" },
   "browserSearchEngine": { "message": "Browser" },
   "buttonOpenIssue": { "message": "Issue を開く" },

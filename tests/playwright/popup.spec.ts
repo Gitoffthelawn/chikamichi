@@ -148,6 +148,27 @@ test.describe("popup", () => {
       .toEqual([{ disposition: 1, text: "unknown-item" }]);
   });
 
+  test("treats bare domains like address-bar navigation", async ({ page }) => {
+    const input = page.locator("[data-testid=search-input]");
+    await input.fill("dev.nstock.com");
+    await expect(page.locator("[data-testid=browser-search-btn]")).toContainText(
+      'Open "dev.nstock.com"',
+    );
+    await expect(page.locator("[data-testid=browser-search-btn]")).toContainText("Address bar");
+
+    await input.press("Enter");
+
+    await expect
+      .poll(() => getLastRuntimeMessage(page))
+      .toEqual({
+        body: {
+          url: "https://dev.nstock.com/",
+        },
+        name: "update-current-page",
+      });
+    await expect.poll(() => getMockCalls(page, "chromeSearchQuery")).toHaveLength(0);
+  });
+
   test("keeps page results above actions for navigation-like queries", async ({ page }) => {
     const input = page.locator("[data-testid=search-input]");
     await input.fill("bookmark-item-0");
@@ -517,6 +538,23 @@ test.describe("popup", () => {
       .toEqual({
         body: {
           url: "https://history-item.com/0",
+        },
+        name: "open-new-tab-page",
+      });
+  });
+
+  test("uses open link setting for bare-domain navigation", async ({ page }) => {
+    await page.locator("[data-testid=setting-tab-btn]").click();
+    await page.locator("[data-testid=open-link-in-new-tab]").click();
+    await page.locator("[data-testid=search-tab-btn]").click();
+    await page.locator("[data-testid=search-input]").fill("dev.nstock.com");
+    await page.locator("[data-testid=search-input]").press("Enter");
+
+    await expect
+      .poll(() => getLastRuntimeMessage(page))
+      .toEqual({
+        body: {
+          url: "https://dev.nstock.com/",
         },
         name: "open-new-tab-page",
       });

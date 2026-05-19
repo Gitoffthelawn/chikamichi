@@ -7,6 +7,7 @@ import {
   detectQueryIntent,
   executeCommand,
   parseCommandQuery,
+  toNavigableUrl,
 } from "~/popup-react/command-items";
 
 const githubHistory: SearchItem = {
@@ -196,6 +197,29 @@ describe("buildCommandItems", () => {
     const firstPageIndex = githubItems.findIndex((item) => item.kind === "page");
     expect(firstPageIndex).toBeGreaterThanOrEqual(0);
     expect(browserSearchIndex).toBeGreaterThan(firstPageIndex);
+  });
+
+  it("shows address-bar style open item for bare domains", () => {
+    expect(build("dev.nstock.com")[0]).toMatchObject({
+      kind: "browser-search",
+      navigationUrl: "https://dev.nstock.com/",
+      subtitle: "Address bar",
+      title: 'Open "dev.nstock.com"',
+    });
+  });
+});
+
+describe("toNavigableUrl", () => {
+  it("normalizes bare domains to https urls", () => {
+    expect(toNavigableUrl("dev.nstock.com")).toBe("https://dev.nstock.com/");
+  });
+
+  it("keeps full urls as-is", () => {
+    expect(toNavigableUrl("http://localhost:3000/foo")).toBe("http://localhost:3000/foo");
+  });
+
+  it("does not treat spaced text as a url", () => {
+    expect(toNavigableUrl("dev.nstock.com docs")).toBeNull();
   });
 });
 

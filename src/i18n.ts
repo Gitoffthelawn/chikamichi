@@ -53,6 +53,8 @@ const FALLBACK_MESSAGES = {
   badgeSavedScreenshot: "Saved screenshot",
   badgeUnmutedTab: "Unmuted tab",
   badgeUnpinnedTab: "Unpinned tab",
+  browserNavigate: 'Open "$1"',
+  browserNavigateEngine: "Address bar",
   browserSearch: 'Search "$1"',
   browserSearchEngine: "Browser",
   buttonOpenIssue: "Open Issue",
