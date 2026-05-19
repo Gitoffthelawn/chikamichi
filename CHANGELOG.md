@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.1.8
+
+### performance
+
+- Stabilize popup search result updates while navigating and editing long queries
+
 ## 4.1.7
 
 ### bugfix
