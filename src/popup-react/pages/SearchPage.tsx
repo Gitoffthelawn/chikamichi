@@ -535,11 +535,10 @@ export function SearchPage({
   const changeSelectedItemByKeyboard = useCallback(
     (index: number) => {
       suppressHoverSelectionRef.current = true;
-      flushSync(() => {
-        changeSelectedItem(index);
-      });
+      changeSelectedItem(index);
+      fixScrollPosition(index);
     },
-    [changeSelectedItem],
+    [changeSelectedItem, fixScrollPosition],
   );
 
   const handlePointerSelection = useCallback(
@@ -1006,7 +1005,6 @@ export function SearchPage({
       event.preventDefault();
       const nextIndex = Math.min(selectedNumber + 1, resultCount - 1);
       changeSelectedItemByKeyboard(nextIndex);
-      fixScrollPosition(nextIndex);
       return true;
     }
 
@@ -1014,7 +1012,6 @@ export function SearchPage({
       event.preventDefault();
       const nextIndex = Math.max(selectedNumber - 1, 0);
       changeSelectedItemByKeyboard(nextIndex);
-      fixScrollPosition(nextIndex);
       return true;
     }
 
