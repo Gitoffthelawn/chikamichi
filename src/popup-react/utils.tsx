@@ -18,10 +18,6 @@ export function reportError(error: unknown) {
   );
 }
 
-export function getResultKey(item: Pick<SearchResult, "title" | "url" | "type">) {
-  return `${item.type}:${item.title}:${item.url}`;
-}
-
 export function getResolvedTheme(theme: ValueOf<typeof THEME>) {
   if (theme === THEME.AUTO) {
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? THEME.DARK : THEME.LIGHT;

@@ -44,6 +44,10 @@ type BrowserSearchWithDisposition = typeof browser.search & {
 
 const OPENING_MIN_VISIBLE_MS = 400;
 
+function shouldOpenInNewTab(openLinkInCurrentTab: boolean, alternateOpen: boolean) {
+  return openLinkInCurrentTab === alternateOpen;
+}
+
 function moveArrayItem<T>(items: T[], fromIndex: number, toIndex: number) {
   if (
     items.length < 2 ||
@@ -529,19 +533,19 @@ export function SearchPage({
     });
   }, []);
 
-  const changeSelectedItem = useCallback(
-    (index: number) => {
-      selectedNumberRef.current = index;
-      setSelectedNumber(index);
-      const nextKey = currentResultKeysRef.current[index];
-      if (nextKey) {
-        setSelectedKey(nextKey);
-      }
-    },
+  const changeSelectedItem = useCallback((index: number) => {
+    selectedNumberRef.current = index;
+    setSelectedNumber(index);
+    const nextKey = currentResultKeysRef.current[index];
+    if (nextKey) {
+      setSelectedKey(nextKey);
+    }
+  }, []);
+
+  const noopReorderFavoriteItem = useCallback(
+    (_fromIndex: number, _toIndex: number) => undefined,
     [],
   );
-
-  const noopReorderFavoriteItem = useCallback((_fromIndex: number, _toIndex: number) => {}, []);
 
   const changeSelectedItemByKeyboard = useCallback(
     (index: number) => {
@@ -600,8 +604,9 @@ export function SearchPage({
         return;
       }
 
-      const messageName =
-        settings.openLinkInCurrentTab === inNewTab ? "open-new-tab-page" : "update-current-page";
+      const messageName = shouldOpenInNewTab(settings.openLinkInCurrentTab, inNewTab)
+        ? "open-new-tab-page"
+        : "update-current-page";
 
       await sendToBackground({
         body: {
@@ -616,11 +621,11 @@ export function SearchPage({
 
   const browserSearch = useCallback(
     async (query: string, inNewTab = false) => {
+      const openInNewTab = shouldOpenInNewTab(settings.openLinkInCurrentTab, inNewTab);
       const navigationUrl = toNavigableUrl(query);
 
       if (navigationUrl) {
-        const messageName =
-          settings.openLinkInCurrentTab === inNewTab ? "open-new-tab-page" : "update-current-page";
+        const messageName = openInNewTab ? "open-new-tab-page" : "update-current-page";
 
         await sendToBackground({
           body: {
@@ -640,7 +645,7 @@ export function SearchPage({
 
         await browser.search.search({
           query,
-          tabId: inNewTab ? undefined : currentTab?.id,
+          tabId: openInNewTab ? undefined : currentTab?.id,
         });
         return;
       }
@@ -648,7 +653,9 @@ export function SearchPage({
       const searchApi = browser.search as BrowserSearchWithDisposition;
 
       await searchApi.query({
-        disposition: inNewTab ? searchApi.Disposition.NEW_TAB : searchApi.Disposition.CURRENT_TAB,
+        disposition: openInNewTab
+          ? searchApi.Disposition.NEW_TAB
+          : searchApi.Disposition.CURRENT_TAB,
         text: query,
       });
     },
@@ -678,16 +685,13 @@ export function SearchPage({
     [favoriteItems, favoriteOrder, onUpdateSettings, showBadge],
   );
 
-  const toggleFavorite = useCallback(
-    async () => {
-      const commandItem = commandItems[selectedNumber];
-      if (!commandItem || commandItem.kind !== "page") {
-        return;
-      }
-      await toggleFavoriteByItem(commandItem.searchResult);
-    },
-    [commandItems, selectedNumber, toggleFavoriteByItem],
-  );
+  const toggleFavorite = useCallback(async () => {
+    const commandItem = commandItems[selectedNumber];
+    if (!commandItem || commandItem.kind !== "page") {
+      return;
+    }
+    await toggleFavoriteByItem(commandItem.searchResult);
+  }, [commandItems, selectedNumber, toggleFavoriteByItem]);
 
   const toggleActionFavoriteByItem = useCallback(
     async (targetItem: (typeof actionItems)[number]) => {

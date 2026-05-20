@@ -560,6 +560,20 @@ test.describe("popup", () => {
       });
   });
 
+  test("uses open link setting for browser search", async ({ page }) => {
+    await page.locator("[data-testid=setting-tab-btn]").click();
+    await page.locator("[data-testid=open-link-in-new-tab]").click();
+    await page.locator("[data-testid=search-tab-btn]").click();
+    await page.locator("[data-testid=search-input]").fill("unknown-item");
+    await page.locator("[data-testid=search-input]").press("Enter");
+
+    await expect
+      .poll(() =>
+        getLastMockCall<{ disposition: number; text: string }[]>(page, "chromeSearchQuery"),
+      )
+      .toEqual([{ disposition: 2, text: "unknown-item" }]);
+  });
+
   test("toggles favorites and copies current url", async ({ page }) => {
     const input = page.locator("[data-testid=search-input]");
     await input.fill("bookmark-item-0");
